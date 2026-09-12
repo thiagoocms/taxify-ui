@@ -143,7 +143,7 @@ export class AuthComponent implements OnInit {
     this.authService.login(login, password).subscribe({
       next: () => {
         this.loginLoading.set(false);
-        this.router.navigate(['/vinculos']);
+        this.router.navigate(['/notas-fiscais']);
       },
       error: () => {
         this.loginLoading.set(false);
