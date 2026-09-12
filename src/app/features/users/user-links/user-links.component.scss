@@ -1,0 +1,32 @@
+.accordion-section {
+  margin-top: 20px;
+  border-top: 1px solid #dee2e6;
+  padding-top: 12px;
+}
+
+.accordion-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 8px 0;
+  font-weight: 600;
+  color: #495057;
+  cursor: pointer;
+
+  .chevron {
+    width: 12px;
+    font-size: 12px;
+    transition: transform 0.15s ease;
+
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.accordion-body {
+  padding-top: 8px;
+}

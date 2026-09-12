@@ -63,6 +63,14 @@
   font-weight: 600;
   font-size: 14px;
   flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(0.92);
+  }
 }
 
 .user-name {

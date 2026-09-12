@@ -115,20 +115,20 @@ export class AuthComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    if (this.route.snapshot.queryParamMap.get('mode') === 'register') {
+    if (this.route.snapshot.routeConfig?.path === 'register') {
       this.activeIndex.set(1);
     }
   }
 
   showLogin(): void {
     this.activeIndex.set(0);
-    this.location.replaceState('/login');
+    this.location.replaceState('/auth/login');
   }
 
   showRegister(): void {
     this.activeIndex.set(1);
     this.step.set(0);
-    this.location.replaceState('/register');
+    this.location.replaceState('/auth/register');
   }
 
   loginSubmit(): void {
@@ -143,7 +143,7 @@ export class AuthComponent implements OnInit {
     this.authService.login(login, password).subscribe({
       next: () => {
         this.loginLoading.set(false);
-        this.router.navigate(['/notas-fiscais']);
+        this.router.navigate(['/home']);
       },
       error: () => {
         this.loginLoading.set(false);
@@ -190,7 +190,10 @@ export class AuthComponent implements OnInit {
 
     const { confirmPassword, ...value } = this.registerForm.getRawValue();
 
-    this.userService.create({ ...value, profile: 'USER' }).subscribe({
+    // Usuários que se cadastram pelo formulário público são donos da conta,
+    // por isso entram como ADMIN. Usuários criados dentro do sistema pelo
+    // admin (ver features/users) entram como EMPLOYEE.
+    this.userService.create({ ...value, profile: 'ADMIN' }).subscribe({
       next: () => {
         this.registerLoading.set(false);
         this.showLogin();

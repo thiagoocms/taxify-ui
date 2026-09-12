@@ -1,4 +1,10 @@
 <nav class="sidebar-nav">
+  <a class="nav-link" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="linkClicked.emit()">
+    <fa-icon [icon]="homeIcon"></fa-icon>
+    <span>Início</span>
+  </a>
+
+  <!-- Menu "Cadastro" com submenu: Empresas, Planos e Usuários (área administrativa). -->
   <ng-container *ngIf="isAdmin">
     <button type="button" class="nav-link nav-group-toggle" (click)="toggleCadastro()">
       <fa-icon [icon]="folderIcon"></fa-icon>
@@ -9,7 +15,7 @@
     <div class="nav-group" [class.open]="cadastroOpen()">
       <a
         class="nav-link nav-sublink"
-        routerLink="/companies"
+        routerLink="/cadastro/empresas"
         routerLinkActive="active"
         (click)="linkClicked.emit()"
       >
@@ -18,21 +24,21 @@
       </a>
       <a
         class="nav-link nav-sublink"
-        routerLink="/vinculos"
-        routerLinkActive="active"
-        (click)="linkClicked.emit()"
-      >
-        <fa-icon [icon]="linkIcon"></fa-icon>
-        <span>Vínculos</span>
-      </a>
-      <a
-        class="nav-link nav-sublink"
-        routerLink="/planos"
+        routerLink="/cadastro/planos"
         routerLinkActive="active"
         (click)="linkClicked.emit()"
       >
         <fa-icon [icon]="tagsIcon"></fa-icon>
         <span>Planos</span>
+      </a>
+      <a
+        class="nav-link nav-sublink"
+        routerLink="/cadastro/usuarios"
+        routerLinkActive="active"
+        (click)="linkClicked.emit()"
+      >
+        <fa-icon [icon]="usersIcon"></fa-icon>
+        <span>Usuários</span>
       </a>
     </div>
   </ng-container>

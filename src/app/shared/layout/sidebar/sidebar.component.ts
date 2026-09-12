@@ -7,8 +7,9 @@ import {
   faChevronDown,
   faFileInvoice,
   faFolderOpen,
-  faLink,
+  faHouse,
   faTags,
+  faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -24,11 +25,12 @@ export class SidebarComponent {
 
   @Output() linkClicked = new EventEmitter<void>();
 
+  readonly homeIcon = faHouse;
   readonly buildingIcon = faBuilding;
-  readonly linkIcon = faLink;
   readonly invoiceIcon = faFileInvoice;
   readonly folderIcon = faFolderOpen;
   readonly tagsIcon = faTags;
+  readonly usersIcon = faUsers;
   readonly chevronIcon = faChevronDown;
   readonly isAdmin = this.authService.isAdmin;
 

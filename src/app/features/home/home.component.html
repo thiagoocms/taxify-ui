@@ -1,0 +1,15 @@
+<app-page pageTitle="Início" [pageDescription]="'Bem-vindo(a)' + (userName() ? ', ' + userName() : '') + '!'">
+  <div class="row g-3">
+    @for (shortcut of shortcuts; track shortcut.routerLink) {
+      @if (!shortcut.adminOnly || isAdmin) {
+        <div class="col-12 col-sm-6 col-lg-3">
+          <a class="home-card d-block text-decoration-none p-3 border rounded h-100" [routerLink]="shortcut.routerLink">
+            <fa-icon class="home-card-icon" [icon]="shortcut.icon"></fa-icon>
+            <h6 class="fw-bold mt-2 mb-1 text-primary">{{ shortcut.label }}</h6>
+            <span class="text-muted small">{{ shortcut.description }}</span>
+          </a>
+        </div>
+      }
+    }
+  </div>
+</app-page>

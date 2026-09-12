@@ -1,0 +1,53 @@
+<form class="form-container" [formGroup]="form" (ngSubmit)="submit()">
+  <div class="row">
+    <div class="col-md-6 col-sm-12">
+      <app-input formControlName="name" label="Nome completo"></app-input>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <app-input
+        formControlName="documentType"
+        label="Tipo de documento"
+        type="select"
+        [options]="documentTypeOptions"
+      ></app-input>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <app-input formControlName="documentNumber" label="CPF / CNPJ"></app-input>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-6 col-sm-12">
+      <app-input formControlName="login" label="Login"></app-input>
+    </div>
+    <div class="col-md-6 col-sm-12">
+      <app-input formControlName="email" type="email" label="E-mail"></app-input>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-6 col-sm-12">
+      <app-input
+        formControlName="password"
+        [label]="isEdit ? 'Nova senha (opcional)' : 'Senha'"
+        [type]="hidePassword() ? 'password' : 'text'"
+        [icon]="eyeIcon()"
+        [clickable]="true"
+        (onClick)="hidePassword.set(!hidePassword())"
+      ></app-input>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end gap-2 mt-3">
+    <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
+    <app-button
+      type="submit"
+      [label]="loading() ? 'Salvando...' : 'Salvar'"
+      [disabled]="loading()"
+    ></app-button>
+  </div>
+</form>
+
+@if (isEdit) {
+  <app-user-links [userId]="user!.id!"></app-user-links>
+}

@@ -1,0 +1,14 @@
+.home-card {
+  color: inherit;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.home-card-icon {
+  font-size: 20px;
+  color: var(--color-primary);
+}

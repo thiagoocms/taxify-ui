@@ -7,7 +7,14 @@
   </div>
 
   <div class="user-area">
-    <span class="user-avatar">{{ userInitial }}</span>
+    <button
+      type="button"
+      class="user-avatar"
+      title="Editar dados do escritório"
+      (click)="openFirmDialog()"
+    >
+      {{ userInitial }}
+    </button>
     <span class="user-name">{{ authService.userName() }}</span>
     <app-button
       label="Sair"
@@ -18,3 +25,17 @@
     ></app-button>
   </div>
 </div>
+
+<app-modal [open]="firmDialogOpen()" title="Dados do escritório" (closed)="closeFirmDialog()">
+  @if (firmDialogOpen()) {
+    @if (firmLoading()) {
+      <p class="loading-text">Carregando...</p>
+    } @else {
+      <app-accounting-firm-form
+        [firm]="firm()"
+        (saved)="onFirmSaved($event)"
+        (cancelled)="closeFirmDialog()"
+      ></app-accounting-firm-form>
+    }
+  }
+</app-modal>

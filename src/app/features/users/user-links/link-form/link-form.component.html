@@ -1,17 +1,6 @@
-<form class="form-container" [formGroup]="form" (ngSubmit)="submit()">
+<form [formGroup]="form" (ngSubmit)="submit()">
   <div class="row">
-    <div class="col-md-6 col-sm-12" *ngIf="isAdmin">
-      <app-input
-        formControlName="user"
-        label="Usuário"
-        type="autocomplete"
-        [searchFn]="searchUsers"
-        displayField="name"
-        displayFieldTooltip="login"
-      ></app-input>
-    </div>
-
-    <div class="col-md-6 col-sm-12">
+    <div class="col-md-8 col-sm-12">
       <app-input
         formControlName="company"
         label="Empresa"

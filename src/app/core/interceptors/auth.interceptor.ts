@@ -54,7 +54,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         toastr.warning('Sua sessão expirou. Faça login novamente.', 'Sessão expirada');
         authService.logout();
-        router.navigate(['/login']);
+        router.navigate(['/auth/login']);
         return throwError(() => error);
       }
 

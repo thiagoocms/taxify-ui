@@ -1,0 +1,31 @@
+<div class="accordion-section">
+  <button type="button" class="accordion-toggle" (click)="toggle()">
+    <span>Vínculos com empresas</span>
+    <fa-icon class="chevron" [class.open]="open()" [icon]="chevronIcon"></fa-icon>
+  </button>
+
+  @if (open()) {
+    <div class="accordion-body">
+      <div class="d-flex justify-content-end mb-2">
+        <app-button label="Vincular empresa" icon="plus" (onClick)="openCreateDialog()"></app-button>
+      </div>
+
+      <app-table [columns]="columns" [data]="links()" [config]="tableConfig"></app-table>
+
+      @if (loading()) {
+        <p class="loading-text">Carregando...</p>
+      }
+    </div>
+  }
+</div>
+
+<app-modal [open]="dialogOpen()" title="Vincular empresa" (closed)="closeDialog()">
+  @if (dialogOpen()) {
+    <app-user-link-form
+      [userId]="userId"
+      [existingCompanyIds]="existingCompanyIds()"
+      (saved)="onSaved()"
+      (cancelled)="closeDialog()"
+    ></app-user-link-form>
+  }
+</app-modal>

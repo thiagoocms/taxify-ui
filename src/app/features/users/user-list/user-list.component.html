@@ -1,0 +1,41 @@
+<app-page [pageTitle]="pageTitle()" [pageDescription]="pageDescription()" [pageButtons]="pageButtons()">
+  @if (viewMode() === 'list') {
+    <div class="toolbar">
+      <div class="search-field">
+        <app-input label="Buscar por nome" [formControl]="searchControl"></app-input>
+      </div>
+    </div>
+
+    <app-table [columns]="columns" [data]="users()" [config]="tableConfig"></app-table>
+
+    @if (loading()) {
+      <p class="loading-text">Carregando...</p>
+    }
+
+    @if (totalPages() > 1) {
+      <div class="pagination-bar">
+        <app-button
+          label="Anterior"
+          variant="outlined"
+          severity="secondary"
+          [disabled]="pageIndex() === 0"
+          (onClick)="previousPage()"
+        ></app-button>
+        <span class="page-info">Página {{ pageIndex() + 1 }} de {{ totalPages() }}</span>
+        <app-button
+          label="Próxima"
+          variant="outlined"
+          severity="secondary"
+          [disabled]="pageIndex() + 1 >= totalPages()"
+          (onClick)="nextPage()"
+        ></app-button>
+      </div>
+    }
+  } @else {
+    <app-user-form
+      [user]="editingUser()"
+      (saved)="onSaved()"
+      (cancelled)="closeForm()"
+    ></app-user-form>
+  }
+</app-page>
