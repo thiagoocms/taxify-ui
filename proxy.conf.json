@@ -1,10 +1,7 @@
 {
   "/taxify-service/**": {
-    "target": "https://4c22-179-55-108-203.ngrok-free.app",
-    "secure": true,
-    "changeOrigin": true,
-    "headers": {
-      "ngrok-skip-browser-warning": "true"
-    }
+    "target": "http://localhost:5000",
+    "secure": false,
+    "changeOrigin": true
   }
 }
