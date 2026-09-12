@@ -1,0 +1,32 @@
+
+:host {
+  display: block;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 2px;
+  overflow: hidden;
+
+  .selectable-cell {
+    width:20px;
+  }
+}
+
+
+th, td {
+  text-align: left;
+  border-bottom: 1px solid #eee !important;
+}
+
+tbody tr.selected > td {
+  background-color: rgba(128, 128, 128, 0.27) !important;
+}
+
+
+.empty-message{
+  padding: 2rem;
+  color: var(--text-title);
+  border-style: dashed !important;
+}

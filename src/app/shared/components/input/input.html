@@ -1,0 +1,88 @@
+<div class="custom-input-container">
+  <label [class.filled]="hasValue || focused || alwaysFloatLabel">{{ label }}</label>
+
+  <div class="wrapper">
+    @switch (type) {
+      @case ('autocomplete') {
+        <input
+          [ngClass]="{ 'border': border }"
+          [disabled]="disabled"
+          [value]="value"
+          (input)="onInput($event)"
+        />
+
+        @if (showDropdown && suggestions.length > 0) {
+          <div class="dialog-container">
+            <ul class="results">
+              @for (item of suggestions; track item[displayField]) {
+                <li (click)="onSelect(item)" class="result-item" [title]="item[displayFieldTooltip] ?? item[displayField]">
+                  <div class="title">
+                    {{ item[displayField] }}
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      }
+      @case ('textarea') {
+        <textarea
+          [ngClass]="{ 'border': border }"
+          [disabled]="disabled"
+          [maxLength]="maxLength"
+          [value]="value"
+          (input)="onInput($event)"
+          (focus)="focused = true"
+          (blur)="onBlur()"
+          rows="3"
+        ></textarea>
+      }
+      @case ('select') {
+        <select
+          [ngClass]="{ 'border': border }"
+          [disabled]="disabled"
+          [value]="value"
+          (change)="onInput($event)"
+          (focus)="focused = true"
+          (blur)="onBlur()"
+        >
+          @if (!value) {
+            <option value="" hidden disabled selected></option>
+          }
+          @for (option of options; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      }
+      @default {
+        <input
+          [ngClass]="{ 'border': border }"
+          [type]="type"
+          [disabled]="disabled"
+          [maxLength]="maxLength"
+          [value]="value"
+          (input)="onInput($event)"
+          (focus)="focused = true"
+          (blur)="onBlur()"
+        />
+      }
+    }
+
+    @if (icon) {
+      <div class="input-icon d-flex align-items-center justify-content-center h-100"
+           [ngClass]="{
+                clickable: clickable
+            }"
+           (click)="toggle($event)">
+        <fa-icon [icon]="icon"></fa-icon>
+      </div>
+    }
+    <div class="underline"></div>
+  </div>
+
+  <div *ngIf="hasErrors" class="error-messages active">
+    <span *ngFor="let error of errorMessages">{{ error + " " }} </span>
+  </div>
+
+
+</div>

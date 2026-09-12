@@ -1,0 +1,18 @@
+<div [ngClass]="styleClass" class="d-flex gap-2 align-items-center form-check form-switch">
+
+  <input
+    class="form-check-input"
+    type="checkbox"
+    role="switch"
+    [checked]="checked"
+    [id]="idInput"
+    (change)="handleChange($event)"
+    [disabled]="isDisabled">
+
+  <label
+    class="form-check-label cursor-pointer"
+    [for]="idInput">
+    {{ label }}
+  </label>
+
+</div>

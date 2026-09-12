@@ -1,0 +1,61 @@
+<div class="accordion-section">
+  <button type="button" class="accordion-toggle" (click)="toggle()">
+    <span>Regras fiscais</span>
+    <fa-icon class="chevron" [class.open]="open()" [icon]="chevronIcon"></fa-icon>
+  </button>
+
+  @if (open()) {
+    <div class="accordion-body">
+      <div class="toolbar">
+        <div class="search-field">
+          <app-input label="Buscar por código do produto" [formControl]="searchControl"></app-input>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end mb-2">
+        <app-button label="Nova regra" icon="plus" (onClick)="openCreateDialog()"></app-button>
+      </div>
+
+      <app-table [columns]="columns" [data]="rules()" [config]="tableConfig"></app-table>
+
+      @if (loading()) {
+        <p class="loading-text">Carregando...</p>
+      }
+
+      @if (totalPages() > 1) {
+        <div class="pagination-bar">
+          <app-button
+            label="Anterior"
+            variant="outlined"
+            severity="secondary"
+            [disabled]="pageIndex() === 0"
+            (onClick)="previousPage()"
+          ></app-button>
+          <span class="page-info">Página {{ pageIndex() + 1 }} de {{ totalPages() }}</span>
+          <app-button
+            label="Próxima"
+            variant="outlined"
+            severity="secondary"
+            [disabled]="pageIndex() + 1 >= totalPages()"
+            (onClick)="nextPage()"
+          ></app-button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<app-modal
+  [open]="dialogOpen()"
+  [title]="editingRule() ? 'Editar regra fiscal' : 'Nova regra fiscal'"
+  (closed)="closeDialog()"
+>
+  @if (dialogOpen()) {
+    <app-rule-form
+      [companyId]="companyId"
+      [rule]="editingRule()"
+      (saved)="onSaved()"
+      (cancelled)="closeDialog()"
+    ></app-rule-form>
+  }
+</app-modal>

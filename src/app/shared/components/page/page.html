@@ -1,0 +1,34 @@
+<header
+  class="d-flex flex-wrap justify-content-between align-items-center gap-2 border rounded border-1 border-primary border-opacity-10 bg-opacity p-3 mb-3">
+  <section class="d-flex align-items-start">
+    <div class="page-title">
+      <h5 class="fw-bold text-primary mb-1">
+        {{ pageTitle }}
+      </h5>
+      <span class="text-muted small">
+        {{ pageDescription }}
+      </span>
+    </div>
+  </section>
+
+  <section>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      @for (pageButton of pageButtons; track $index) {
+        @if (pageButton.isShow !== false) {
+          <app-button
+            [severity]="pageButton.severity"
+            [variant]="pageButton.variant"
+            [label]="pageButton.label || ''"
+            [icon]="pageButton.icon || ''"
+            [disabled]="pageButton.isDisabled || false"
+            (onClick)="action(pageButton)"
+          />
+        }
+      }
+    </div>
+  </section>
+</header>
+
+<main>
+  <ng-content></ng-content>
+</main>

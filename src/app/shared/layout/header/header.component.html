@@ -1,0 +1,20 @@
+<div class="header-bar">
+  <div class="d-flex align-items-center gap-3">
+    <button type="button" class="menu-toggle" (click)="menuToggle.emit()" aria-label="Abrir/fechar menu">
+      <fa-icon [icon]="menuIcon"></fa-icon>
+    </button>
+    <span class="brand">Taxify</span>
+  </div>
+
+  <div class="user-area">
+    <span class="user-avatar">{{ userInitial }}</span>
+    <span class="user-name">{{ authService.userName() }}</span>
+    <app-button
+      label="Sair"
+      icon="right-from-bracket"
+      variant="outlined"
+      severity="secondary"
+      (onClick)="logout()"
+    ></app-button>
+  </div>
+</div>

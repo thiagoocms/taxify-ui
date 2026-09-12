@@ -1,0 +1,44 @@
+<nav class="sidebar-nav">
+  <button type="button" class="nav-link nav-group-toggle" (click)="toggleCadastro()">
+    <fa-icon [icon]="folderIcon"></fa-icon>
+    <span>Cadastro</span>
+    <fa-icon class="chevron" [class.open]="cadastroOpen()" [icon]="chevronIcon"></fa-icon>
+  </button>
+
+  <div class="nav-group" [class.open]="cadastroOpen()">
+    <a
+      *ngIf="isAdmin"
+      class="nav-link nav-sublink"
+      routerLink="/companies"
+      routerLinkActive="active"
+      (click)="linkClicked.emit()"
+    >
+      <fa-icon [icon]="buildingIcon"></fa-icon>
+      <span>Empresas</span>
+    </a>
+    <a
+      class="nav-link nav-sublink"
+      routerLink="/vinculos"
+      routerLinkActive="active"
+      (click)="linkClicked.emit()"
+    >
+      <fa-icon [icon]="linkIcon"></fa-icon>
+      <span>Vínculos</span>
+    </a>
+    <a
+      *ngIf="isAdmin"
+      class="nav-link nav-sublink"
+      routerLink="/planos"
+      routerLinkActive="active"
+      (click)="linkClicked.emit()"
+    >
+      <fa-icon [icon]="tagsIcon"></fa-icon>
+      <span>Planos</span>
+    </a>
+  </div>
+
+  <a class="nav-link" routerLink="/notas-fiscais" routerLinkActive="active" (click)="linkClicked.emit()">
+    <fa-icon [icon]="invoiceIcon"></fa-icon>
+    <span>Notas fiscais</span>
+  </a>
+</nav>

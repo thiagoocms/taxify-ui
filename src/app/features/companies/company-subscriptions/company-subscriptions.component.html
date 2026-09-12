@@ -1,0 +1,35 @@
+<div class="accordion-section">
+  <button type="button" class="accordion-toggle" (click)="toggle()">
+    <span>Assinaturas</span>
+    <fa-icon class="chevron" [class.open]="open()" [icon]="chevronIcon"></fa-icon>
+  </button>
+
+  @if (open()) {
+    <div class="accordion-body">
+      <div class="d-flex justify-content-end mb-2">
+        <app-button label="Nova assinatura" icon="plus" (onClick)="openCreateDialog()"></app-button>
+      </div>
+
+      <app-table [columns]="columns" [data]="subscriptions()" [config]="tableConfig"></app-table>
+
+      @if (loading()) {
+        <p class="loading-text">Carregando...</p>
+      }
+    </div>
+  }
+</div>
+
+<app-modal
+  [open]="dialogOpen()"
+  [title]="editingSubscription() ? 'Editar assinatura' : 'Nova assinatura'"
+  (closed)="closeDialog()"
+>
+  @if (dialogOpen()) {
+    <app-subscription-form
+      [companyId]="companyId"
+      [subscription]="editingSubscription()"
+      (saved)="onSaved()"
+      (cancelled)="closeDialog()"
+    ></app-subscription-form>
+  }
+</app-modal>

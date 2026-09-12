@@ -1,0 +1,116 @@
+<div class="card shadow-sm">
+
+  <div class="card-body p-0">
+    <div class="table-responsive ">
+      <table class="table table-hover align-middle mb-0">
+        @if (config.headerVisible) {
+          <thead class="table-light">
+          <tr >
+            @if (config.selectable) {
+              <th class="text-center">
+                <input type="checkbox" [checked]="selectedRows.size === data.length && data.length > 0"
+                       (change)="handleCheckboxChange($event)">
+              </th>
+            }
+            @for (column of columns; track column.name; let i = $index) {
+              <th
+                class="text-center text-muted fw-semibold p-1 border-end"
+                [style.width]="column.width"
+                [ngClass]="{'border-right': i < columns.length - 1}">
+                <div class="d-flex align-items-center gap-2">
+                  @if (column.iconConfig?.header && column.iconConfig?.header?.position === 'start') {
+                    <fa-icon [icon]="['fas', column.iconConfig?.header?.name || '']"></fa-icon>
+                  }
+                  {{column.name || "teste"}}
+                  @if (column.iconConfig?.header && column.iconConfig?.header?.position === 'end') {
+                    <fa-icon [icon]="['fas', column.iconConfig?.header?.name || '']"></fa-icon>
+                  }
+                </div>
+              </th>
+            }
+            @if (config.actions) {
+              <th class="text-center text-muted p-2 text-sm">Ações</th>
+            }
+          </tr>
+          </thead>
+        }
+
+        <tbody>
+          @for (row of data; track row.id || $index) {
+            <tr
+              class="cursor-pointer"
+              (click)="handleRowClick(row)"
+              [class.selected]="selectedRows.has(row)">
+              @if (config.selectable) {
+                <td>
+                  <input type="checkbox" [checked]="selectedRows.has(row)"
+                         (change)="handleRowCheckboxChange($event, row)">
+                </td>
+              }
+
+              @for (column of columns; track column.name) {
+                <td
+                  [title]="!column.cellTemplate ? row[column.property || column.name] : ''"
+                  (click)="handleColumnClick(column, row)"
+                  class="text-muted border-0  text-sm">
+                  @if (column.checkbox) {
+                    <input type="checkbox" [checked]="row[column.property || column.name]">
+                  }
+                  @else if (column.booleanChip) {
+                    <span class="badge"
+                          [class.bg-success]="row[column.property || column.name]"
+                          [class.bg-danger]="!row[column.property || column.name]">
+                        {{row[column.property || column.name] ? (column.trueText || 'Sim') : (column.falseText || 'Não')}}
+                      </span>
+                  }
+                  @else {
+                    @if (column.cellTemplate) {
+                      <ng-container
+                        *ngTemplateOutlet="column.cellTemplate; context: { row: row, column: column }">
+                      </ng-container>
+                    } @else {
+                      @if (column.iconConfig?.cell && column.iconConfig?.cell?.position === 'start') {
+                        <fa-icon [icon]="['fas', column.iconConfig?.cell?.name || '']"></fa-icon>
+                      }
+                      {{ formatText(row[column.property || column.name], column.cellTextLength) }}
+                      @if (column.iconConfig?.cell && column.iconConfig?.cell?.position === 'end') {
+                        <fa-icon [icon]="['fas', column.iconConfig?.cell?.name  || '']"></fa-icon>
+                      }
+                    }
+                  }
+                </td>
+              }
+
+              @if (config.actions) {
+                <td class="justify-content-center text-center d-flex flex-row">
+                  @for (action of config.actions; track action.name) {
+                    <app-button
+                      class="action-button border-0"
+                      [variant]="action.variant"
+                      [rounded]="action.rounded || false"
+                      [label]="action.label || ''"
+                      [severity]="action.severity || 'primary'"
+                      [icon]="action.icon || ''"
+                      [class]="action.class || ''"
+                      (onClick)="action.handler(row); $event.stopPropagation()"
+                      [title]="action.tooltip || ''"
+                      [disabled]="row['disableActions']" />
+
+
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (data.length === 0) {
+        <div class="empty-message border border-3 mt-1 mb-1 rounded d-flex justify-content-center gap-1 w-100 p-2">
+          Nenhum dado disponível
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

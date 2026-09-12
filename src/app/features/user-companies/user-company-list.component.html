@@ -1,0 +1,42 @@
+<app-page [pageTitle]="pageTitle()" [pageDescription]="pageDescription()" [pageButtons]="pageButtons()">
+  @if (viewMode() === 'list') {
+    <div class="toolbar row">
+      @if (isAdmin) {
+        <div class="col-md-6 col-sm-12">
+          <app-input
+            label="Usuário"
+            type="autocomplete"
+            [formControl]="userAutocompleteControl"
+            [searchFn]="searchUsers"
+            displayField="name"
+            displayFieldTooltip="login"
+            (itemSelected)="onUserSelected($event)"
+          ></app-input>
+        </div>
+        <div class="col-md-4 col-sm-12 mt-md-2 mt-sm-0 d-grid gap-2 d-flex justify-content-md-start justify-content-sm-end">
+          <app-button label="Buscar" icon="magnifying-glass" variant="outlined" severity="secondary"
+                      (onClick)="loadLinks()"></app-button>
+          <app-button label="Meu usuário" icon="user" variant="outlined" severity="secondary"
+                      (onClick)="useMyUser()"></app-button>
+        </div>
+
+      } @else {
+        <app-button label="Buscar" icon="magnifying-glass" variant="outlined" severity="secondary"
+                    (onClick)="loadLinks()"></app-button>
+      }
+    </div>
+
+    <app-table [columns]="columns" [data]="links()" [config]="tableConfig"></app-table>
+
+    @if (loading()) {
+      <p class="loading-text">Carregando...</p>
+    }
+  } @else {
+    <app-link-form
+      [userId]="userIdControl.value"
+      [existingCompanyIds]="existingCompanyIds()"
+      (saved)="onSaved()"
+      (cancelled)="closeForm()"
+    ></app-link-form>
+  }
+</app-page>

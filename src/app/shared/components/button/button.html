@@ -1,0 +1,21 @@
+<button
+  [type]="type"
+  class="btn"
+  [ngClass]="[
+    getSizeClass(),
+    getButtonClass(),
+    rounded ? 'rounded-pill' : '',
+    styleClass
+  ]"
+  [disabled]="disabled"
+  (click)="onButtonClick($event)"
+>
+  @if(icon){
+    <fa-icon
+      [class.me-1]="label"
+      [icon]="['fas', icon || '']">
+    </fa-icon>
+  }
+
+  {{ label }}
+</button>

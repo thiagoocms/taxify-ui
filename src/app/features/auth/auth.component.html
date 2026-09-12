@@ -1,0 +1,154 @@
+<div class="auth-page">
+  <div class="carousel-viewport shadow">
+    <div class="form-panel" [class.slide-right]="activeIndex() === 1">
+      <div class="form-track" [class.show-register]="activeIndex() === 1">
+        <!-- Login form -->
+        <div class="form-slide">
+          <div class="auth-header">
+            <h1>Entrar</h1>
+            <p class="text-muted">Acesse sua conta Taxify</p>
+          </div>
+
+          <form [formGroup]="loginForm" (ngSubmit)="loginSubmit()">
+            <div class="mt-1">
+              <app-input formControlName="login" label="Login"></app-input>
+            </div>
+            <div class="mt-3">
+              <app-input
+                formControlName="password"
+                label="Senha"
+                [type]="hideLoginPassword() ? 'password' : 'text'"
+                [icon]="loginEyeIcon()"
+                [clickable]="true"
+                (onClick)="hideLoginPassword.set(!hideLoginPassword())"
+              ></app-input>
+            </div>
+
+            <div class="d-grid mt-2">
+              <app-button
+                type="submit"
+                [label]="loginLoading() ? 'Entrando...' : 'Entrar'"
+                [disabled]="loginLoading()"
+                styleClass="w-100"
+              ></app-button>
+            </div>
+          </form>
+
+          <p class="switch-link">
+            Não tem conta? <button type="button" class="link-btn" (click)="showRegister()">Cadastre-se</button>
+          </p>
+        </div>
+
+        <!-- Register wizard -->
+        <div class="form-slide">
+          @if (step() > 0) {
+            <button type="button" class="back-arrow" (click)="changeStep(-1)">
+              <fa-icon [icon]="arrowLeft"></fa-icon>
+            </button>
+          }
+
+          <div class="brand">Taxify</div>
+
+          <div class="steps-row">
+            <div class="step-col">
+              <app-step-indicator [stepIndex]="step()" [stepReference]="1"></app-step-indicator>
+              <div class="step-labels">
+                <div class="step-title">Dados</div>
+                <div class="step-subtitle">Seus dados pessoais</div>
+              </div>
+            </div>
+            <div class="step-col">
+              <app-step-indicator [stepIndex]="step()" [stepReference]="2"></app-step-indicator>
+              <div class="step-labels">
+                <div class="step-title">Contato</div>
+                <div class="step-subtitle">Login e e-mail</div>
+              </div>
+            </div>
+            <div class="step-col">
+              <app-step-indicator [stepIndex]="step()" [stepReference]="3"></app-step-indicator>
+              <div class="step-labels">
+                <div class="step-title">Senha</div>
+                <div class="step-subtitle">Crie uma senha segura</div>
+              </div>
+            </div>
+          </div>
+
+          <form [formGroup]="registerForm" class="wizard-form">
+            @switch (step()) {
+              @case (1) {
+                <div class="mt-1">
+                  <app-input formControlName="name" label="Nome completo"></app-input>
+                </div>
+
+                <div class="mt-3 row-fields">
+                  <app-input
+                    formControlName="documentType"
+                    label="Documento"
+                    type="select"
+                    [options]="documentTypeOptions"
+                  ></app-input>
+                  <app-input formControlName="documentNumber" label="CPF / CNPJ"></app-input>
+                </div>
+              }
+              @case (2) {
+                <div class="mt-1">
+                  <app-input formControlName="login" label="Login"></app-input>
+                </div>
+                <div class="mt-3">
+                  <app-input formControlName="email" type="email" label="E-mail"></app-input>
+                </div>
+              }
+              @case (3) {
+                <div class="mt-1">
+                  <app-input
+                    formControlName="password"
+                    label="Senha"
+                    [type]="hidePassword() ? 'password' : 'text'"
+                    [icon]="eyeIcon()"
+                    [clickable]="true"
+                    (onClick)="hidePassword.set(!hidePassword())"
+                  ></app-input>
+                </div>
+
+                <div class="mt-3">
+                  <app-input
+                    formControlName="confirmPassword"
+                    label="Confirme a senha"
+                    [type]="hideConfirmPassword() ? 'password' : 'text'"
+                    [icon]="eyeIconConfirm()"
+                    [clickable]="true"
+                    (onClick)="hideConfirmPassword.set(!hideConfirmPassword())"
+                  ></app-input>
+                </div>
+              }
+              @default {
+                <div class="mt-3 welcome-box">
+                  <h5 class="fw-bold mb-2">Bem-vindo ao <span class="text-primary">Taxify</span>!</h5>
+                  <p class="text-muted mb-0">Vamos iniciar o seu cadastro?</p>
+                </div>
+              }
+            }
+
+          </form>
+
+          <div class="wizard-footer">
+            <div class="d-grid">
+              <app-button
+                [label]="buttonLabel()"
+                [disabled]="registerLoading()"
+                styleClass="w-100"
+                (onClick)="changeStep()"
+              ></app-button>
+            </div>
+
+            @if (step() === 0) {
+              <p class="switch-link">Já tem conta? <button type="button" class="link-btn" (click)="showLogin()">Entrar</button></p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <app-auth-side-panel class="auth-illustration" [class.slide-left]="activeIndex() === 1"></app-auth-side-panel>
+  </div>
+</div>

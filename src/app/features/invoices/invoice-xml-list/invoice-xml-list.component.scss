@@ -1,0 +1,29 @@
+
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 16px;
+  color: var(--text-title);
+  font-size: 14px;
+}
+
+.audit-xml-key {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-title);
+}
+
+.hint-text {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-title);
+}
+
+.file-input-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: var(--text-title);
+}

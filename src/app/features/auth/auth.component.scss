@@ -1,0 +1,225 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2050a2 0%, #10305e 100%);
+  padding: 32px 24px;
+}
+
+// Percentage split between the form side and the illustration side.
+$form-width: 58%;
+$illustration-width: 42%;
+
+.carousel-viewport {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  min-height: 620px;
+  border-radius: var(--border-radius, 12px);
+  overflow: hidden;
+  background: #fff;
+}
+
+// A single illustration element that slides between the right side (login)
+// and the left side (register) — never duplicated.
+.auth-illustration {
+  position: absolute;
+  top: 0;
+  left: $form-width;
+  width: $illustration-width;
+  height: 100%;
+  display: none;
+  transition: left 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.slide-left {
+    left: 0%;
+  }
+}
+
+@media (min-width: 768px) {
+  .auth-illustration {
+    display: flex;
+  }
+}
+
+// The form side slides to make room for the illustration, and internally
+// carousels between the login form and the register wizard.
+.form-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: $form-width;
+  height: 100%;
+  overflow: hidden;
+  transition: left 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.slide-right {
+    left: $illustration-width;
+  }
+}
+
+@media (max-width: 767px) {
+  .auth-page {
+    padding: 40px 20px;
+  }
+
+  .carousel-viewport {
+    min-height: auto;
+  }
+
+  .form-panel {
+    position: static;
+    width: 100%;
+
+    &.slide-right {
+      left: 0;
+    }
+  }
+
+  .form-slide {
+    padding: 32px 24px;
+  }
+}
+
+.form-track {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.show-register {
+    transform: translateX(-50%);
+  }
+}
+
+.form-slide {
+  position: relative;
+  width: 50%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 48px;
+  min-width: 0;
+}
+
+.back-arrow {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.brand {
+  text-align: center;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--color-primary);
+  margin-bottom: 20px;
+}
+
+.auth-header {
+  margin-bottom: 20px;
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.steps-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.step-col {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.step-labels {
+  min-width: 0;
+}
+
+.step-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #495057;
+}
+
+.step-subtitle {
+  font-size: 11px;
+  color: #adb5bd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wizard-form {
+  min-height: 140px;
+}
+
+.row-fields {
+  display: flex;
+  gap: 16px;
+
+  app-input:first-child {
+    flex: 0 0 160px;
+  }
+
+  app-input:last-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.welcome-box {
+  text-align: center;
+  border-radius: 12px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  padding: 32px 16px;
+  margin-top: 8px;
+}
+
+.wizard-footer {
+  margin-top: 8px;
+}
+
+.switch-link {
+  text-align: center;
+  margin: 16px 0 0;
+  font-size: 14px;
+}
+
+.link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--color-primary);
+  font-weight: 500;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,32 @@
+<form class="form-container" [formGroup]="form" (ngSubmit)="submit()">
+  <div class="row">
+    <div class="col-md-6 col-sm-12">
+      <app-input formControlName="name" label="Nome"></app-input>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <app-input
+        formControlName="documentType"
+        label="Documento"
+        type="select"
+        [options]="documentTypeOptions"
+      ></app-input>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <app-input formControlName="documentNumber" label="Número do documento"></app-input>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end gap-2 mt-3">
+    <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
+    <app-button
+      type="submit"
+      [label]="loading() ? 'Salvando...' : 'Salvar'"
+      [disabled]="loading()"
+    ></app-button>
+  </div>
+</form>
+
+@if (isEdit) {
+  <app-company-subscriptions [companyId]="company!.id!"></app-company-subscriptions>
+  <app-company-product-fiscal-rules [companyId]="company!.id!"></app-company-product-fiscal-rules>
+}

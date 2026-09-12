@@ -1,0 +1,160 @@
+<app-page
+  pageTitle="Notas fiscais"
+  pageDescription="Busque ou importe XMLs de notas fiscais de uma empresa"
+  [pageButtons]="pageButtons()"
+>
+  <form [formGroup]="form" (ngSubmit)="buscarXmls()" class="row">
+    <div class="col-lg-3 col-md-6 col-sm-12">
+      <app-input
+        formControlName="company"
+        label="Empresa"
+        type="autocomplete"
+        [searchFn]="searchCompanies"
+        displayField="name"
+        displayFieldTooltip="documentNumber"
+      ></app-input>
+    </div>
+
+    <div class="col-lg-2 col-md-3 col-sm-6">
+      <app-input
+        formControlName="xmlType"
+        label="Tipo de XML"
+        type="select"
+        [options]="xmlTypeOptions"
+      ></app-input>
+    </div>
+
+    <div class="col-lg-2 col-md-3 col-sm-6">
+      <app-input
+        formControlName="downloadEvent"
+        label="Baixar eventos"
+        type="select"
+        [options]="yesNoOptions"
+      ></app-input>
+    </div>
+    <div class="col-lg-2 col-md-6 col-sm-12">
+      <app-input formControlName="dataEmissaoInicio" label="Emissão de" type="date"></app-input>
+    </div>
+
+    <div class="col-lg-2 col-md-6 col-sm-12">
+      <app-input formControlName="dataEmissaoFim" label="Emissão até" type="date"></app-input>
+    </div>
+
+
+    <div class="col-lg-2 mt-2 mb-sm-3 col-md-6 col-sm-12">
+      <app-button
+        type="submit"
+        [label]="loading() ? 'Buscando...' : 'Buscar notas'"
+        [disabled]="loading()"
+      ></app-button>
+    </div>
+  </form>
+
+  @if (loading()) {
+    <p class="loading-text">Buscando notas fiscais...</p>
+  }
+
+  @if (result(); as r) {
+    <div class="summary">
+      <span>Itens localizados: <strong>{{ r.totalItemsFound ?? 0 }}</strong></span>
+      <span>XMLs processados: <strong>{{ r.totalXmlsCounted ?? 0 }}</strong></span>
+      <span>Novos importados: <strong>{{ r.totalPersistedNew ?? 0 }}</strong></span>
+      <span>Duplicados ignorados: <strong>{{ r.totalDuplicatedSkipped ?? 0 }}</strong></span>
+      <span>Erros de leitura: <strong>{{ r.totalParseErrors ?? 0 }}</strong></span>
+    </div>
+
+    <p class="hint-text">Clique em uma nota para ver/registrar a auditoria.</p>
+    <app-table [columns]="xmlColumns" [data]="r.xmls ?? []" (rowClick)="openNoteAudit($event)"></app-table>
+  }
+</app-page>
+
+<app-modal
+  [open]="!!selectedXml()"
+  title="Auditoria da nota fiscal"
+  size="lg"
+  (closed)="closeNoteAudit()"
+>
+  @if (selectedXml(); as xml) {
+    <p class="audit-xml-key">Chave de acesso: <strong>{{ xml.accessKey }}</strong></p>
+
+    <div class="d-flex justify-content-end mb-3">
+      <app-button label="Adicionar registro" icon="plus" (onClick)="openCreateAuditForm()"></app-button>
+    </div>
+
+    @if (noteAuditLoading()) {
+      <p class="loading-text">Carregando auditoria...</p>
+    }
+
+    <app-table [columns]="auditColumns" [data]="noteAuditLogs()" [config]="auditTableConfig"></app-table>
+  }
+</app-modal>
+
+<app-modal
+  [open]="auditFormDialogOpen()"
+  [title]="editingLog() ? 'Editar registro de auditoria' : 'Novo registro de auditoria'"
+  (closed)="closeAuditForm()"
+>
+  @if (auditFormDialogOpen()) {
+    <form [formGroup]="auditForm" (ngSubmit)="saveAudit()">
+      <app-input formControlName="status" label="Status"></app-input>
+      <app-input formControlName="notes" label="Observações" type="textarea"></app-input>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="closeAuditForm()"></app-button>
+        <app-button type="submit" [label]="editingLog() ? 'Atualizar' : 'Adicionar'"></app-button>
+      </div>
+    </form>
+  }
+</app-modal>
+
+<app-modal
+  [open]="importModalOpen()"
+  title="Importar XML manualmente"
+  (closed)="closeImportModal()"
+>
+  @if (importModalOpen()) {
+    <form [formGroup]="importForm" (ngSubmit)="importarXml()">
+      <app-input
+        formControlName="company"
+        label="Empresa"
+        type="autocomplete"
+        [searchFn]="searchCompanies"
+        displayField="name"
+        displayFieldTooltip="documentNumber"
+      ></app-input>
+
+      <div class="mt-3">
+        <label class="file-input-label" for="importXmlFile">Arquivo XML</label>
+        <input
+          id="importXmlFile"
+          type="file"
+          accept=".xml"
+          class="form-control"
+          (change)="onImportFileSelected($event)"
+        />
+      </div>
+
+      @if (importing()) {
+        <p class="loading-text mt-2">Importando XML...</p>
+      }
+
+      @if (importResult(); as r) {
+        <div class="summary mt-3">
+          <span>XMLs processados: <strong>{{ r.totalXmlsCounted ?? 0 }}</strong></span>
+          <span>Novos importados: <strong>{{ r.totalPersistedNew ?? 0 }}</strong></span>
+          <span>Duplicados ignorados: <strong>{{ r.totalDuplicatedSkipped ?? 0 }}</strong></span>
+          <span>Erros de leitura: <strong>{{ r.totalParseErrors ?? 0 }}</strong></span>
+        </div>
+      }
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="closeImportModal()"></app-button>
+        <app-button
+          type="submit"
+          [label]="importing() ? 'Importando...' : 'Importar'"
+          [disabled]="importing()"
+        ></app-button>
+      </div>
+    </form>
+  }
+</app-modal>

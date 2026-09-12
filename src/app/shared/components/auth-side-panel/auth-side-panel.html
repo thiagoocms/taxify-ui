@@ -1,0 +1,19 @@
+<div class="panel-icon">
+  <fa-icon [icon]="chartIcon"></fa-icon>
+</div>
+
+<h2>Auditoria contábil sem complicação</h2>
+<p class="panel-subtitle">
+  Centralize empresas, usuários e auditorias fiscais em uma única plataforma.
+</p>
+
+<ul class="panel-features">
+  @for (feature of features; track feature.text) {
+    <li>
+      <span class="feature-icon">
+        <fa-icon [icon]="feature.icon"></fa-icon>
+      </span>
+      {{ feature.text }}
+    </li>
+  }
+</ul>

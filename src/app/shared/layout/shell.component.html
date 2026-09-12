@@ -1,0 +1,21 @@
+<header class="w-100 border-bottom bg-light">
+  <app-header (menuToggle)="toggleSidebar()"></app-header>
+</header>
+
+<main>
+  <aside class="border-end shadow-lg sidebar" [class.sidebar-open]="sidebarOpen()">
+    <div class="footer-bar">
+      <app-sidebar (linkClicked)="closeSidebar()"></app-sidebar>
+    </div>
+  </aside>
+
+  @if (sidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="closeSidebar()"></div>
+  }
+
+  <section class="content-wrapper bg-body-secondary">
+    <section class="bg-white rounded main-content">
+      <router-outlet></router-outlet>
+    </section>
+  </section>
+</main>

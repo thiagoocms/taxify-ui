@@ -1,0 +1,61 @@
+@use 'ngx-toastr/toastr' as toastr;
+/* Brand palette sampled from https://www.instagram.com/cshubcontabilidade/
+   (logo background blue + accent orange used in their post graphics). */
+:root {
+  --color-primary: #2050a2;
+  --color-primary-dark: #163c7e;
+  --color-secondary: #ff741f;
+  --text-title: #495057;
+  --app-bg: #f4f5f9;
+  --border-radius: 12px;
+  --card-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: 'Poppins', 'Helvetica Neue', sans-serif; }
+
+.card {
+  border-radius: var(--border-radius) !important;
+}
+
+/* app-button uses Bootstrap's btn-primary/btn-outline-primary classes for its
+   default "primary" severity — repoint those at the brand blue instead of
+   Bootstrap's own default blue. */
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: var(--color-primary-dark) !important;
+    border-color: var(--color-primary-dark) !important;
+  }
+}
+
+.btn-outline-primary {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.loading-text {
+  text-align: center;
+  color: #868e96;
+  padding: 16px 0 0;
+  margin: 0;
+}

@@ -1,0 +1,91 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+main {
+  position: relative;
+  min-height: calc(100vh - 65px);
+}
+
+@media (min-width: 768px) {
+  main {
+    display: flex;
+    align-items: stretch;
+  }
+}
+
+// Mobile: off-canvas drawer, hidden by default and toggled via the header's
+// menu button. Desktop: always-visible, in-flow sidebar (see override below).
+.sidebar {
+  position: fixed;
+  top: 65px;
+  left: 0;
+  width: 220px;
+  height: calc(100vh - 65px);
+  background: #fff;
+  z-index: 20;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+
+  &.sidebar-open {
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    position: static;
+    flex-shrink: 0;
+    height: auto;
+    transform: none;
+    transition: none;
+  }
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 65px 0 0 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 15;
+}
+
+@media (min-width: 768px) {
+  .sidebar-backdrop {
+    display: none;
+  }
+}
+
+.footer-bar {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.content-wrapper {
+  padding: 24px;
+}
+
+@media (min-width: 768px) {
+  .content-wrapper {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.main-content {
+  min-height: 100%;
+  padding: 24px;
+}
+
+@media (max-width: 575px) {
+  .content-wrapper,
+  .main-content {
+    padding: 16px;
+  }
+}

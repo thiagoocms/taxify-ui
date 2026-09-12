@@ -1,0 +1,7 @@
+<div class="step-circle" [class.done]="isDone" [class.active]="isActive">
+  @if (isDone) {
+    <fa-icon [icon]="checkIcon"></fa-icon>
+  } @else {
+    {{ stepReference }}
+  }
+</div>
