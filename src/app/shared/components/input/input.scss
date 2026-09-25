@@ -19,7 +19,7 @@
     transition: all 0.2s ease;
 
     &.invalid {
-      border-bottom: 2px solid #e74c3c;
+      border-bottom: 2px solid #dc3545;
     }
   }
 
@@ -34,10 +34,17 @@
     pointer-events: none;
   
 
+    // Floated, the label sits right on the boxed input's top border — without
+    // a background behind it, the border stroke draws straight through the
+    // letters. Punching a matching background patch "notches" the border,
+    // the same trick outlined Material-style fields use.
     &.filled {
       top: 0;
+      left: 6px;
       font-size: 0.950rem;
       color: var(--color-secondary);
+      background: #fff;
+      padding: 0 4px;
     }
   }
 
@@ -72,21 +79,30 @@
     transition: all 0.2s ease;
 
     &.invalid {
-      border-bottom: 2px solid #e74c3c;
+      border-bottom: 2px solid #dc3545;
     }
 
 
   }
 
-  .error {
-    font-size: 12px;
-    color: #e74c3c;
-    margin-top: 4px;
-  }
+  // Named "input-boxed" (not "border") to avoid colliding with Bootstrap's
+  // own global `.border` utility class, which carries `!important` and was
+  // silently overriding this rule (and the `.invalid` state below) entirely.
+  //
+  // Neutral at rest, brand blue only once the field is actually focused —
+  // an always-on colored border read as noisy across a form with many fields.
+  .input-boxed {
+    border: 2px solid #dee2e6;
+    border-radius: var(--radius-control, 8px);
+    transition: border-color 0.15s ease;
 
-  .border {
-    border: 2px solid var(--color-primary);
-      border-radius: 5px;
+    &:focus {
+      border-color: var(--color-primary);
+    }
+
+    &.invalid {
+      border-color: #dc3545;
+    }
   }
 }
 

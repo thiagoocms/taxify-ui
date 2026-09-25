@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '../../components/button/button';
 import { Modal } from '../../components/modal/modal';
 import { AccountingFirmFormComponent } from '../../../features/accounting-firm/accounting-firm-form/accounting-firm-form.component';
@@ -23,6 +23,7 @@ export class HeaderComponent {
   @Output() menuToggle = new EventEmitter<void>();
 
   readonly menuIcon = faBars;
+  readonly brandIcon = faChartLine;
 
   readonly firmDialogOpen = signal(false);
   readonly firmLoading = signal(false);

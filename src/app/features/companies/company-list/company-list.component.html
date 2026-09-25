@@ -12,25 +12,11 @@
       <p class="loading-text">Carregando...</p>
     }
 
-    @if (totalPages() > 1) {
-      <div class="pagination-bar">
-        <app-button
-          label="Anterior"
-          variant="outlined"
-          severity="secondary"
-          [disabled]="pageIndex() === 0"
-          (onClick)="previousPage()"
-        ></app-button>
-        <span class="page-info">Página {{ pageIndex() + 1 }} de {{ totalPages() }}</span>
-        <app-button
-          label="Próxima"
-          variant="outlined"
-          severity="secondary"
-          [disabled]="pageIndex() + 1 >= totalPages()"
-          (onClick)="nextPage()"
-        ></app-button>
-      </div>
-    }
+    <app-pagination
+      [pageIndex]="pageIndex()"
+      [totalPages]="totalPages()"
+      (pageIndexChange)="onPageIndexChange($event)"
+    ></app-pagination>
   } @else {
     <app-company-form
       [company]="editingCompany()"

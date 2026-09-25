@@ -1,5 +1,27 @@
-<div class="panel-icon">
-  <fa-icon [icon]="chartIcon"></fa-icon>
+<div class="invoice-mock" aria-hidden="true">
+  <div class="invoice-mock-header">
+    <span class="invoice-mock-tag">NF-e</span>
+    <span class="invoice-mock-barcode"></span>
+  </div>
+  <div class="invoice-mock-key">{{ mockAccessKey }}</div>
+  <div class="invoice-mock-lines">
+    <div class="invoice-mock-line">
+      <span class="bar bar-lg"></span>
+      <span class="value">R$ 4.280,00</span>
+    </div>
+    <div class="invoice-mock-line">
+      <span class="bar bar-md"></span>
+      <span class="value">R$ 912,40</span>
+    </div>
+    <div class="invoice-mock-line">
+      <span class="bar bar-sm"></span>
+      <span class="value">R$ 156,00</span>
+    </div>
+  </div>
+  <div class="invoice-mock-audited">
+    <fa-icon [icon]="auditedIcon"></fa-icon>
+    Auditada
+  </div>
 </div>
 
 <h2>Auditoria contábil sem complicação</h2>

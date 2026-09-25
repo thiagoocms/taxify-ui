@@ -54,17 +54,15 @@
     <p class="loading-text">Buscando notas fiscais...</p>
   }
 
-  @if (result(); as r) {
-    <div class="summary">
-      <span>Itens localizados: <strong>{{ r.totalItemsFound ?? 0 }}</strong></span>
-      <span>XMLs processados: <strong>{{ r.totalXmlsCounted ?? 0 }}</strong></span>
-      <span>Novos importados: <strong>{{ r.totalPersistedNew ?? 0 }}</strong></span>
-      <span>Duplicados ignorados: <strong>{{ r.totalDuplicatedSkipped ?? 0 }}</strong></span>
-      <span>Erros de leitura: <strong>{{ r.totalParseErrors ?? 0 }}</strong></span>
-    </div>
-
+  @if (hasSearched()) {
     <p class="hint-text">Clique em uma nota para ver/registrar a auditoria.</p>
-    <app-table [columns]="xmlColumns" [data]="r.xmls ?? []" (rowClick)="openNoteAudit($event)"></app-table>
+    <app-table [columns]="xmlColumns" [data]="xmls()" (rowClick)="openNoteAudit($event)"></app-table>
+
+    <app-pagination
+      [pageIndex]="pageIndex()"
+      [totalPages]="totalPages()"
+      (pageIndexChange)="onPageIndexChange($event)"
+    ></app-pagination>
   }
 </app-page>
 

@@ -23,6 +23,7 @@ const CONFIRM_MESSAGES: Record<string, string> = {
   standalone: true,
   imports: [CommonModule, Button],
   templateUrl: './page.html',
+  styleUrl: './page.scss',
 })
 export class Page {
   @Input() pageTitle = '';

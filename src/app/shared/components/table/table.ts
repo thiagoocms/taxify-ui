@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FaIconComponent} from '@fortawesome/angular-fontawesome';
+import {faInbox} from '@fortawesome/free-solid-svg-icons';
 import {Observable} from 'rxjs';
 import {Button} from '../button/button';
 
@@ -77,6 +78,7 @@ export class Table {
   @Output() selectionChange = new EventEmitter<any[]>();
 
   selectedRows = new Set<any>();
+  readonly emptyIcon = faInbox;
 
   toggleRowSelection(row: any): void {
     if (this.config.rowSelectable) {

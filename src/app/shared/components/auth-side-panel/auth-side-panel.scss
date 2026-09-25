@@ -10,39 +10,115 @@
   overflow: hidden;
 }
 
-:host::before,
-:host::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
+// A stamped, slightly-tilted NF-e (the Brazilian electronic invoice) stands
+// in for the generic "icon in a colored square" opener — it's the one
+// artifact this product's whole job revolves around auditing.
+.invoice-mock {
+  position: relative;
+  background: #fbfaf7;
+  color: #1f2937;
+  border-radius: 14px;
+  padding: 16px 18px 20px;
+  margin-bottom: 32px;
+  max-width: 300px;
+  box-shadow: 0 20px 40px rgba(6, 20, 46, 0.35);
+  transform: rotate(-2deg);
 }
 
-:host::before {
-  width: 260px;
-  height: 260px;
-  top: -80px;
-  right: -80px;
-}
-
-:host::after {
-  width: 180px;
-  height: 180px;
-  bottom: -60px;
-  left: -60px;
-}
-
-.panel-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--color-secondary);
+.invoice-mock-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  margin-bottom: 24px;
-  position: relative;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #d8d3c8;
+}
+
+.invoice-mock-tag {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: var(--color-primary);
+}
+
+.invoice-mock-barcode {
+  width: 72px;
+  height: 20px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #1f2937 0, #1f2937 2px,
+    transparent 2px, transparent 3px,
+    #1f2937 3px, #1f2937 4px,
+    transparent 4px, transparent 6px,
+    #1f2937 6px, #1f2937 8px,
+    transparent 8px, transparent 9px
+  );
+}
+
+.invoice-mock-key {
+  font-family: 'Courier New', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  word-spacing: 2px;
+  color: #6b7280;
+  margin-bottom: 14px;
+}
+
+.invoice-mock-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.invoice-mock-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  .bar {
+    height: 8px;
+    border-radius: 4px;
+    background: #e5e1d8;
+  }
+
+  .bar-lg {
+    width: 120px;
+  }
+
+  .bar-md {
+    width: 90px;
+  }
+
+  .bar-sm {
+    width: 68px;
+  }
+
+  .value {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1f2937;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+}
+
+.invoice-mock-audited {
+  position: absolute;
+  top: -12px;
+  right: -14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.4);
+  transform: rotate(4deg);
 }
 
 h2 {
@@ -89,4 +165,37 @@ h2 {
   justify-content: center;
   flex-shrink: 0;
   font-size: 14px;
+}
+
+// The illustration panel becomes visible at 768px (see auth.component.scss)
+// but the carousel doesn't reach its comfortable 960px width until well
+// past that — without this, the headline was wider than the panel and got
+// silently clipped by :host's overflow: hidden instead of wrapping.
+@media (min-width: 768px) and (max-width: 1000px) {
+  :host {
+    padding: 36px 28px;
+  }
+
+  h2 {
+    font-size: 19px;
+  }
+
+  .panel-subtitle {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .invoice-mock {
+    max-width: 220px;
+    padding: 12px 14px 16px;
+    margin-bottom: 24px;
+  }
+
+  .invoice-mock-key {
+    font-size: 9px;
+  }
+
+  .panel-features li {
+    font-size: 13px;
+  }
 }

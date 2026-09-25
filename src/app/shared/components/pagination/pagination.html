@@ -1,0 +1,19 @@
+@if (totalPages > 1) {
+  <div class="pagination-bar">
+    <app-button
+      label="Anterior"
+      variant="outlined"
+      severity="secondary"
+      [disabled]="isFirstPage"
+      (onClick)="previous()"
+    ></app-button>
+    <span class="page-info">Página {{ pageIndex + 1 }} de {{ totalPages }}</span>
+    <app-button
+      label="Próxima"
+      variant="outlined"
+      severity="secondary"
+      [disabled]="isLastPage"
+      (onClick)="next()"
+    ></app-button>
+  </div>
+}

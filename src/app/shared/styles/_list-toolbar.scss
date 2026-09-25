@@ -1,0 +1,10 @@
+// Shared look for a list screen's search field, used by every "cadastro"
+// list (companies, plans, users, fiscal rules, ...). Pagination has its own
+// component (app-pagination) and styles it independently.
+@mixin list-toolbar {
+  .search-field {
+    max-width: 320px;
+    flex: 1;
+    min-width: 220px;
+  }
+}

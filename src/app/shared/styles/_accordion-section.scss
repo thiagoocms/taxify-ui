@@ -1,0 +1,38 @@
+// Shared look for the collapsible "accordion" sections used inside forms
+// (company subscriptions, company fiscal rules, user links, ...). Kept as a
+// mixin rather than a global class so each component's view encapsulation is
+// untouched — only the source of truth is shared.
+@mixin accordion-section {
+  .accordion-section {
+    margin-top: 20px;
+    border-top: 1px solid #dee2e6;
+    padding-top: 12px;
+  }
+
+  .accordion-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    border: none;
+    background: none;
+    padding: 8px 0;
+    font-weight: 600;
+    color: var(--text-title);
+    cursor: pointer;
+
+    .chevron {
+      width: 12px;
+      font-size: 12px;
+      transition: transform 0.15s ease;
+
+      &.open {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .accordion-body {
+    padding-top: 8px;
+  }
+}

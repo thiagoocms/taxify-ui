@@ -7,6 +7,7 @@ import { Button } from '../../../shared/components/button/button';
 import { InputComponent, SelectOption } from '../../../shared/components/input/input';
 import { Modal } from '../../../shared/components/modal/modal';
 import { Page, PageButton } from '../../../shared/components/page/page';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { CompanyDTO } from '../../../core/models/company.model';
 import { InvoiceAuditLogDTO } from '../../../core/models/invoice-audit-log.model';
@@ -33,7 +34,7 @@ const YES_NO_OPTIONS: SelectOption[] = [
 @Component({
   selector: 'app-invoice-xml-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Button, InputComponent, Modal, Page, Table],
+  imports: [CommonModule, ReactiveFormsModule, Button, InputComponent, Modal, Page, Pagination, Table],
   templateUrl: './invoice-xml-list.component.html',
   styleUrl: './invoice-xml-list.component.scss',
 })
@@ -88,7 +89,11 @@ export class InvoiceXmlListComponent implements OnDestroy {
 
   readonly loading = signal(false);
   readonly exportingZip = signal(false);
-  readonly result = signal<FiscalXmlDownloadResultDTO | null>(null);
+  readonly hasSearched = signal(false);
+  readonly xmls = signal<FiscalXmlItemDTO[]>([]);
+  readonly totalPages = signal(0);
+  readonly pageIndex = signal(0);
+  readonly pageSize = 10;
   readonly queriedCompanyId = signal<string | null>(null);
 
   readonly selectedXml = signal<FiscalXmlItemDTO | null>(null);
@@ -135,11 +140,20 @@ export class InvoiceXmlListComponent implements OnDestroy {
       return;
     }
 
+    this.pageIndex.set(0);
+    this.loadXmls();
+  }
+
+  onPageIndexChange(pageIndex: number): void {
+    this.pageIndex.set(pageIndex);
+    this.loadXmls();
+  }
+
+  private loadXmls(): void {
     const { company, xmlType, dataEmissaoInicio, dataEmissaoFim, downloadEvent } = this.form.getRawValue();
     const companyId = company!.id!;
 
     this.loading.set(true);
-    this.result.set(null);
 
     this.fiscalXmlService
       .download({
@@ -148,12 +162,15 @@ export class InvoiceXmlListComponent implements OnDestroy {
         dataEmissaoInicio: dataEmissaoInicio || undefined,
         dataEmissaoFim: dataEmissaoFim || undefined,
         downloadEvent: downloadEvent === 'true',
+        pagination: { page: this.pageIndex(), size: this.pageSize },
       })
       .pipe(takeUntil(this.destroyed$))
       .subscribe({
-        next: (result) => {
+        next: (page) => {
           this.loading.set(false);
-          this.result.set(result);
+          this.hasSearched.set(true);
+          this.xmls.set(page.content);
+          this.totalPages.set(page.totalPages);
           this.queriedCompanyId.set(companyId);
         },
         error: () => this.loading.set(false),

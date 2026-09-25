@@ -1,32 +1,69 @@
-
 :host {
   display: block;
+}
+
+// A borderless, flat surface rather than a card nested inside the page's
+// own white card — the header row and row dividers carry the structure
+// instead of a second stacked box-and-shadow.
+.table-surface {
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: var(--border-radius);
+  overflow: hidden;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  border-radius: 2px;
-  overflow: hidden;
+  margin-bottom: 0;
 
   .selectable-cell {
-    width:20px;
+    width: 20px;
   }
 }
 
+thead th {
+  background: var(--app-bg);
+  padding: 12px 16px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 14px 16px;
+}
+
+// The hover tint below leans on Bootstrap's own custom property rather than
+// fighting its specificity with a plain selector.
+.table-hover {
+  --bs-table-hover-bg: rgba(32, 80, 162, 0.05);
+}
 
 th, td {
   text-align: left;
   border-bottom: 1px solid #eee !important;
 }
 
-tbody tr.selected > td {
-  background-color: rgba(128, 128, 128, 0.27) !important;
+tbody tr:last-child td {
+  border-bottom: none !important;
 }
 
-
-.empty-message{
-  padding: 2rem;
+// The actual row data, as opposed to the header labels, should read as the
+// primary content rather than share the header's muted weight.
+.cell-value {
   color: var(--text-title);
-  border-style: dashed !important;
+}
+
+tbody tr.selected > td {
+  background-color: rgba(32, 80, 162, 0.12) !important;
+}
+
+.empty-state {
+  color: var(--text-title);
+  font-size: 14px;
+}
+
+.empty-state-icon {
+  font-size: 22px;
+  color: #ced4da;
 }

@@ -3,8 +3,9 @@ export interface FiscalXmlDownloadFilterDTO {
   xmlType: number;
   dataEmissaoInicio?: string;
   dataEmissaoFim?: string;
-  take?: number;
-  skip?: number;
+  // Unlike the other list endpoints, this one nests the page/size under a
+  // "pagination" object in the request body instead of taking them flat.
+  pagination?: { page: number; size: number };
   downloadEvent?: boolean;
 }
 

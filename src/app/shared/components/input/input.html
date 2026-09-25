@@ -5,7 +5,7 @@
     @switch (type) {
       @case ('autocomplete') {
         <input
-          [ngClass]="{ 'border': border }"
+          [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
           [disabled]="disabled"
           [value]="value"
           (input)="onInput($event)"
@@ -27,7 +27,7 @@
       }
       @case ('textarea') {
         <textarea
-          [ngClass]="{ 'border': border }"
+          [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
           [disabled]="disabled"
           [maxLength]="maxLength"
           [value]="value"
@@ -39,7 +39,7 @@
       }
       @case ('select') {
         <select
-          [ngClass]="{ 'border': border }"
+          [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
           [disabled]="disabled"
           [value]="value"
           (change)="onInput($event)"
@@ -56,7 +56,7 @@
       }
       @default {
         <input
-          [ngClass]="{ 'border': border }"
+          [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
           [type]="type"
           [disabled]="disabled"
           [maxLength]="maxLength"

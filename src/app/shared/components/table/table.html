@@ -1,10 +1,8 @@
-<div class="card shadow-sm">
-
-  <div class="card-body p-0">
-    <div class="table-responsive ">
-      <table class="table table-hover align-middle mb-0">
+<div class="table-surface">
+  <div class="table-responsive ">
+    <table class="table table-hover align-middle mb-0">
         @if (config.headerVisible) {
-          <thead class="table-light">
+          <thead>
           <tr >
             @if (config.selectable) {
               <th class="text-center">
@@ -14,9 +12,8 @@
             }
             @for (column of columns; track column.name; let i = $index) {
               <th
-                class="text-center text-muted fw-semibold p-1 border-end"
-                [style.width]="column.width"
-                [ngClass]="{'border-right': i < columns.length - 1}">
+                class="text-muted fw-semibold"
+                [style.width]="column.width">
                 <div class="d-flex align-items-center gap-2">
                   @if (column.iconConfig?.header && column.iconConfig?.header?.position === 'start') {
                     <fa-icon [icon]="['fas', column.iconConfig?.header?.name || '']"></fa-icon>
@@ -29,7 +26,7 @@
               </th>
             }
             @if (config.actions) {
-              <th class="text-center text-muted p-2 text-sm">Ações</th>
+              <th class="text-center text-muted fw-semibold">Ações</th>
             }
           </tr>
           </thead>
@@ -52,7 +49,7 @@
                 <td
                   [title]="!column.cellTemplate ? row[column.property || column.name] : ''"
                   (click)="handleColumnClick(column, row)"
-                  class="text-muted border-0  text-sm">
+                  class="cell-value border-0 text-sm">
                   @if (column.checkbox) {
                     <input type="checkbox" [checked]="row[column.property || column.name]">
                   }
@@ -82,7 +79,7 @@
               }
 
               @if (config.actions) {
-                <td class="justify-content-center text-center d-flex flex-row">
+                <td class="justify-content-center text-center d-flex flex-row gap-1">
                   @for (action of config.actions; track action.name) {
                     <app-button
                       class="action-button border-0"
@@ -106,11 +103,10 @@
       </table>
 
       @if (data.length === 0) {
-        <div class="empty-message border border-3 mt-1 mb-1 rounded d-flex justify-content-center gap-1 w-100 p-2">
-          Nenhum dado disponível
+        <div class="empty-state d-flex flex-column align-items-center gap-2 w-100 p-4">
+          <fa-icon [icon]="emptyIcon" class="empty-state-icon"></fa-icon>
+          <span>Nenhum dado disponível</span>
         </div>
       }
-    </div>
-
   </div>
 </div>

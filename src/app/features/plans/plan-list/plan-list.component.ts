@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, OnInit, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
-import { Button } from '../../../shared/components/button/button';
 import { InputComponent } from '../../../shared/components/input/input';
 import { Page, PageButton } from '../../../shared/components/page/page';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { PLAN_SERVICE_LABELS, PlanDTO } from '../../../core/models/plan.model';
 import { PlanService } from '../../../core/services/plan.service';
@@ -19,7 +19,7 @@ type ViewMode = 'list' | 'form';
 @Component({
   selector: 'app-plan-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Button, InputComponent, Page, Table, PlanFormComponent],
+  imports: [CommonModule, ReactiveFormsModule, InputComponent, Page, Pagination, Table, PlanFormComponent],
   templateUrl: './plan-list.component.html',
   styleUrl: './plan-list.component.scss',
 })
@@ -105,18 +105,9 @@ export class PlanListComponent implements OnInit {
       });
   }
 
-  previousPage(): void {
-    if (this.pageIndex() > 0) {
-      this.pageIndex.set(this.pageIndex() - 1);
-      this.loadPlans();
-    }
-  }
-
-  nextPage(): void {
-    if (this.pageIndex() + 1 < this.totalPages()) {
-      this.pageIndex.set(this.pageIndex() + 1);
-      this.loadPlans();
-    }
+  onPageIndexChange(pageIndex: number): void {
+    this.pageIndex.set(pageIndex);
+    this.loadPlans();
   }
 
   openCreateForm(): void {

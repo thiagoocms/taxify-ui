@@ -7,6 +7,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent } from '../../../shared/components/input/input';
 import { Modal } from '../../../shared/components/modal/modal';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { ProductFiscalRuleDTO } from '../../../core/models/product-fiscal-rule.model';
 import { ProductFiscalRuleService } from '../../../core/services/product-fiscal-rule.service';
@@ -15,7 +16,7 @@ import { RuleFormComponent } from './rule-form/rule-form.component';
 @Component({
   selector: 'app-company-product-fiscal-rules',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Table, RuleFormComponent],
+  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Pagination, Table, RuleFormComponent],
   templateUrl: './company-product-fiscal-rules.component.html',
   styleUrl: './company-product-fiscal-rules.component.scss',
 })
@@ -91,18 +92,9 @@ export class CompanyProductFiscalRulesComponent implements OnChanges {
       });
   }
 
-  previousPage(): void {
-    if (this.pageIndex() > 0) {
-      this.pageIndex.set(this.pageIndex() - 1);
-      this.loadRules();
-    }
-  }
-
-  nextPage(): void {
-    if (this.pageIndex() + 1 < this.totalPages()) {
-      this.pageIndex.set(this.pageIndex() + 1);
-      this.loadRules();
-    }
+  onPageIndexChange(pageIndex: number): void {
+    this.pageIndex.set(pageIndex);
+    this.loadRules();
   }
 
   openCreateDialog(): void {

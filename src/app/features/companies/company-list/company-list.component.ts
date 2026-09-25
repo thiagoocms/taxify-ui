@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, OnInit, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
-import { Button } from '../../../shared/components/button/button';
 import { InputComponent } from '../../../shared/components/input/input';
 import { Page, PageButton } from '../../../shared/components/page/page';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { CompanyDTO } from '../../../core/models/company.model';
 import { CompanyService } from '../../../core/services/company.service';
@@ -15,7 +15,7 @@ type ViewMode = 'list' | 'form';
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Button, InputComponent, Page, Table, CompanyFormComponent],
+  imports: [CommonModule, ReactiveFormsModule, InputComponent, Page, Pagination, Table, CompanyFormComponent],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
@@ -96,18 +96,9 @@ export class CompanyListComponent implements OnInit {
       });
   }
 
-  previousPage(): void {
-    if (this.pageIndex() > 0) {
-      this.pageIndex.set(this.pageIndex() - 1);
-      this.loadCompanies();
-    }
-  }
-
-  nextPage(): void {
-    if (this.pageIndex() + 1 < this.totalPages()) {
-      this.pageIndex.set(this.pageIndex() + 1);
-      this.loadCompanies();
-    }
+  onPageIndexChange(pageIndex: number): void {
+    this.pageIndex.set(pageIndex);
+    this.loadCompanies();
   }
 
   openCreateForm(): void {

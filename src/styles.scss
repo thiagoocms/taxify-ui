@@ -4,11 +4,16 @@
 :root {
   --color-primary: #2050a2;
   --color-primary-dark: #163c7e;
+  --color-primary-darker: #0e2c56;
   --color-secondary: #ff741f;
   --text-title: #495057;
   --app-bg: #f4f5f9;
   --border-radius: 12px;
+  --radius-control: 8px;
   --card-shadow: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.08);
+  /* Same navy-to-orange pairing as the login screen's illustration panel,
+     carried into the app shell's sidebar so the two don't feel like separate products. */
+  --sidebar-bg: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-darker) 130%);
 }
 
 html, body { height: 100%; }
@@ -33,6 +38,10 @@ body { margin: 0; font-family: 'Poppins', 'Helvetica Neue', sans-serif; }
   }
 }
 
+.btn {
+  --bs-btn-border-radius: var(--radius-control);
+}
+
 .btn-outline-primary {
   color: var(--color-primary);
   border-color: var(--color-primary);
@@ -43,6 +52,21 @@ body { margin: 0; font-family: 'Poppins', 'Helvetica Neue', sans-serif; }
     background-color: var(--color-primary) !important;
     border-color: var(--color-primary) !important;
   }
+}
+
+/* Same story for the `.text-primary` utility — page titles, home shortcut
+   cards and links all use it, so without this override they show
+   Bootstrap's default blue instead of the brand navy. */
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+/* Used across the app (table rows, the toggle label, ...) to mark an element
+   as clickable, but was never actually defined anywhere — so hovering it fell
+   back to the browser's default text-selection caret instead of a pointer. */
+.cursor-pointer {
+  cursor: pointer;
+  user-select: none;
 }
 
 .toolbar {
