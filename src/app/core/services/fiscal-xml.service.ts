@@ -2,7 +2,15 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FiscalXmlDownloadFilterDTO, FiscalXmlDownloadResultDTO, FiscalXmlExportFilterDTO, FiscalXmlItemDTO } from '../models/fiscal-xml.model';
+import {
+  FiscalXmlDetailDTO,
+  FiscalXmlDownloadResultDTO,
+  FiscalXmlExportFilterDTO,
+  FiscalXmlProdutoDTO,
+  FiscalXmlRectificationResultDTO,
+  FiscalXmlSearchFilterDTO,
+  FiscalXmlSummaryDTO,
+} from '../models/fiscal-xml.model';
 import { Page } from '../models/page.model';
 
 interface FiscalXmlDownloadResultResponse extends Omit<FiscalXmlDownloadResultDTO, 'totalItemsFound'> {
@@ -20,8 +28,25 @@ export class FiscalXmlService {
 
   constructor(private readonly http: HttpClient) {}
 
-  download(filter: FiscalXmlDownloadFilterDTO): Observable<Page<FiscalXmlItemDTO>> {
-    return this.http.post<Page<FiscalXmlItemDTO>>(this.baseUrl, filter);
+  /** List rows of the XMLs already stored for a company (no live SIEG call, no XML content). */
+  search(filter: FiscalXmlSearchFilterDTO): Observable<Page<FiscalXmlSummaryDTO>> {
+    return this.http.post<Page<FiscalXmlSummaryDTO>>(this.baseUrl, filter);
+  }
+
+  getDetail(documentId: string): Observable<FiscalXmlDetailDTO> {
+    return this.http.get<FiscalXmlDetailDTO>(`${this.baseUrl}/${documentId}`);
+  }
+
+  getProdutos(documentId: string): Observable<FiscalXmlProdutoDTO[]> {
+    return this.http.get<FiscalXmlProdutoDTO[]>(`${this.baseUrl}/${documentId}/produtos`);
+  }
+
+  getXml(documentId: string): Observable<string> {
+    return this.http.get(`${this.baseUrl}/${documentId}/xml`, { responseType: 'text' });
+  }
+
+  downloadXml(documentId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${documentId}/xml`, { responseType: 'blob' });
   }
 
   importarManual(companyId: string, file: File): Observable<FiscalXmlDownloadResultDTO> {
@@ -36,5 +61,9 @@ export class FiscalXmlService {
 
   exportarZip(filter: FiscalXmlExportFilterDTO): Observable<Blob> {
     return this.http.post(`${this.baseUrl}/exportar/zip`, filter, { responseType: 'blob' });
+  }
+
+  retificar(documentId: string): Observable<FiscalXmlRectificationResultDTO> {
+    return this.http.post<FiscalXmlRectificationResultDTO>(`${this.baseUrl}/${documentId}/retificar`, {});
   }
 }

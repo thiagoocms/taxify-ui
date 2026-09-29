@@ -3,7 +3,17 @@ import { RouterOutlet } from '@angular/router';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import {
   faArrowLeft,
+  faArrowRight,
+  faChevronDown,
+  faChevronUp,
+  faCircleCheck,
+  faCopy,
+  faDownload,
+  faEye,
+  faFileCode,
+  faFileInvoice,
   faFileZipper,
+  faLocationDot,
   faLink,
   faLinkSlash,
   faMagnifyingGlass,
@@ -13,6 +23,8 @@ import {
   faTrash,
   faUpload,
   faUser,
+  faTriangleExclamation,
+  faWandMagicSparkles,
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -26,5 +38,9 @@ export class AppComponent {
 
   constructor(library: FaIconLibrary) {
     library.addIcons(faPlus, faPen, faTrash, faLink, faLinkSlash, faMagnifyingGlass, faUser, faRightFromBracket, faArrowLeft, faUpload, faFileZipper);
+    library.addIcons(
+      faArrowRight, faChevronDown, faChevronUp, faCircleCheck, faCopy, faDownload, faEye, faFileCode,
+      faFileInvoice, faLocationDot, faTriangleExclamation, faWandMagicSparkles,
+    );
   }
 }

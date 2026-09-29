@@ -67,3 +67,19 @@ tbody tr.selected > td {
   font-size: 22px;
   color: #ced4da;
 }
+
+// The cell itself must stay a real table-cell (a flex <td> doesn't stretch to
+// the row height, so it drifts out of line on multi-line rows) — the flex
+// layout lives on the inner wrapper instead.
+.actions-cell {
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.actions-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}

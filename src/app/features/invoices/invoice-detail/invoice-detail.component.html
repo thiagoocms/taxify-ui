@@ -1,0 +1,436 @@
+<app-page [pageTitle]="title()" [pageDescription]="subtitle()" [pageButtons]="pageButtons()">
+  @if (loading()) {
+    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando nota fiscal...</p>
+  } @else if (notFound() || !xml()) {
+    <div class="not-found">
+      <fa-icon [icon]="['fas', 'triangle-exclamation']" class="not-found-icon"></fa-icon>
+      <h6>Nota fiscal não encontrada</h6>
+      <p>Não foi possível carregar esta nota. Volte à lista e abra a nota novamente.</p>
+      <app-button label="Voltar para notas fiscais" icon="arrow-left" (onClick)="back()"></app-button>
+    </div>
+  } @else {
+    @let nota = xml()!;
+
+    <!-- Cabeçalho: valor, partes e chave -->
+    <section class="hero">
+      <div class="hero-main">
+        <div class="hero-badges">
+          <span class="type-badge">{{ documentTypeLabel(nota) }}</span>
+          @if (nota.identificacao?.tipoOperacao) {
+            <span class="op-badge" [class.op-in]="nota.identificacao?.tipoOperacao === '0'" [class.op-out]="nota.identificacao?.tipoOperacao === '1'">
+              {{ tipoOperacaoLabel(nota.identificacao?.tipoOperacao) }}
+            </span>
+          }
+          @if (nota.identificacao?.finalidadeEmissao && nota.identificacao?.finalidadeEmissao !== '1') {
+            <span class="op-badge">{{ finalidadeLabel(nota.identificacao?.finalidadeEmissao) }}</span>
+          }
+          @if (nota.identificacao?.ambiente === '2') {
+            <span class="op-badge op-out">Homologação</span>
+          }
+          @if (divergences().length) {
+            <button type="button" class="alert-badge" (click)="selectTab('divergencias')">
+              <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+              {{ divergences().length }} {{ divergences().length === 1 ? 'divergência fiscal' : 'divergências fiscais' }}
+            </button>
+          }
+        </div>
+
+        <div class="parties">
+          <div class="party">
+            <span class="party-role">Emitente</span>
+            <strong>{{ nota.emitente?.nome || '—' }}</strong>
+            @if (nota.emitente?.nomeFantasia && nota.emitente?.nomeFantasia !== nota.emitente?.nome) {
+              <span class="party-sub">{{ nota.emitente?.nomeFantasia }}</span>
+            }
+            <span class="party-sub mono">{{ issuerDocument(nota) }}</span>
+          </div>
+          <fa-icon [icon]="['fas', 'arrow-right']" class="parties-arrow"></fa-icon>
+          <div class="party">
+            <span class="party-role">Destinatário</span>
+            <strong>{{ nota.destinatario?.nome || '—' }}</strong>
+            <span class="party-sub mono">{{ recipientDocument(nota) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-total">
+        <span class="hero-total-label">Valor total da nota</span>
+        <span class="hero-total-value">{{ formatCurrency(nota.totais?.valorTotalNota) }}</span>
+        <span class="hero-total-sub">{{ nota.quantidadeItens }} {{ nota.quantidadeItens === 1 ? 'item' : 'itens' }}</span>
+      </div>
+
+      <div class="hero-key">
+        <span class="hero-key-label">Chave de acesso</span>
+        <span class="hero-key-value mono">{{ formatAccessKey(nota.accessKey) }}</span>
+        <button type="button" class="icon-btn" title="Copiar chave de acesso" (click)="copyKey()">
+          <fa-icon [icon]="['fas', 'copy']"></fa-icon>
+        </button>
+      </div>
+    </section>
+
+    <!-- Abas -->
+    <nav class="tabs" role="tablist">
+      <button type="button" role="tab" [class.active]="tab() === 'resumo'" (click)="selectTab('resumo')">Resumo</button>
+      <button type="button" role="tab" [class.active]="tab() === 'produtos'" (click)="selectTab('produtos')">
+        Produtos <span class="tab-count">{{ nota.quantidadeItens }}</span>
+      </button>
+      <button type="button" role="tab" [class.active]="tab() === 'totais'" (click)="selectTab('totais')">Totais e impostos</button>
+      <button type="button" role="tab" [class.active]="tab() === 'divergencias'" (click)="selectTab('divergencias')">
+        Divergências
+        @if (divergences().length) {
+          <span class="tab-count warn">{{ divergences().length }}</span>
+        }
+      </button>
+      <button type="button" role="tab" [class.active]="tab() === 'auditoria'" (click)="selectTab('auditoria')">
+        Auditoria <span class="tab-count">{{ auditLogs().length }}</span>
+      </button>
+      <button type="button" role="tab" [class.active]="tab() === 'xml'" (click)="selectTab('xml')">XML</button>
+    </nav>
+
+    <div class="tab-panel">
+      @switch (tab()) {
+        @case ('resumo') {
+          <div class="cards-grid">
+            <section class="info-card">
+              <h6>Emitente</h6>
+              <p class="info-name">{{ nota.emitente?.nome || '—' }}</p>
+              <dl>
+                @for (field of emitenteFields(); track field.label) {
+                  <dt>{{ field.label }}</dt>
+                  <dd [class.mono]="field.mono">{{ field.value }}</dd>
+                }
+              </dl>
+              @if (formatAddress(nota.emitente?.endereco); as lines) {
+                @if (lines.length) {
+                  <address>
+                    <fa-icon [icon]="['fas', 'location-dot']"></fa-icon>
+                    <span>@for (line of lines; track $index) {<span class="d-block">{{ line }}</span>}</span>
+                  </address>
+                }
+              }
+            </section>
+
+            <section class="info-card">
+              <h6>Destinatário</h6>
+              <p class="info-name">{{ nota.destinatario?.nome || '—' }}</p>
+              <dl>
+                @for (field of destinatarioFields(); track field.label) {
+                  <dt>{{ field.label }}</dt>
+                  <dd [class.mono]="field.mono">{{ field.value }}</dd>
+                }
+              </dl>
+              @if (formatAddress(nota.destinatario?.endereco); as lines) {
+                @if (lines.length) {
+                  <address>
+                    <fa-icon [icon]="['fas', 'location-dot']"></fa-icon>
+                    <span>@for (line of lines; track $index) {<span class="d-block">{{ line }}</span>}</span>
+                  </address>
+                }
+              }
+            </section>
+
+            <section class="info-card span-2">
+              <h6>Identificação</h6>
+              @if (identificacaoFields().length) {
+                <dl class="dl-grid">
+                  @for (field of identificacaoFields(); track field.label) {
+                    <div>
+                      <dt>{{ field.label }}</dt>
+                      <dd>{{ field.value }}</dd>
+                    </div>
+                  }
+                </dl>
+              } @else {
+                <p class="muted">Os dados de identificação não estão disponíveis para este tipo de documento.</p>
+              }
+            </section>
+          </div>
+        }
+
+        @case ('produtos') {
+          @if (produtosLoading()) {
+            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando produtos...</p>
+          } @else if (produtos().length) {
+            <div class="items-table-wrapper">
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th class="col-num">#</th>
+                    <th>Produto</th>
+                    <th>NCM</th>
+                    <th>CFOP</th>
+                    <th class="num">Qtd.</th>
+                    <th class="num">Vl. unitário</th>
+                    <th class="num">Vl. total</th>
+                    <th class="num">ICMS</th>
+                    <th class="col-toggle"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (produto of produtos(); track $index; let i = $index) {
+                    @let divergence = divergenceFor(produto);
+                    <tr class="item-row" [class.has-divergence]="divergence" [class.expanded]="expandedItems().has(i)" (click)="toggleItem(i)">
+                      <td class="col-num">{{ produto.numeroItem ?? i + 1 }}</td>
+                      <td>
+                        <div class="item-desc" [title]="produto.descricao">{{ produto.descricao || '—' }}</div>
+                        <div class="cell-sub">
+                          Cód. {{ produto.codigo || '—' }}
+                          @if (produto.codigoBarras && produto.codigoBarras !== 'SEM GTIN') {
+                            · EAN {{ produto.codigoBarras }}
+                          }
+                        </div>
+                      </td>
+                      <td class="mono">
+                        <span [class.diverge]="divergence?.ncmCorreto && divergence?.ncmCorreto !== divergence?.ncmAtual">{{ formatNcm(produto.ncm) || '—' }}</span>
+                        @if (divergence?.ncmCorreto && divergence?.ncmCorreto !== divergence?.ncmAtual) {
+                          <div class="correct">→ {{ formatNcm(divergence?.ncmCorreto) }}</div>
+                        }
+                      </td>
+                      <td class="mono">
+                        <span [class.diverge]="divergence?.cfopCorreto && divergence?.cfopCorreto !== divergence?.cfopAtual">{{ produto.cfop || '—' }}</span>
+                        @if (divergence?.cfopCorreto && divergence?.cfopCorreto !== divergence?.cfopAtual) {
+                          <div class="correct">→ {{ divergence?.cfopCorreto }}</div>
+                        }
+                      </td>
+                      <td class="num">{{ formatNumber(produto.quantidadeComercial) }} <span class="unit">{{ produto.unidadeComercial }}</span></td>
+                      <td class="num">{{ formatCurrency(produto.valorUnitarioComercial) }}</td>
+                      <td class="num strong">{{ formatCurrency(produto.valorTotal) }}</td>
+                      <td class="num">{{ formatCurrency(produto.impostos?.valorIcms) }}</td>
+                      <td class="col-toggle">
+                        <fa-icon [icon]="['fas', expandedItems().has(i) ? 'chevron-up' : 'chevron-down']"></fa-icon>
+                      </td>
+                    </tr>
+                    @if (expandedItems().has(i)) {
+                      <tr class="item-details">
+                        <td></td>
+                        <td colspan="8">
+                          <div class="tax-grid">
+                            <div class="tax-box">
+                              <span class="tax-title">ICMS</span>
+                              <span>CST/CSOSN <strong>{{ produto.impostos?.situacaoTributariaIcms || '—' }}</strong></span>
+                              <span>Base <strong>{{ formatCurrency(produto.impostos?.baseCalculoIcms) }}</strong></span>
+                              <span>Alíquota <strong>{{ formatPercent(produto.impostos?.aliquotaIcms) }}</strong></span>
+                              <span>Valor <strong>{{ formatCurrency(produto.impostos?.valorIcms) }}</strong></span>
+                            </div>
+                            <div class="tax-box">
+                              <span class="tax-title">IPI</span>
+                              <span>CST <strong>{{ produto.impostos?.situacaoTributariaIpi || '—' }}</strong></span>
+                              <span>Valor <strong>{{ formatCurrency(produto.impostos?.valorIpi) }}</strong></span>
+                            </div>
+                            <div class="tax-box">
+                              <span class="tax-title">PIS</span>
+                              <span>CST <strong>{{ produto.impostos?.situacaoTributariaPis || '—' }}</strong></span>
+                              <span>Valor <strong>{{ formatCurrency(produto.impostos?.valorPis) }}</strong></span>
+                            </div>
+                            <div class="tax-box">
+                              <span class="tax-title">COFINS</span>
+                              <span>CST <strong>{{ produto.impostos?.situacaoTributariaCofins || '—' }}</strong></span>
+                              <span>Valor <strong>{{ formatCurrency(produto.impostos?.valorCofins) }}</strong></span>
+                            </div>
+                            <div class="tax-box">
+                              <span class="tax-title">Unidade tributável</span>
+                              <span>Unidade <strong>{{ produto.unidadeTributavel || '—' }}</strong></span>
+                              <span>Qtd. <strong>{{ formatNumber(produto.quantidadeTributavel) }}</strong></span>
+                              <span>Vl. unit. <strong>{{ formatCurrency(produto.valorUnitarioTributavel) }}</strong></span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="6">Total dos produtos</td>
+                    <td class="num strong">{{ formatCurrency(nota.totais?.valorProdutos) }}</td>
+                    <td class="num">{{ formatCurrency(nota.totais?.valorIcms) }}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <p class="hint">Clique em um item para ver o detalhamento dos impostos.</p>
+          } @else {
+            <p class="muted">Nenhum item detalhado para este documento.</p>
+          }
+        }
+
+        @case ('totais') {
+          @if (nota.totais) {
+            <div class="cards-grid">
+              <section class="info-card">
+                <h6>Composição do valor</h6>
+                <ul class="amounts">
+                  @for (line of composicao(); track line.label) {
+                    <li>
+                      <span>{{ line.sign ? line.sign + ' ' : '' }}{{ line.label }}</span>
+                      <span [class.negative]="line.sign === '-'">{{ formatCurrency(line.value ?? 0) }}</span>
+                    </li>
+                  }
+                  <li class="total">
+                    <span>Valor total da nota</span>
+                    <span>{{ formatCurrency(nota.totais.valorTotalNota) }}</span>
+                  </li>
+                </ul>
+              </section>
+
+              <section class="info-card">
+                <h6>Tributos</h6>
+                <ul class="amounts">
+                  @for (line of tributos(); track line.label) {
+                    <li [class.strong]="line.strong">
+                      <span>{{ line.label }}</span>
+                      <span>{{ formatCurrency(line.value ?? 0) }}</span>
+                    </li>
+                  }
+                </ul>
+              </section>
+            </div>
+          } @else {
+            <p class="muted">Os totais não estão disponíveis para este tipo de documento.</p>
+          }
+        }
+
+        @case ('divergencias') {
+          @if (divergencesLoading()) {
+            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Verificando regras fiscais...</p>
+          } @else if (divergences().length) {
+            <div class="divergence-header">
+              <p>
+                Os itens abaixo estão com CFOP/NCM diferente do cadastrado nas regras fiscais de produto da empresa.
+                A retificação gera um novo XML corrigido — o original é mantido.
+              </p>
+              <app-button
+                icon="wand-magic-sparkles"
+                [label]="rectifying() ? 'Retificando...' : 'Retificar nota'"
+                [disabled]="rectifying() || !documentId()"
+                (onClick)="retificar()"
+              ></app-button>
+            </div>
+
+            <div class="divergence-list">
+              @for (d of divergences(); track $index) {
+                <div class="divergence-card">
+                  <div class="divergence-product">
+                    <strong>{{ d.descricaoProduto || 'Produto' }}</strong>
+                    <span class="cell-sub">Cód. {{ d.codigoProduto }}</span>
+                  </div>
+                  <div class="divergence-changes">
+                    @if (d.cfopCorreto && d.cfopCorreto !== d.cfopAtual) {
+                      <div class="change">
+                        <span class="change-label">CFOP</span>
+                        <span class="from mono">{{ d.cfopAtual || '—' }}</span>
+                        <fa-icon [icon]="['fas', 'arrow-right']"></fa-icon>
+                        <span class="to mono">{{ d.cfopCorreto }}</span>
+                      </div>
+                    }
+                    @if (d.ncmCorreto && d.ncmCorreto !== d.ncmAtual) {
+                      <div class="change">
+                        <span class="change-label">NCM</span>
+                        <span class="from mono">{{ formatNcm(d.ncmAtual) || '—' }}</span>
+                        <fa-icon [icon]="['fas', 'arrow-right']"></fa-icon>
+                        <span class="to mono">{{ formatNcm(d.ncmCorreto) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="all-good">
+              <fa-icon [icon]="['fas', 'circle-check']"></fa-icon>
+              <div>
+                <strong>Nenhuma divergência encontrada</strong>
+                <p>Os CFOP/NCM dos itens estão de acordo com as regras fiscais de produto cadastradas para a empresa.</p>
+              </div>
+            </div>
+          }
+        }
+
+        @case ('auditoria') {
+          <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+            <p class="muted mb-0">Registre conferências e observações sobre esta nota.</p>
+            <app-button label="Adicionar registro" icon="plus" (onClick)="openCreateAuditForm()"></app-button>
+          </div>
+
+          @if (auditLoading()) {
+            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando auditoria...</p>
+          }
+
+          <app-table [columns]="auditColumns()" [data]="auditLogs()" [config]="auditTableConfig"></app-table>
+        }
+
+        @case ('xml') {
+          @if (xmlLoading()) {
+            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando XML...</p>
+          } @else if (xmlContent()) {
+            <div class="xml-toolbar">
+              <app-button label="Copiar" icon="copy" variant="outlined" severity="secondary" (onClick)="copyXml()"></app-button>
+              <app-button label="Baixar" icon="download" variant="outlined" (onClick)="downloadXml()"></app-button>
+            </div>
+            <pre class="xml-view">{{ prettyXml() }}</pre>
+          } @else {
+            <p class="muted">O conteúdo XML desta nota não está disponível.</p>
+          }
+        }
+      }
+    </div>
+  }
+</app-page>
+
+<ng-template #statusCell let-row="row">
+  <span class="status-pill" [ngClass]="statusClass(row.status)">{{ row.status }}</span>
+</ng-template>
+
+<app-modal
+  [open]="auditFormDialogOpen()"
+  [title]="editingLog() ? 'Editar registro de auditoria' : 'Novo registro de auditoria'"
+  (closed)="closeAuditForm()"
+>
+  @if (auditFormDialogOpen()) {
+    <form [formGroup]="auditForm" (ngSubmit)="saveAudit()">
+      <div class="status-suggestions">
+        @for (s of statusSuggestions; track s) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="auditForm.controls.status.value === s"
+            (click)="pickStatus(s)"
+          >{{ s }}</button>
+        }
+      </div>
+      <app-input formControlName="status" label="Status"></app-input>
+      <app-input formControlName="notes" label="Observações" type="textarea"></app-input>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="closeAuditForm()"></app-button>
+        <app-button type="submit" [label]="editingLog() ? 'Atualizar' : 'Adicionar'"></app-button>
+      </div>
+    </form>
+  }
+</app-modal>
+
+<app-modal [open]="!!rectificationResult()" title="Nota retificada" (closed)="closeRectificationResult()">
+  @if (rectificationResult(); as r) {
+    <div class="all-good mb-3">
+      <fa-icon [icon]="['fas', 'circle-check']"></fa-icon>
+      <div>
+        <strong>Versão retificada gerada</strong>
+        <p>As próximas exportações desta nota usarão o XML corrigido.</p>
+      </div>
+    </div>
+    @if (r.correcoesAplicadas?.length) {
+      <h6 class="small fw-semibold">Correções aplicadas</h6>
+      <ul class="corrections">
+        @for (c of r.correcoesAplicadas; track $index) {
+          <li>{{ c }}</li>
+        }
+      </ul>
+    } @else {
+      <p class="muted">Nenhuma correção precisou ser aplicada.</p>
+    }
+    <div class="d-flex justify-content-end mt-3">
+      <app-button label="Fechar" (onClick)="closeRectificationResult()"></app-button>
+    </div>
+  }
+</app-modal>

@@ -14,7 +14,7 @@
               <th
                 class="text-muted fw-semibold"
                 [style.width]="column.width">
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2" [ngClass]="column.headerClass || ''">
                   @if (column.iconConfig?.header && column.iconConfig?.header?.position === 'start') {
                     <fa-icon [icon]="['fas', column.iconConfig?.header?.name || '']"></fa-icon>
                   }
@@ -49,7 +49,8 @@
                 <td
                   [title]="!column.cellTemplate ? row[column.property || column.name] : ''"
                   (click)="handleColumnClick(column, row)"
-                  class="cell-value border-0 text-sm">
+                  class="cell-value border-0 text-sm"
+                  [ngClass]="column.cellClass || ''">
                   @if (column.checkbox) {
                     <input type="checkbox" [checked]="row[column.property || column.name]">
                   }
@@ -79,7 +80,8 @@
               }
 
               @if (config.actions) {
-                <td class="justify-content-center text-center d-flex flex-row gap-1">
+                <td class="actions-cell">
+                  <div class="actions-group">
                   @for (action of config.actions; track action.name) {
                     <app-button
                       class="action-button border-0"
@@ -92,9 +94,8 @@
                       (onClick)="action.handler(row); $event.stopPropagation()"
                       [title]="action.tooltip || ''"
                       [disabled]="row['disableActions']" />
-
-
                   }
+                  </div>
                 </td>
               }
             </tr>

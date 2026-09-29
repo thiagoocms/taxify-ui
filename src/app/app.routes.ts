@@ -39,6 +39,13 @@ export const routes: Routes = [
             (m) => m.InvoiceXmlListComponent,
           ),
       },
+      {
+        path: 'notas-fiscais/:id',
+        loadComponent: () =>
+          import('./features/invoices/invoice-detail/invoice-detail.component').then(
+            (m) => m.InvoiceDetailComponent,
+          ),
+      },
       // Compatibilidade com links antigos.
       { path: 'companies', redirectTo: 'cadastro/empresas' },
       { path: 'planos', redirectTo: 'cadastro/planos' },
