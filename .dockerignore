@@ -3,3 +3,6 @@ dist/
 .git/
 .editorconfig
 README.md
+.claude/
+.agents/
+skills-lock.json
