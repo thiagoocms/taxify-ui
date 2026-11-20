@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Page, Pageable } from '../models/page.model';
-import { ProductFiscalDivergenceDTO, ProductFiscalRuleDTO, ProductFiscalRuleFilterDTO } from '../models/product-fiscal-rule.model';
+import { ProductFiscalDivergenceDTO, ProductFiscalRuleDTO, ProductFiscalRuleFilterDTO, CompanyProductDTO } from '../models/product-fiscal-rule.model';
 import { buildParams } from './user.service';
 
 @Injectable({ providedIn: 'root' })
@@ -42,5 +42,11 @@ export class ProductFiscalRuleService {
       params = params.set('dataEmissaoFim', dataEmissaoFim);
     }
     return this.http.get<ProductFiscalDivergenceDTO[]>(`${this.baseUrl}/divergencias`, { params });
+  }
+
+  /** Produtos da empresa (códigos das notas importadas) que contêm o termo no código ou na descrição. */
+  produtos(companyId: string, search: string): Observable<CompanyProductDTO[]> {
+    const params = new HttpParams().set('companyId', companyId).set('search', search);
+    return this.http.get<CompanyProductDTO[]>(`${this.baseUrl}/produtos`, { params });
   }
 }

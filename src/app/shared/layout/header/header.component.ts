@@ -64,6 +64,7 @@ export class HeaderComponent {
 
   onFirmSaved(firm: AccountingFirmDTO): void {
     this.firm.set(firm);
+    this.accountingFirmService.setCurrent(firm);
     this.closeFirmDialog();
   }
 }

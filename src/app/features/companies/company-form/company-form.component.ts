@@ -14,6 +14,8 @@ import { CompanySubscriptionsComponent } from '../company-subscriptions/company-
   templateUrl: './company-form.component.html',
   styles: `
     .form-container { max-width: 900px; }
+    .section-title { font-weight: 600; margin-bottom: 0.25rem; }
+    .section-hint { font-size: 0.85rem; opacity: 0.75; margin-bottom: 0.5rem; }
   `,
 })
 export class CompanyFormComponent implements OnChanges {
@@ -31,10 +33,26 @@ export class CompanyFormComponent implements OnChanges {
     { value: 'CPF', label: 'CPF' },
   ];
 
+  readonly activeOptions: SelectOption[] = [
+    { value: '', label: 'Não informado' },
+    { value: 'true', label: 'Ativa' },
+    { value: 'false', label: 'Inativa' },
+  ];
+
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
     documentType: ['CNPJ', [Validators.required]],
     documentNumber: ['', [Validators.required]],
+    // Dados cadastrais opcionais.
+    tradeName: [''],
+    phone: [''],
+    uf: ['', [Validators.maxLength(2)]],
+    taxRegime: [''],
+    stateRegistration: [''],
+    companyGroup: [''],
+    active: [''],
+    clientSince: [''],
+    clientUntil: [''],
   });
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -43,6 +61,15 @@ export class CompanyFormComponent implements OnChanges {
         name: this.company?.name ?? '',
         documentType: this.company?.documentType ?? 'CNPJ',
         documentNumber: this.company?.documentNumber ?? '',
+        tradeName: this.company?.tradeName ?? '',
+        phone: this.company?.phone ?? '',
+        uf: this.company?.uf ?? '',
+        taxRegime: this.company?.taxRegime ?? '',
+        stateRegistration: this.company?.stateRegistration ?? '',
+        companyGroup: this.company?.companyGroup ?? '',
+        active: this.company?.active == null ? '' : String(this.company.active),
+        clientSince: this.company?.clientSince ?? '',
+        clientUntil: this.company?.clientUntil ?? '',
       });
     }
   }
@@ -58,7 +85,21 @@ export class CompanyFormComponent implements OnChanges {
     }
 
     this.loading.set(true);
-    const value = this.form.getRawValue();
+    const raw = this.form.getRawValue();
+    const value: CompanyDTO = {
+      name: raw.name,
+      documentType: raw.documentType,
+      documentNumber: raw.documentNumber,
+      tradeName: raw.tradeName || null,
+      phone: raw.phone || null,
+      uf: raw.uf ? raw.uf.toUpperCase() : null,
+      taxRegime: raw.taxRegime || null,
+      stateRegistration: raw.stateRegistration || null,
+      companyGroup: raw.companyGroup || null,
+      active: raw.active === '' ? null : raw.active === 'true',
+      clientSince: raw.clientSince || null,
+      clientUntil: raw.clientUntil || null,
+    };
 
     const request$ = this.isEdit
       ? this.companyService.update(this.company!.id!, { ...this.company, ...value })

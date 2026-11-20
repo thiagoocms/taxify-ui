@@ -25,3 +25,51 @@
     ></app-user-form>
   }
 </app-page>
+
+<app-modal [open]="!!acessoriasUsers()" title="Usuários do Acessórias" size="lg" (closed)="closeAcessoriasUsers()">
+  @if (acessoriasUsers()) {
+    <p class="acessorias-hint">
+      {{ acessoriasMissingCount() }} usuário(s) ainda sem cadastro no Taxify. O Acessórias não informa CPF nem senha:
+      clique em <strong>Cadastrar</strong> para abrir o formulário já preenchido e completar esses dados. Depois, rode
+      "Importar do Acessórias" em Empresas para vinculá-los às empresas em que são responsáveis.
+    </p>
+
+    <label class="acessorias-toggle">
+      <input type="checkbox" [checked]="showInactiveAcessorias()" (change)="toggleInactiveAcessorias()" />
+      Mostrar inativos
+    </label>
+
+    <table class="acessorias-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of visibleAcessoriasUsers(); track user.acessoriasId) {
+          <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email || '-' }}</td>
+            <td>{{ user.active ? 'Ativo' : 'Inativo' }}</td>
+            <td class="acessorias-action">
+              @if (user.taxifyUserId) {
+                <span class="acessorias-badge">Já no Taxify</span>
+              } @else if (user.email) {
+                <app-button label="Cadastrar" icon="plus" variant="text" (onClick)="registerFromAcessorias(user)"></app-button>
+              } @else {
+                <span class="acessorias-muted">Sem e-mail</span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="acessorias-muted">Nenhum usuário encontrado no Acessórias.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</app-modal>

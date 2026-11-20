@@ -25,3 +25,41 @@
     ></app-company-form>
   }
 </app-page>
+
+<app-modal [open]="!!importResult()" title="Importação do Acessórias" size="lg" (closed)="closeImportResult()">
+  @if (importResult(); as result) {
+    <ul class="import-summary">
+      <li><strong>{{ result.received }}</strong> empresa(s) recebida(s) do Acessórias</li>
+      <li><strong>{{ result.created }}</strong> criada(s), <strong>{{ result.updated }}</strong> atualizada(s), <strong>{{ result.unchanged }}</strong> sem alteração</li>
+      <li><strong>{{ result.linksCreated }}</strong> vínculo(s) de responsável criado(s)</li>
+    </ul>
+
+    @if (result.responsiblesNotFound.length) {
+      <h6 class="import-section">Responsáveis sem usuário no Taxify ({{ result.responsiblesNotFound.length }})</h6>
+      <p class="import-hint">Cadastre-os em Cadastro &gt; Usuários com o mesmo e-mail e rode a importação de novo para vinculá-los.</p>
+      <ul class="import-list">
+        @for (item of result.responsiblesNotFound; track item) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+    }
+
+    @if (result.skipped.length) {
+      <h6 class="import-section">Não importadas ({{ result.skipped.length }})</h6>
+      <ul class="import-list">
+        @for (item of result.skipped; track $index) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+    }
+
+    @if (result.errors.length) {
+      <h6 class="import-section">Erros ({{ result.errors.length }})</h6>
+      <ul class="import-list">
+        @for (item of result.errors; track $index) {
+          <li>{{ item }}</li>
+        }
+      </ul>
+    }
+  }
+</app-modal>

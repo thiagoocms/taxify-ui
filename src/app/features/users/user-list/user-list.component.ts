@@ -1,12 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { Button } from '../../../shared/components/button/button';
 import { InputComponent } from '../../../shared/components/input/input';
+import { Modal } from '../../../shared/components/modal/modal';
 import { Page, PageButton } from '../../../shared/components/page/page';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
+import { AcessoriasUserSummaryDTO } from '../../../core/models/acessorias.model';
 import { UserDTO } from '../../../core/models/user.model';
+import { AccountingFirmService } from '../../../core/services/accounting-firm.service';
+import { AcessoriasService } from '../../../core/services/acessorias.service';
 import { UserService } from '../../../core/services/user.service';
 import { UserFormComponent } from '../user-form/user-form.component';
 
@@ -24,7 +29,7 @@ type ViewMode = 'list' | 'form';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputComponent, Page, Pagination, Table, UserFormComponent],
+  imports: [CommonModule, ReactiveFormsModule, Button, InputComponent, Modal, Page, Pagination, Table, UserFormComponent],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss',
 })
@@ -43,6 +48,19 @@ export class UserListComponent implements OnInit {
       { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
     ],
   };
+
+  private readonly acessoriasService = inject(AcessoriasService);
+  private readonly accountingFirmService = inject(AccountingFirmService);
+
+  readonly acessoriasUsers = signal<AcessoriasUserSummaryDTO[] | null>(null);
+  readonly acessoriasLoading = signal(false);
+  readonly showInactiveAcessorias = signal(false);
+  readonly visibleAcessoriasUsers = computed(() =>
+    (this.acessoriasUsers() ?? []).filter((user) => user.active || this.showInactiveAcessorias()),
+  );
+  readonly acessoriasMissingCount = computed(
+    () => this.visibleAcessoriasUsers().filter((user) => !user.taxifyUserId && user.email).length,
+  );
 
   readonly users = signal<UserRow[]>([]);
   readonly loading = signal(false);
@@ -71,7 +89,17 @@ export class UserListComponent implements OnInit {
 
   readonly pageButtons = computed<PageButton[]>(() => {
     if (this.viewMode() === 'list') {
-      return [{ label: 'Novo usuário', icon: 'plus', handler: () => this.openCreateForm() }];
+      return [
+        {
+          label: this.acessoriasLoading() ? 'Buscando...' : 'Buscar do Acessórias',
+          icon: 'cloud-arrow-down',
+          variant: 'outlined',
+          isDisabled: this.acessoriasLoading(),
+          isShow: this.accountingFirmService.hasAcessoriasToken(),
+          handler: () => this.openAcessoriasUsers(),
+        },
+        { label: 'Novo usuário', icon: 'plus', handler: () => this.openCreateForm() },
+      ];
     }
     return [{ label: 'Voltar', icon: 'arrow-left', variant: 'outlined', severity: 'secondary', handler: () => this.closeForm() }];
   });
@@ -82,6 +110,7 @@ export class UserListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
+    this.accountingFirmService.loadCurrent();
 
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
@@ -116,6 +145,43 @@ export class UserListComponent implements OnInit {
   onPageIndexChange(pageIndex: number): void {
     this.pageIndex.set(pageIndex);
     this.loadUsers();
+  }
+
+  openAcessoriasUsers(): void {
+    this.acessoriasLoading.set(true);
+    this.acessoriasService.listUsers().subscribe({
+      next: (users) => {
+        this.acessoriasLoading.set(false);
+        this.acessoriasUsers.set(users);
+      },
+      // A mensagem de erro da API (ex.: token não configurado) já é exibida pelo interceptor.
+      error: () => this.acessoriasLoading.set(false),
+    });
+  }
+
+  closeAcessoriasUsers(): void {
+    this.acessoriasUsers.set(null);
+  }
+
+  toggleInactiveAcessorias(): void {
+    this.showInactiveAcessorias.update((value) => !value);
+  }
+
+  /**
+   * Abre o formulário de novo usuário já com nome, e-mail e login vindos do Acessórias -
+   * CPF e senha o Acessórias não fornece, então o ADMIN completa.
+   */
+  registerFromAcessorias(user: AcessoriasUserSummaryDTO): void {
+    this.acessoriasUsers.set(null);
+    this.editingUser.set({
+      name: user.name ?? '',
+      email: user.email ?? '',
+      login: user.email ?? '',
+      documentType: 'CPF',
+      documentNumber: '',
+      profile: 'EMPLOYEE',
+    });
+    this.viewMode.set('form');
   }
 
   openCreateForm(): void {

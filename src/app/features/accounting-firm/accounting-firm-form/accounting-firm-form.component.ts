@@ -24,6 +24,7 @@ export class AccountingFirmFormComponent implements OnChanges {
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
     siegApiKey: [''],
+    acessoriasApiToken: [''],
   });
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -31,6 +32,7 @@ export class AccountingFirmFormComponent implements OnChanges {
       this.form.reset({
         name: this.firm?.name ?? '',
         siegApiKey: this.firm?.siegApiKey ?? '',
+        acessoriasApiToken: this.firm?.acessoriasApiToken ?? '',
       });
     }
   }

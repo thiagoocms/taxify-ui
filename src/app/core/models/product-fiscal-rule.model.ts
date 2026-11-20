@@ -27,3 +27,16 @@ export interface ProductFiscalDivergenceDTO {
   ncmAtual?: string;
   ncmCorreto?: string;
 }
+
+/** Produto da empresa: código distinto encontrado nos itens das notas importadas. */
+export interface CompanyProductDTO {
+  codigo: string;
+  descricao: string | null;
+  ncm: string | null;
+  cfop: string | null;
+  ocorrencias: number;
+  /** A empresa já tem regra cadastrada para este código. */
+  possuiRegra: boolean;
+  /** "codigo - descricao", para exibição. */
+  label: string;
+}

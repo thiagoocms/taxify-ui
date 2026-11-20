@@ -1,12 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { InputComponent } from '../../../shared/components/input/input';
+import { Modal } from '../../../shared/components/modal/modal';
 import { Page, PageButton } from '../../../shared/components/page/page';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
+import { AcessoriasImportResultDTO } from '../../../core/models/acessorias.model';
 import { CompanyDTO } from '../../../core/models/company.model';
+import { AccountingFirmService } from '../../../core/services/accounting-firm.service';
+import { AcessoriasService } from '../../../core/services/acessorias.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { CompanyFormComponent } from '../company-form/company-form.component';
 
@@ -15,7 +20,7 @@ type ViewMode = 'list' | 'form';
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputComponent, Page, Pagination, Table, CompanyFormComponent],
+  imports: [CommonModule, ReactiveFormsModule, InputComponent, Modal, Page, Pagination, Table, CompanyFormComponent],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
@@ -24,6 +29,9 @@ export class CompanyListComponent implements OnInit {
     { name: 'Nome', property: 'name' },
     { name: 'Tipo doc.', property: 'documentType' },
     { name: 'Documento', property: 'documentNumber' },
+    { name: 'UF', property: 'uf' },
+    { name: 'Regime', property: 'taxRegime' },
+    { name: 'Situação', property: 'situacao' },
   ];
 
   readonly tableConfig: TableConfig = {
@@ -34,7 +42,13 @@ export class CompanyListComponent implements OnInit {
     ],
   };
 
-  readonly companies = signal<CompanyDTO[]>([]);
+  private readonly acessoriasService = inject(AcessoriasService);
+  private readonly accountingFirmService = inject(AccountingFirmService);
+  private readonly toastr = inject(ToastrService);
+
+  readonly companies = signal<(CompanyDTO & { situacao: string })[]>([]);
+  readonly importing = signal(false);
+  readonly importResult = signal<AcessoriasImportResultDTO | null>(null);
   readonly loading = signal(false);
   readonly totalPages = signal(0);
   readonly pageIndex = signal(0);
@@ -59,7 +73,17 @@ export class CompanyListComponent implements OnInit {
 
   readonly pageButtons = computed<PageButton[]>(() => {
     if (this.viewMode() === 'list') {
-      return [{ label: 'Nova empresa', icon: 'plus', handler: () => this.openCreateForm() }];
+      return [
+        {
+          label: this.importing() ? 'Importando...' : 'Importar do Acessórias',
+          icon: 'cloud-arrow-down',
+          variant: 'outlined',
+          isDisabled: this.importing(),
+          isShow: this.accountingFirmService.hasAcessoriasToken(),
+          handler: () => this.importFromAcessorias(),
+        },
+        { label: 'Nova empresa', icon: 'plus', handler: () => this.openCreateForm() },
+      ];
     }
     return [{ label: 'Voltar', icon: 'arrow-left', variant: 'outlined', severity: 'secondary', handler: () => this.closeForm() }];
   });
@@ -70,6 +94,7 @@ export class CompanyListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCompanies();
+    this.accountingFirmService.loadCurrent();
 
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
@@ -88,12 +113,37 @@ export class CompanyListComponent implements OnInit {
       )
       .subscribe({
         next: (page) => {
-          this.companies.set(page.content);
+          this.companies.set(page.content.map((company) => ({ ...company, situacao: this.situacao(company) })));
           this.totalPages.set(page.totalPages);
           this.loading.set(false);
         },
         error: () => this.loading.set(false),
       });
+  }
+
+  private situacao(company: CompanyDTO): string {
+    if (company.active == null) {
+      return '';
+    }
+    return company.active ? 'Ativa' : 'Inativa';
+  }
+
+  importFromAcessorias(): void {
+    this.importing.set(true);
+    this.acessoriasService.importCompanies().subscribe({
+      next: (result) => {
+        this.importing.set(false);
+        this.importResult.set(result);
+        this.toastr.success(`${result.created} criada(s), ${result.updated} atualizada(s).`, 'Importação do Acessórias');
+        this.loadCompanies();
+      },
+      // A mensagem de erro da API (ex.: token não configurado) já é exibida pelo interceptor.
+      error: () => this.importing.set(false),
+    });
+  }
+
+  closeImportResult(): void {
+    this.importResult.set(null);
   }
 
   onPageIndexChange(pageIndex: number): void {
@@ -106,8 +156,9 @@ export class CompanyListComponent implements OnInit {
     this.viewMode.set('form');
   }
 
-  openEditForm(company: CompanyDTO): void {
-    this.editingCompany.set(company);
+  openEditForm(company: CompanyDTO & { situacao?: string }): void {
+    const { situacao, ...dto } = company;
+    this.editingCompany.set(dto);
     this.viewMode.set('form');
   }
 

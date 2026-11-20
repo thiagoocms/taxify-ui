@@ -1,12 +1,27 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <div class="row">
-    <div class="col-md-4 col-sm-12">
-      <app-input formControlName="codigoProduto" label="Código do produto"></app-input>
+    <div class="col-md-5 col-sm-12">
+      <app-input
+        formControlName="codigoProduto"
+        label="Produto (código ou descrição)"
+        type="autocomplete"
+        [searchFn]="searchProducts"
+        displayField="label"
+        displayFieldTooltip="label"
+        [minRequired]="1"
+        (itemSelected)="onProductSelected($event)"
+      ></app-input>
     </div>
-    <div class="col-md-8 col-sm-12">
+    <div class="col-md-7 col-sm-12">
       <app-input formControlName="descricaoProduto" label="Descrição do produto"></app-input>
     </div>
   </div>
+
+  @if (selectedProduct(); as product) {
+    <p class="product-hint">
+      Nas notas: NCM {{ product.ncm || '-' }} · CFOP {{ product.cfop || '-' }} · {{ product.ocorrencias }} item(ns)
+    </p>
+  }
 
   <div class="row">
     <div class="col-md-6 col-sm-12">
