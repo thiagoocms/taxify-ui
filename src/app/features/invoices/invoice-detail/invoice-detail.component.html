@@ -85,6 +85,7 @@
         Auditoria <span class="tab-count">{{ auditLogs().length }}</span>
       </button>
       <button type="button" role="tab" [class.active]="tab() === 'xml'" (click)="selectTab('xml')">XML</button>
+      <button type="button" role="tab" [class.active]="tab() === 'pdf'" (click)="selectTab('pdf')">PDF</button>
     </nav>
 
     <div class="tab-panel">
@@ -371,6 +372,21 @@
             <pre class="xml-view">{{ prettyXml() }}</pre>
           } @else {
             <p class="muted">O conteúdo XML desta nota não está disponível.</p>
+          }
+        }
+
+        @case ('pdf') {
+          @if (pdfLoading()) {
+            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Gerando PDF...</p>
+          } @else if (pdfUrl()) {
+            <div class="xml-toolbar">
+              <app-button label="Abrir em nova aba" icon="up-right-from-square" variant="outlined" severity="secondary" (onClick)="openPdfInNewTab()"></app-button>
+              <app-button label="Baixar PDF" icon="download" variant="outlined" (onClick)="downloadPdf()"></app-button>
+            </div>
+            <iframe class="pdf-view" [src]="pdfUrl()" title="DANFE da nota fiscal"></iframe>
+          } @else if (pdfError()) {
+            <p class="muted">Não foi possível gerar o PDF desta nota.</p>
+            <app-button label="Tentar novamente" icon="file-pdf" variant="outlined" (onClick)="loadPdf()"></app-button>
           }
         }
       }

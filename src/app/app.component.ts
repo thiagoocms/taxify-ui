@@ -12,6 +12,8 @@ import {
   faEye,
   faFileCode,
   faFileInvoice,
+  faFilePdf,
+  faUpRightFromSquare,
   faFileZipper,
   faLocationDot,
   faLink,
@@ -41,7 +43,7 @@ export class AppComponent {
     library.addIcons(faPlus, faPen, faTrash, faLink, faLinkSlash, faMagnifyingGlass, faUser, faRightFromBracket, faArrowLeft, faUpload, faFileZipper, faCloudArrowDown);
     library.addIcons(
       faArrowRight, faChevronDown, faChevronUp, faCircleCheck, faCopy, faDownload, faEye, faFileCode,
-      faFileInvoice, faLocationDot, faTriangleExclamation, faWandMagicSparkles,
+      faFileInvoice, faFilePdf, faUpRightFromSquare, faLocationDot, faTriangleExclamation, faWandMagicSparkles,
     );
   }
 }

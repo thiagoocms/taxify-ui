@@ -49,6 +49,11 @@ export class FiscalXmlService {
     return this.http.get(`${this.baseUrl}/${documentId}/xml`, { responseType: 'blob' });
   }
 
+  /** DANFE (PDF) rendered by the backend from the stored XML. */
+  downloadPdf(documentId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${documentId}/pdf`, { responseType: 'blob' });
+  }
+
   importarManual(companyId: string, file: File): Observable<FiscalXmlDownloadResultDTO> {
     const formData = new FormData();
     formData.append('file', file);

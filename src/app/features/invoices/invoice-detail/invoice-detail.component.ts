@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnDestroy, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastrService } from 'ngx-toastr';
@@ -43,7 +44,7 @@ import {
   tipoOperacaoLabel,
 } from '../invoice-format';
 
-type DetailTab = 'resumo' | 'produtos' | 'totais' | 'divergencias' | 'auditoria' | 'xml';
+type DetailTab = 'resumo' | 'produtos' | 'totais' | 'divergencias' | 'auditoria' | 'xml' | 'pdf';
 
 interface InfoField {
   label: string;
@@ -96,6 +97,7 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   private readonly fiscalXmlService = inject(FiscalXmlService);
   private readonly invoiceAuditLogService = inject(InvoiceAuditLogService);
   private readonly productFiscalRuleService = inject(ProductFiscalRuleService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   private readonly destroyed$ = new Subject<void>();
 
@@ -117,6 +119,14 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   readonly xmlContent = signal<string | null>(null);
   readonly xmlLoading = signal(false);
   private xmlLoaded = false;
+
+  // DANFE PDF: fetched as a blob (the API needs the auth header, so the iframe can't
+  // hit the URL directly) and shown through an object URL, revoked on destroy.
+  private pdfObjectUrl: string | null = null;
+  private pdfBlob: Blob | null = null;
+  readonly pdfUrl = signal<SafeResourceUrl | null>(null);
+  readonly pdfLoading = signal(false);
+  readonly pdfError = signal(false);
 
   readonly divergences = signal<ProductFiscalDivergenceDTO[]>([]);
   readonly divergencesLoading = signal(false);
@@ -345,6 +355,9 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
+    if (this.pdfObjectUrl) {
+      URL.revokeObjectURL(this.pdfObjectUrl);
+    }
   }
 
   back(): void {
@@ -357,6 +370,44 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
       this.loadProdutos();
     } else if (tab === 'xml') {
       this.loadXmlContent();
+    } else if (tab === 'pdf') {
+      this.loadPdf();
+    }
+  }
+
+  loadPdf(): void {
+    const documentId = this.documentId();
+    if (this.pdfObjectUrl || this.pdfLoading() || !documentId) {
+      return;
+    }
+    this.pdfLoading.set(true);
+    this.pdfError.set(false);
+    this.fiscalXmlService
+      .downloadPdf(documentId)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: (blob) => {
+          this.pdfBlob = new Blob([blob], { type: 'application/pdf' });
+          this.pdfObjectUrl = URL.createObjectURL(this.pdfBlob);
+          this.pdfUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(this.pdfObjectUrl));
+          this.pdfLoading.set(false);
+        },
+        error: () => {
+          this.pdfLoading.set(false);
+          this.pdfError.set(true);
+        },
+      });
+  }
+
+  openPdfInNewTab(): void {
+    if (this.pdfObjectUrl) {
+      window.open(this.pdfObjectUrl, '_blank', 'noopener');
+    }
+  }
+
+  downloadPdf(): void {
+    if (this.pdfBlob) {
+      downloadBlob(this.pdfBlob, `${this.accessKey() || 'nota-fiscal'}.pdf`);
     }
   }
 
