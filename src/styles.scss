@@ -46,11 +46,14 @@ body { margin: 0; font-family: 'Poppins', 'Helvetica Neue', sans-serif; }
   color: var(--color-primary);
   border-color: var(--color-primary);
 
+  /* The fill turns brand blue, so the label must turn light too — otherwise a
+     clicked button (it keeps focus) shows as an empty blue bar. */
   &:hover,
   &:focus,
   &:active {
     background-color: var(--color-primary) !important;
     border-color: var(--color-primary) !important;
+    color: #f4f6fb !important;
   }
 }
 

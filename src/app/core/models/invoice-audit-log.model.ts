@@ -5,6 +5,7 @@ export type InvoiceAuditStatus =
   | 'PENDING_DOCUMENTATION'
   | 'REJECTED'
   | 'RECTIFIED'
+  | 'RECTIFICATION_REVERTED'
   | 'DIVERGENT'
   | 'REVIEW_REOPENED'
   | 'CANCELED';
@@ -15,6 +16,7 @@ export const AUDIT_STATUS_LABELS: Record<InvoiceAuditStatus, string> = {
   PENDING_DOCUMENTATION: 'Pendente de documentação',
   REJECTED: 'Recusada',
   RECTIFIED: 'Retificada',
+  RECTIFICATION_REVERTED: 'Retificação desfeita',
   DIVERGENT: 'Com divergência',
   REVIEW_REOPENED: 'Voltou para a conferir',
   CANCELED: 'Cancelada na SEFAZ',

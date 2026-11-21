@@ -12,7 +12,7 @@ import { InputComponent } from '../../../shared/components/input/input';
 import { Modal } from '../../../shared/components/modal/modal';
 import { Page, PageButton } from '../../../shared/components/page/page';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
-import { EVENT_LABELS, REVIEW_LABELS, ReviewStatus, FiscalXmlEventDTO, FiscalXmlDetailDTO, FiscalXmlProdutoDTO, FiscalXmlRectificationResultDTO } from '../../../core/models/fiscal-xml.model';
+import { DIRECTION_LABELS, EVENT_LABELS, REVIEW_LABELS, ReviewStatus, FiscalXmlEventDTO, FiscalXmlDetailDTO, FiscalXmlProdutoDTO, FiscalXmlRectificationResultDTO } from '../../../core/models/fiscal-xml.model';
 import { AUDIT_STATUS_LABELS, InvoiceAuditLogDTO, InvoiceAuditStatus, MANUAL_AUDIT_STATUSES } from '../../../core/models/invoice-audit-log.model';
 import { ProductFiscalDivergenceDTO } from '../../../core/models/product-fiscal-rule.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -319,6 +319,7 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   readonly formatNumber = formatNumber;
   readonly formatPercent = formatPercent;
   readonly tipoOperacaoLabel = tipoOperacaoLabel;
+  readonly directionLabels = DIRECTION_LABELS;
   readonly ambienteLabel = ambienteLabel;
   readonly finalidadeLabel = finalidadeLabel;
   readonly documentTypeLabel = documentTypeLabel;
@@ -399,6 +400,7 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
         this.xml.set(detail);
         this.reviewSaving.set(false);
         this.divergenceOpen.set(false);
+        this.loadAuditLogs();
       },
       error: () => this.reviewSaving.set(false),
     });
@@ -587,6 +589,8 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.rectifying.set(false);
           this.rectificationResult.set(result);
+          // The rectification is logged server-side: refresh the Auditoria tab and its count.
+          this.loadAuditLogs();
         },
         error: () => this.rectifying.set(false),
       });

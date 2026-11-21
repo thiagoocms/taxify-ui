@@ -54,7 +54,13 @@
       <div class="hero-main">
         <div class="hero-badges">
           <span class="type-badge">{{ documentTypeLabel(nota) }}</span>
-          @if (nota.identificacao?.tipoOperacao) {
+          @if (nota.direction) {
+            <!-- Same rule as the list: entrada/saída from the company's side, not the
+                 emitter's tpNF (a supplier's "saída" is the company's entrada). -->
+            <span class="op-badge" [class.op-in]="nota.direction === 'INBOUND'" [class.op-out]="nota.direction === 'OUTBOUND'">
+              {{ directionLabels[nota.direction] }}
+            </span>
+          } @else if (nota.identificacao?.tipoOperacao) {
             <span class="op-badge" [class.op-in]="nota.identificacao?.tipoOperacao === '0'" [class.op-out]="nota.identificacao?.tipoOperacao === '1'">
               {{ tipoOperacaoLabel(nota.identificacao?.tipoOperacao) }}
             </span>

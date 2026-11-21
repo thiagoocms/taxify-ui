@@ -246,7 +246,9 @@
   border-bottom: 1px solid #dde1ea;
   margin-bottom: 8px;
 
-  button {
+  // Only the tabs: the bulk "Marcar N da página como conferidas" button in this row
+  // must keep its Bootstrap outline look, or it reads as plain text.
+  button[role='tab'] {
     border: 0;
     background: none;
     padding: 8px 14px;
@@ -260,6 +262,11 @@
       font-weight: 600;
       border-bottom-color: var(--text-title);
     }
+  }
+
+  .btn-outline-success {
+    margin-left: 8px;
+    font-size: 13px;
   }
 }
 

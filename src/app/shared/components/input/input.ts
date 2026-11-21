@@ -110,6 +110,9 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   writeValue(value: any): void {
     if (value && !(typeof value === 'string') && this.displayField) {
       this.value = value[this.displayField];
+      // A value set later (e.g. a company loaded from a ?empresa= link) must repaint too,
+      // or the autocomplete stays empty under OnPush.
+      this.cdr.markForCheck();
       return;
     }
     this.value = value ?? '';
