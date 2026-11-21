@@ -11,6 +11,13 @@
   } @else {
     @let nota = xml()!;
 
+    @if (nota.status === 'CANCELED') {
+      <div class="canceled-banner">
+        <strong>Nota cancelada na SEFAZ</strong>{{ nota.canceledAt ? ' em ' + formatDate(nota.canceledAt, true) : '' }}.
+        Não deve ser escriturada e fica fora dos totais. Veja o motivo na aba Eventos.
+      </div>
+    }
+
     <!-- Cabeçalho: valor, partes e chave -->
     <section class="hero">
       <div class="hero-main">
@@ -84,6 +91,7 @@
       <button type="button" role="tab" [class.active]="tab() === 'auditoria'" (click)="selectTab('auditoria')">
         Auditoria <span class="tab-count">{{ auditLogs().length }}</span>
       </button>
+      <button type="button" role="tab" [class.active]="tab() === 'eventos'" (click)="selectTab('eventos')">Eventos</button>
       <button type="button" role="tab" [class.active]="tab() === 'xml'" (click)="selectTab('xml')">XML</button>
       <button type="button" role="tab" [class.active]="tab() === 'pdf'" (click)="selectTab('pdf')">PDF</button>
     </nav>
@@ -378,6 +386,37 @@
             <pre class="xml-view">{{ prettyXml() }}</pre>
           } @else {
             <p class="muted">O conteúdo XML desta nota não está disponível.</p>
+          }
+        }
+
+        @case ('eventos') {
+          @if (eventsLoading()) {
+            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando eventos...</p>
+          } @else if (events()?.length) {
+            <div class="events-list">
+              @for (event of events(); track event.type + '-' + event.sequence) {
+                <div class="event-item" [class.event-cancel]="event.type === '110111' || event.type === '110112'">
+                  <div class="event-head">
+                    <strong>{{ eventLabel(event.type) }}</strong>
+                    @if (event.sequence > 1) {
+                      <span class="muted">· {{ event.sequence }}ª</span>
+                    }
+                    @if (!event.registered) {
+                      <span class="event-rejected">não registrado na SEFAZ</span>
+                    }
+                    <span class="muted ms-auto">{{ event.eventAt ? formatDate(event.eventAt, true) : '' }}</span>
+                  </div>
+                  @if (event.text) {
+                    <div class="event-text">{{ event.text }}</div>
+                  }
+                  @if (event.protocol) {
+                    <div class="muted small">Protocolo {{ event.protocol }}</div>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="muted">Nenhum evento registrado para esta nota (cancelamento, carta de correção, manifestação).</p>
           }
         }
 

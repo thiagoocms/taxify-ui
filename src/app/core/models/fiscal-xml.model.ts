@@ -3,6 +3,32 @@ export type FiscalDirection = 'INBOUND' | 'OUTBOUND';
 
 export const DIRECTION_LABELS: Record<FiscalDirection, string> = { INBOUND: 'Entrada', OUTBOUND: 'Saída' };
 
+/** Situação na SEFAZ, pelos eventos: cancelada quando chega um cancelamento registrado. */
+export type FiscalDocumentStatus = 'AUTHORIZED' | 'CANCELED';
+
+/** Evento SEFAZ de uma nota (cancelamento, carta de correção, manifestação). */
+export interface FiscalXmlEventDTO {
+  /** tpEvento: 110111 cancelamento, 110110 carta de correção, 2102x0 manifestação... */
+  type: string;
+  description?: string | null;
+  sequence: number;
+  eventAt?: string | null;
+  protocol?: string | null;
+  /** Justificativa (cancelamento) ou texto da correção (CC-e). */
+  text?: string | null;
+  registered: boolean;
+}
+
+export const EVENT_LABELS: Record<string, string> = {
+  '110111': 'Cancelamento',
+  '110112': 'Cancelamento por substituição',
+  '110110': 'Carta de correção',
+  '210200': 'Confirmação da operação',
+  '210210': 'Ciência da operação',
+  '210220': 'Desconhecimento da operação',
+  '210240': 'Operação não realizada',
+};
+
 export interface FiscalXmlSearchFilterDTO {
   companyId: string;
   dataEmissaoInicio?: string;
@@ -172,6 +198,7 @@ export interface FiscalXmlSummaryDTO {
   direction?: FiscalDirection;
   /** Emitida pela própria empresa (não pode ser retificada). */
   ownIssue: boolean;
+  status?: FiscalDocumentStatus;
 }
 
 /** Totais do período por direção (cards acima da lista). */
@@ -183,6 +210,8 @@ export interface FiscalXmlDirectionTotalsDTO {
   ipi: number;
   pis: number;
   cofins: number;
+  /** Canceladas no período — aparecem na lista, mas ficam fora dos totais acima. */
+  canceledCount: number;
 }
 
 export interface FiscalXmlTotalsDTO {
@@ -207,6 +236,8 @@ export interface FiscalXmlDetailDTO {
   totais?: FiscalXmlTotaisDTO;
   direction?: FiscalDirection;
   ownIssue: boolean;
+  status?: FiscalDocumentStatus;
+  canceledAt?: string | null;
 }
 
 export interface FiscalXmlDownloadResultDTO {

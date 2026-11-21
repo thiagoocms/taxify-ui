@@ -86,6 +86,11 @@
             <span>IPI {{ formatCurrency(t.inbound.ipi) }}</span>
             <span>PIS/COFINS {{ formatCurrency(t.inbound.pis + t.inbound.cofins) }}</span>
           </div>
+          @if (t.inbound.canceledCount) {
+            <div class="direction-canceled">
+              {{ t.inbound.canceledCount }} {{ t.inbound.canceledCount === 1 ? 'cancelada' : 'canceladas' }} (fora dos totais)
+            </div>
+          }
         </button>
         <button type="button" class="direction-card outbound" [class.active]="direction() === 'OUTBOUND'" (click)="selectDirection('OUTBOUND')">
           <div class="direction-card-head">
@@ -100,6 +105,11 @@
             <span>IPI {{ formatCurrency(t.outbound.ipi) }}</span>
             <span>PIS/COFINS {{ formatCurrency(t.outbound.pis + t.outbound.cofins) }}</span>
           </div>
+          @if (t.outbound.canceledCount) {
+            <div class="direction-canceled">
+              {{ t.outbound.canceledCount }} {{ t.outbound.canceledCount === 1 ? 'cancelada' : 'canceladas' }} (fora dos totais)
+            </div>
+          }
         </button>
       </div>
     }
@@ -149,6 +159,9 @@
         <span class="op-badge" [class.op-in]="row.direction === 'INBOUND'" [class.op-out]="row.direction === 'OUTBOUND'">
           {{ directionLabel(row.direction) }}
         </span>
+      }
+      @if (row.status === 'CANCELED') {
+        <span class="canceled-badge" title="Cancelada na SEFAZ - fora dos totais">Cancelada</span>
       }
       @if (row.ownIssue) {
         <span class="own-badge" title="Emitida pela própria empresa">Emissão própria</span>

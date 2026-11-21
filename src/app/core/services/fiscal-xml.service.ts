@@ -11,6 +11,7 @@ import {
   FiscalXmlSearchFilterDTO,
   FiscalXmlSummaryDTO,
   FiscalXmlTotalsDTO,
+  FiscalXmlEventDTO,
 } from '../models/fiscal-xml.model';
 import { Page } from '../models/page.model';
 
@@ -41,6 +42,11 @@ export class FiscalXmlService {
 
   getDetail(documentId: string): Observable<FiscalXmlDetailDTO> {
     return this.http.get<FiscalXmlDetailDTO>(`${this.baseUrl}/${documentId}`);
+  }
+
+  /** Eventos SEFAZ da nota (cancelamento, carta de correção...). */
+  getEvents(documentId: string): Observable<FiscalXmlEventDTO[]> {
+    return this.http.get<FiscalXmlEventDTO[]>(`${this.baseUrl}/${documentId}/eventos`);
   }
 
   getProdutos(documentId: string): Observable<FiscalXmlProdutoDTO[]> {

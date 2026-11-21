@@ -12,7 +12,7 @@ import { InputComponent } from '../../../shared/components/input/input';
 import { Modal } from '../../../shared/components/modal/modal';
 import { Page, PageButton } from '../../../shared/components/page/page';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
-import { FiscalXmlDetailDTO, FiscalXmlProdutoDTO, FiscalXmlRectificationResultDTO } from '../../../core/models/fiscal-xml.model';
+import { EVENT_LABELS, FiscalXmlEventDTO, FiscalXmlDetailDTO, FiscalXmlProdutoDTO, FiscalXmlRectificationResultDTO } from '../../../core/models/fiscal-xml.model';
 import { InvoiceAuditLogDTO } from '../../../core/models/invoice-audit-log.model';
 import { ProductFiscalDivergenceDTO } from '../../../core/models/product-fiscal-rule.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -44,7 +44,7 @@ import {
   tipoOperacaoLabel,
 } from '../invoice-format';
 
-type DetailTab = 'resumo' | 'produtos' | 'totais' | 'divergencias' | 'auditoria' | 'xml' | 'pdf';
+type DetailTab = 'resumo' | 'produtos' | 'totais' | 'divergencias' | 'auditoria' | 'eventos' | 'xml' | 'pdf';
 
 interface InfoField {
   label: string;
@@ -374,7 +374,32 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
       this.loadXmlContent();
     } else if (tab === 'pdf') {
       this.loadPdf();
+    } else if (tab === 'eventos') {
+      this.loadEvents();
     }
+  }
+
+  // Eventos SEFAZ (cancelamento, carta de correção...) - carregados ao abrir a aba.
+  readonly events = signal<FiscalXmlEventDTO[] | null>(null);
+  readonly eventsLoading = signal(false);
+  readonly eventLabel = (type: string): string => EVENT_LABELS[type] ?? `Evento ${type}`;
+
+  private loadEvents(): void {
+    const documentId = this.documentId();
+    if (this.events() || this.eventsLoading() || !documentId) {
+      return;
+    }
+    this.eventsLoading.set(true);
+    this.fiscalXmlService
+      .getEvents(documentId)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: (events) => {
+          this.events.set(events);
+          this.eventsLoading.set(false);
+        },
+        error: () => this.eventsLoading.set(false),
+      });
   }
 
   loadPdf(): void {
