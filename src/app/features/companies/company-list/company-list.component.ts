@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
@@ -10,9 +11,11 @@ import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { AcessoriasImportResultDTO } from '../../../core/models/acessorias.model';
 import { CompanyDTO } from '../../../core/models/company.model';
+import { isRunning, progressLabel, SyncJobStatusDTO } from '../../../core/models/sync-job.model';
 import { AccountingFirmService } from '../../../core/services/accounting-firm.service';
 import { AcessoriasService } from '../../../core/services/acessorias.service';
 import { CompanyService } from '../../../core/services/company.service';
+import { pollUntilDone } from '../../../core/services/sync-job-polling';
 import { CompanyFormComponent } from '../company-form/company-form.component';
 
 type ViewMode = 'list' | 'form';
@@ -47,7 +50,10 @@ export class CompanyListComponent implements OnInit {
   private readonly toastr = inject(ToastrService);
 
   readonly companies = signal<(CompanyDTO & { situacao: string })[]>([]);
-  readonly importing = signal(false);
+  private readonly destroyRef = inject(DestroyRef);
+  /** Importação em segundo plano: acompanhada até terminar; o resumo abre no fim. */
+  readonly importJob = signal<SyncJobStatusDTO<AcessoriasImportResultDTO> | null>(null);
+  readonly importing = computed(() => isRunning(this.importJob()));
   readonly importResult = signal<AcessoriasImportResultDTO | null>(null);
   readonly loading = signal(false);
   readonly totalPages = signal(0);
@@ -75,7 +81,7 @@ export class CompanyListComponent implements OnInit {
     if (this.viewMode() === 'list') {
       return [
         {
-          label: this.importing() ? 'Importando...' : 'Importar do Acessórias',
+          label: this.importing() ? `Importando ${progressLabel(this.importJob())}...` : 'Importar do Acessórias',
           icon: 'cloud-arrow-down',
           variant: 'outlined',
           isDisabled: this.importing(),
@@ -129,17 +135,29 @@ export class CompanyListComponent implements OnInit {
   }
 
   importFromAcessorias(): void {
-    this.importing.set(true);
-    this.acessoriasService.importCompanies().subscribe({
-      next: (result) => {
-        this.importing.set(false);
-        this.importResult.set(result);
-        this.toastr.success(`${result.created} criada(s), ${result.updated} atualizada(s).`, 'Importação do Acessórias');
-        this.loadCompanies();
-      },
-      // A mensagem de erro da API (ex.: token não configurado) já é exibida pelo interceptor.
-      error: () => this.importing.set(false),
+    // A mensagem de erro da API (ex.: token não configurado) já é exibida pelo interceptor.
+    this.acessoriasService.startImport().subscribe((job) => {
+      this.importJob.set(job);
+      this.followImport();
     });
+  }
+
+  private followImport(): void {
+    pollUntilDone(() => this.acessoriasService.importStatus())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((job) => {
+        this.importJob.set(job);
+        if (isRunning(job)) {
+          return;
+        }
+        if (job.status === 'FAILED' || !job.result) {
+          this.toastr.error(job.error || 'A importação do Acessórias falhou.', 'Importação do Acessórias');
+          return;
+        }
+        this.importResult.set(job.result);
+        this.toastr.success(`${job.result.created} criada(s), ${job.result.updated} atualizada(s).`, 'Importação do Acessórias');
+        this.loadCompanies();
+      });
   }
 
   closeImportResult(): void {

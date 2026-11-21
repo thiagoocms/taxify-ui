@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../../shared/utils/format';
 import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnChanges, signal, SimpleChanges } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -21,7 +22,6 @@ interface SubscriptionRow extends SubscriptionDTO {
   sourceLabel: string;
 }
 
-const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 @Component({
   selector: 'app-company-subscriptions',
@@ -92,7 +92,7 @@ export class CompanySubscriptionsComponent implements OnChanges {
                 of<SubscriptionRow>({
                   ...subscription,
                   planName: plan.name,
-                  feeLabel: subscription.fee != null ? currency.format(subscription.fee) : '—',
+                  feeLabel: formatCurrency(subscription.fee),
                   statusLabel: SUBSCRIPTION_STATUS_LABELS[subscription.status ?? 'ACTIVE'],
                   sourceLabel:
                     BILLING_PROVIDER_LABELS[subscription.source ?? 'MANUAL'] +

@@ -9,6 +9,7 @@ import {
   BillingSyncResultDTO,
   CompanyBillingDTO,
 } from '../models/billing.model';
+import { SyncJobStatusDTO } from '../models/sync-job.model';
 
 /** Contratos e honorários — independente do sistema de cobrança (Manual, Conta Azul...). */
 @Injectable({ providedIn: 'root' })
@@ -30,8 +31,13 @@ export class BillingService {
     return this.http.get<BillingCategoryDTO[]>(`${this.baseUrl}/categories`);
   }
 
-  sync(): Observable<BillingSyncResultDTO> {
-    return this.http.post<BillingSyncResultDTO>(`${this.baseUrl}/sync`, {});
+  /** Dispara a sincronização em segundo plano; acompanhe com {@link syncStatus}. */
+  startSync(): Observable<SyncJobStatusDTO<BillingSyncResultDTO>> {
+    return this.http.post<SyncJobStatusDTO<BillingSyncResultDTO>>(`${this.baseUrl}/sync`, {});
+  }
+
+  syncStatus(): Observable<SyncJobStatusDTO<BillingSyncResultDTO>> {
+    return this.http.get<SyncJobStatusDTO<BillingSyncResultDTO>>(`${this.baseUrl}/sync`);
   }
 
   companyBilling(companyId: string): Observable<CompanyBillingDTO> {

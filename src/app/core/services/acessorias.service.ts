@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AcessoriasImportResultDTO, AcessoriasUserSummaryDTO } from '../models/acessorias.model';
+import { SyncJobStatusDTO } from '../models/sync-job.model';
 
 @Injectable({ providedIn: 'root' })
 export class AcessoriasService {
@@ -10,9 +11,16 @@ export class AcessoriasService {
 
   constructor(private readonly http: HttpClient) {}
 
-  /** Importa (cria/atualiza) as empresas do escritório a partir do Acessórias e vincula os responsáveis. */
-  importCompanies(): Observable<AcessoriasImportResultDTO> {
-    return this.http.post<AcessoriasImportResultDTO>(`${this.baseUrl}/import`, {});
+  /**
+   * Dispara em segundo plano a importação (cria/atualiza) das empresas do escritório a partir
+   * do Acessórias, vinculando os responsáveis; acompanhe com {@link importStatus}.
+   */
+  startImport(): Observable<SyncJobStatusDTO<AcessoriasImportResultDTO>> {
+    return this.http.post<SyncJobStatusDTO<AcessoriasImportResultDTO>>(`${this.baseUrl}/import`, {});
+  }
+
+  importStatus(): Observable<SyncJobStatusDTO<AcessoriasImportResultDTO>> {
+    return this.http.get<SyncJobStatusDTO<AcessoriasImportResultDTO>>(`${this.baseUrl}/import`);
   }
 
   /** Usuários do Acessórias do escritório, indicando quais já existem no Taxify (por e-mail). */

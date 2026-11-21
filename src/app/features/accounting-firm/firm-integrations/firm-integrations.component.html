@@ -127,14 +127,23 @@
         </small>
         <div class="d-flex gap-2">
           @if (settings.provider !== 'MANUAL' && settings.connected && providerDraft === settings.provider) {
-            <app-button [label]="syncing() ? 'Sincronizando...' : 'Sincronizar agora'" variant="outlined" [disabled]="syncing()" (onClick)="syncBilling()"></app-button>
+            <app-button [label]="syncing() ? 'Sincronizando ' + syncProgress() + '...' : 'Sincronizar agora'" variant="outlined" [disabled]="syncing()" (onClick)="syncBilling()"></app-button>
           }
           <app-button [label]="savingBilling() ? 'Salvando...' : 'Salvar cobrança'" [disabled]="savingBilling()" (onClick)="saveBilling()"></app-button>
         </div>
       </div>
 
+      @if (syncJob()?.status === 'FAILED') {
+        <div class="sync-result text-danger">
+          A última sincronização falhou{{ syncJob()?.finishedAt ? ' em ' + (syncJob()?.finishedAt | date: 'dd/MM/yyyy HH:mm') : '' }}:
+          {{ syncJob()?.error }}
+        </div>
+      }
       @if (syncResult(); as result) {
         <div class="sync-result">
+          @if (syncing()) {
+            <div class="text-muted mb-1">Resultado da sincronização anterior (uma nova está em andamento):</div>
+          }
           <div>
             {{ result.linked }} de {{ result.companies }} empresas vinculadas ({{ result.newlyLinked }} novas) ·
             {{ result.subscriptionsUpdated }} assinaturas atualizadas · {{ result.chargesSynced }} cobranças

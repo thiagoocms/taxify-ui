@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../../shared/utils/format';
 import { CommonModule } from '@angular/common';
 import { Component, computed, OnInit, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -16,7 +17,6 @@ interface PlanRow extends PlanDTO {
   priceLabel: string;
 }
 
-const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 type ViewMode = 'list' | 'form';
 
@@ -103,7 +103,7 @@ export class PlanListComponent implements OnInit {
               servicesLabel: (plan.services ?? []).map((service) => PLAN_SERVICE_LABELS[service]).join(', '),
               priceLabel:
                 plan.listPrice != null
-                  ? currency.format(plan.listPrice) + (plan.billingCycle ? ` / ${BILLING_CYCLE_LABELS[plan.billingCycle].toLowerCase()}` : '')
+                  ? formatCurrency(plan.listPrice) + (plan.billingCycle ? ` / ${BILLING_CYCLE_LABELS[plan.billingCycle].toLowerCase()}` : '')
                   : '—',
             })),
           );

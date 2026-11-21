@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { Button } from '../../../shared/components/button/button';
@@ -12,10 +13,12 @@ import {
 } from '../../../core/models/billing.model';
 import { ContaAzulConnectionStatusDTO } from '../../../core/models/conta-azul.model';
 import { INTEGRATION_LABELS, IntegrationType } from '../../../core/models/integration.model';
+import { isRunning, progressLabel, SyncJobStatusDTO } from '../../../core/models/sync-job.model';
 import { BillingService } from '../../../core/services/billing.service';
 import { CONTA_AZUL_CHANNEL, ContaAzulPopupMessage, openContaAzulPopup } from '../../../core/services/conta-azul-popup';
 import { ContaAzulService } from '../../../core/services/conta-azul.service';
 import { IntegrationService } from '../../../core/services/integration.service';
+import { pollUntilDone } from '../../../core/services/sync-job-polling';
 
 /**
  * Integrações do escritório num só lugar: chaves da SIEG / Acessórias (nunca exibidas
@@ -34,6 +37,7 @@ export class FirmIntegrationsComponent implements OnInit, OnDestroy {
   private readonly contaAzulService = inject(ContaAzulService);
   private readonly billingService = inject(BillingService);
   private readonly toastr = inject(ToastrService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly labels = INTEGRATION_LABELS;
   readonly providerLabels = BILLING_PROVIDER_LABELS;
@@ -57,8 +61,11 @@ export class FirmIntegrationsComponent implements OnInit, OnDestroy {
   readonly selectedCategories = signal<Set<string>>(new Set());
   providerDraft: BillingProviderType = 'MANUAL';
   readonly savingBilling = signal(false);
-  readonly syncing = signal(false);
-  readonly syncResult = signal<BillingSyncResultDTO | null>(null);
+  /** Sincronização em segundo plano: andamento enquanto roda, resumo da última quando termina. */
+  readonly syncJob = signal<SyncJobStatusDTO<BillingSyncResultDTO> | null>(null);
+  readonly syncing = computed(() => isRunning(this.syncJob()));
+  readonly syncProgress = computed(() => progressLabel(this.syncJob()));
+  readonly syncResult = computed(() => this.syncJob()?.result ?? null);
 
   readonly providerIsIntegrated = computed(() => (this.billing()?.provider ?? 'MANUAL') !== 'MANUAL');
 
@@ -203,6 +210,9 @@ export class FirmIntegrationsComponent implements OnInit, OnDestroy {
         this.selectedCategories.set(new Set(settings.feeCategoryIds));
         if (settings.provider !== 'MANUAL' && settings.connected) {
           this.loadCategories();
+          if (!this.syncJob()) {
+            this.loadSyncStatus();
+          }
         } else {
           this.categories.set(null);
         }
@@ -248,21 +258,40 @@ export class FirmIntegrationsComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Dispara em segundo plano e acompanha; dá para sair da tela - o resultado fica guardado. */
   syncBilling(): void {
-    this.syncing.set(true);
-    this.syncResult.set(null);
-    this.billingService.sync().subscribe({
-      next: (result) => {
-        this.syncing.set(false);
-        this.syncResult.set(result);
-        if (result.errors.length) {
+    this.billingService.startSync().subscribe((job) => {
+      this.syncJob.set(job);
+      this.followSync(true);
+    });
+  }
+
+  /** Retoma o acompanhamento ao abrir a tela se houver uma sincronização rodando (botão, outra aba ou o agendador). */
+  private loadSyncStatus(): void {
+    this.billingService.syncStatus().subscribe((job) => {
+      this.syncJob.set(job);
+      if (isRunning(job)) {
+        this.followSync(false);
+      }
+    });
+  }
+
+  private followSync(notify: boolean): void {
+    pollUntilDone(() => this.billingService.syncStatus())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((job) => {
+        this.syncJob.set(job);
+        if (isRunning(job) || !notify) {
+          return;
+        }
+        if (job.status === 'FAILED') {
+          this.toastr.error(job.error || 'A sincronização falhou.');
+        } else if (job.result?.errors.length) {
           this.toastr.warning('Sincronização concluída com erros — veja o resumo.');
         } else {
           this.toastr.success('Contratos e honorários sincronizados.');
         }
         this.loadBilling();
-      },
-      error: () => this.syncing.set(false),
-    });
+      });
   }
 }

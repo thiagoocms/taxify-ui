@@ -1,5 +1,8 @@
 import { FiscalXmlEnderecoDTO, FiscalXmlItemDTO, FiscalXmlSummaryDTO } from '../../core/models/fiscal-xml.model';
 
+// Moeda tem um formatador único no app; reexportado aqui para quem já importava daqui.
+export { formatCurrency } from '../../shared/utils/format';
+
 // The API returns the raw codes from the NFe layout (tpNF, finNFe, CRT, ...);
 // these maps turn them into what an accountant actually reads on a DANFE.
 const TIPO_OPERACAO: Record<string, string> = { '0': 'Entrada', '1': 'Saída' };
@@ -85,12 +88,7 @@ export function formatNcm(value?: string): string {
   return digits.length === 8 ? digits.replace(/^(\d{4})(\d{2})(\d{2})$/, '$1.$2.$3') : value ?? '';
 }
 
-const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const decimal = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 });
-
-export function formatCurrency(value?: number | null): string {
-  return value == null ? '—' : currency.format(value);
-}
 
 export function formatNumber(value?: number | null): string {
   return value == null ? '—' : decimal.format(value);
