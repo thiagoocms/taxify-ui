@@ -46,6 +46,14 @@ export const routes: Routes = [
             (m) => m.InvoiceDetailComponent,
           ),
       },
+      // Retorno do login OAuth da Conta Azul (CONTA_AZUL_REDIRECT_URI aponta para cá).
+      {
+        path: 'integracoes/conta-azul/callback',
+        loadComponent: () =>
+          import('./features/integrations/conta-azul-callback/conta-azul-callback.component').then(
+            (m) => m.ContaAzulCallbackComponent,
+          ),
+      },
       // Compatibilidade com links antigos.
       { path: 'companies', redirectTo: 'cadastro/empresas' },
       { path: 'planos', redirectTo: 'cadastro/planos' },
