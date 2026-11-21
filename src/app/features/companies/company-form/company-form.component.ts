@@ -4,6 +4,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent, SelectOption } from '../../../shared/components/input/input';
 import { CompanyDTO } from '../../../core/models/company.model';
+import {
+  BUSINESS_ACTIVITY_LABELS,
+  BusinessActivity,
+  SERVICE_ANNEX_LABELS,
+  SimplesAnnex,
+  TAX_REGIME_LABELS,
+  TaxRegime,
+} from '../../../core/models/tax-assessment.model';
 import { CompanyService } from '../../../core/services/company.service';
 import { CompanyProductFiscalRulesComponent } from '../company-product-fiscal-rules/company-product-fiscal-rules.component';
 import { CompanyBillingComponent } from '../company-billing/company-billing.component';
@@ -39,6 +47,21 @@ export class CompanyFormComponent implements OnChanges {
     { value: 'CPF', label: 'CPF' },
   ];
 
+  readonly taxRegimeOptions: SelectOption[] = [
+    { value: '', label: 'Não informado' },
+    ...Object.entries(TAX_REGIME_LABELS).map(([value, label]) => ({ value, label })),
+  ];
+
+  readonly activityOptions: SelectOption[] = [
+    { value: '', label: 'Não informada' },
+    ...Object.entries(BUSINESS_ACTIVITY_LABELS).map(([value, label]) => ({ value, label })),
+  ];
+
+  readonly serviceAnnexOptions: SelectOption[] = [
+    { value: '', label: 'Anexo III (padrão)' },
+    ...Object.entries(SERVICE_ANNEX_LABELS).map(([value, label]) => ({ value, label })),
+  ];
+
   readonly activeOptions: SelectOption[] = [
     { value: '', label: 'Não informado' },
     { value: 'true', label: 'Ativa' },
@@ -53,7 +76,9 @@ export class CompanyFormComponent implements OnChanges {
     tradeName: [''],
     phone: [''],
     uf: ['', [Validators.maxLength(2)]],
-    taxRegime: [''],
+    taxRegimeType: [''],
+    businessActivity: [''],
+    simplesServiceAnnex: [''],
     stateRegistration: [''],
     companyGroup: [''],
     active: [''],
@@ -70,7 +95,9 @@ export class CompanyFormComponent implements OnChanges {
         tradeName: this.company?.tradeName ?? '',
         phone: this.company?.phone ?? '',
         uf: this.company?.uf ?? '',
-        taxRegime: this.company?.taxRegime ?? '',
+        taxRegimeType: this.company?.taxRegimeType ?? '',
+        businessActivity: this.company?.businessActivity ?? '',
+        simplesServiceAnnex: this.company?.simplesServiceAnnex ?? '',
         stateRegistration: this.company?.stateRegistration ?? '',
         companyGroup: this.company?.companyGroup ?? '',
         active: this.company?.active == null ? '' : String(this.company.active),
@@ -106,7 +133,11 @@ export class CompanyFormComponent implements OnChanges {
       tradeName: raw.tradeName || null,
       phone: raw.phone || null,
       uf: raw.uf ? raw.uf.toUpperCase() : null,
-      taxRegime: raw.taxRegime || null,
+      // o rótulo acompanha o regime escolhido (o back gera "Simples Nacional - Comércio")
+      taxRegime: raw.taxRegimeType ? (this.company?.taxRegime ?? null) : null,
+      taxRegimeType: (raw.taxRegimeType || null) as TaxRegime | null,
+      businessActivity: (raw.businessActivity || null) as BusinessActivity | null,
+      simplesServiceAnnex: raw.taxRegimeType === 'SIMPLES_NACIONAL' ? ((raw.simplesServiceAnnex || null) as SimplesAnnex | null) : null,
       stateRegistration: raw.stateRegistration || null,
       companyGroup: raw.companyGroup || null,
       active: raw.active === '' ? null : raw.active === 'true',

@@ -7,6 +7,7 @@ export type Permission =
   | 'INVOICES_AUDIT'
   | 'FISCAL_RULES_VIEW'
   | 'FISCAL_RULES_MANAGE'
+  | 'TAX_ASSESSMENT_VIEW'
   | 'PLANS_VIEW'
   | 'SUBSCRIPTIONS_VIEW'
   | 'SUBSCRIPTIONS_MANAGE'
@@ -17,8 +18,8 @@ export type Permission =
 export type AccessProfile = 'FISCAL' | 'ACCOUNTING' | 'FINANCIAL' | 'PAYROLL' | 'MANAGEMENT';
 
 export const ACCESS_PROFILE_OPTIONS: { value: AccessProfile; label: string; description: string }[] = [
-  { value: 'FISCAL', label: 'Fiscal', description: 'Notas, SIEG, auditoria, retificação e regras fiscais' },
-  { value: 'ACCOUNTING', label: 'Contábil', description: 'Consulta notas e regras fiscais' },
+  { value: 'FISCAL', label: 'Fiscal', description: 'Notas, SIEG, auditoria, retificação, regras fiscais e apuração' },
+  { value: 'ACCOUNTING', label: 'Contábil', description: 'Consulta notas, regras fiscais e apuração' },
   { value: 'FINANCIAL', label: 'Financeiro', description: 'Planos, assinaturas, honorários e cobranças' },
   { value: 'PAYROLL', label: 'Departamento pessoal', description: 'Carteira de empresas (módulos de DP em breve)' },
   { value: 'MANAGEMENT', label: 'Gestão', description: 'Vê tudo, sem alterar' },

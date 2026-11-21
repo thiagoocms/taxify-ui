@@ -1,0 +1,165 @@
+<app-page pageTitle="Apuração" pageDescription="Faturamento do mês, RBT12 e estimativa de impostos de cada empresa, pelas notas importadas">
+  <div class="toolbar">
+    <div class="month-picker">
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="shiftMonth(-1)" aria-label="Mês anterior">‹</button>
+      <input type="month" class="form-control form-control-sm" [ngModel]="month()" (ngModelChange)="changeMonth($event)" />
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="shiftMonth(1)" aria-label="Próximo mês">›</button>
+    </div>
+    <input type="search" class="form-control form-control-sm search" placeholder="Empresa ou CNPJ"
+           [ngModel]="search()" (ngModelChange)="search.set($event)" />
+    <select class="form-select form-select-sm" [ngModel]="regimeFilter()" (ngModelChange)="regimeFilter.set($event)">
+      <option value="ALL">Todos os regimes</option>
+      @for (option of regimeOptions; track option[0]) {
+        <option [value]="option[0]">{{ option[1] }}</option>
+      }
+      <option value="MISSING">Sem regime</option>
+    </select>
+    <select class="form-select form-select-sm" [ngModel]="alertFilter()" (ngModelChange)="alertFilter.set($event)">
+      <option value="ALL">Todas</option>
+      <option value="ALERTS">Só com alertas</option>
+    </select>
+  </div>
+
+  @let s = summary();
+  <div class="cards">
+    <div class="card-stat"><span>Empresas</span><strong>{{ s.companies }}</strong></div>
+    <div class="card-stat"><span>Faturamento</span><strong>{{ formatCurrency(s.revenue) }}</strong></div>
+    <div class="card-stat"><span>Impostos estimados</span><strong>{{ formatCurrency(s.taxes) }}</strong></div>
+    <div class="card-stat" [class.warn]="s.withoutInvoices"><span>Sem nota no mês</span><strong>{{ s.withoutInvoices }}</strong></div>
+    <div class="card-stat" [class.danger]="s.danger"><span>Com alerta</span><strong>{{ s.danger }}</strong></div>
+    <div class="card-stat" [class.warn]="s.missingRegime"><span>Sem regime</span><strong>{{ s.missingRegime }}</strong></div>
+  </div>
+
+  @if (selected(); as detail) {
+    <section class="detail">
+      <header class="detail-head">
+        <div>
+          <h5>{{ detail.companyName }}</h5>
+          <div class="muted">{{ formatDocument(detail.companyDocument) }} · {{ regimeLabel(detail) }}
+            @if (detail.taxRegime === 'SIMPLES_NACIONAL') {
+              · serviços no anexo {{ detail.simplesServiceAnnex ?? 'III' }}
+            }
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="openInvoices(detail)">Ver notas</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeDetail()">Fechar</button>
+        </div>
+      </header>
+
+      @for (alert of detail.alerts; track alert.code) {
+        <div class="alert-line" [class]="'level-' + alert.level">{{ alert.message }}</div>
+      }
+
+      <div class="detail-grid">
+        <div>
+          <h6>Faturamento do mês</h6>
+          <table class="kv">
+            <tr><td>Revenda de mercadorias</td><td>{{ formatCurrency(detail.revenue.resales) }}</td></tr>
+            <tr><td>Venda de produção própria</td><td>{{ formatCurrency(detail.revenue.ownProductionSales) }}</td></tr>
+            <tr><td>Serviços</td><td>{{ formatCurrency(detail.revenue.services) }}</td></tr>
+            <tr><td>(−) Devoluções de venda</td><td>{{ formatCurrency(detail.revenue.salesReturns) }}</td></tr>
+            <tr class="total"><td>Receita líquida</td><td>{{ formatCurrency(detail.revenue.net) }}</td></tr>
+            <tr><td>Notas de saída</td><td>{{ detail.invoicesIssued }}</td></tr>
+            <tr><td>Acumulado no ano</td><td>{{ formatCurrency(detail.yearToDate) }}</td></tr>
+            <tr>
+              <td>RBT12 @if (detail.rbt12Proportional) {<span class="muted">(proporcional)</span>}</td>
+              <td>{{ formatCurrency(detail.rbt12) }}</td>
+            </tr>
+          </table>
+        </div>
+        <div>
+          <h6>Impostos estimados</h6>
+          @if (detail.taxes.length) {
+            <table class="taxes">
+              <thead><tr><th>Imposto</th><th>Base</th><th>Alíquota</th><th>Valor</th></tr></thead>
+              <tbody>
+                @for (tax of detail.taxes; track tax.code) {
+                  <tr>
+                    <td>{{ tax.label }}
+                      @if (tax.note) {
+                        <div class="muted small">{{ tax.note }}</div>
+                      }
+                    </td>
+                    <td>{{ formatCurrency(tax.base) }}</td>
+                    <td>{{ formatRate(tax.rate) }}</td>
+                    <td>{{ formatCurrency(tax.amount) }}</td>
+                  </tr>
+                }
+                <tr class="total"><td colspan="3">Total estimado</td><td>{{ formatCurrency(detail.totalTaxes) }}</td></tr>
+              </tbody>
+            </table>
+          } @else {
+            <p class="muted">Cadastre o regime tributário da empresa para estimar os impostos.</p>
+          }
+        </div>
+      </div>
+
+      <h6>Últimos 13 meses</h6>
+      <div class="history">
+        @for (m of detail.history; track m.month) {
+          <div class="bar-col" [class.current]="m.month === detail.month" [title]="formatMonth(m.month) + ': ' + formatCurrency(m.net)">
+            <div class="bar" [style.height.%]="barHeight(m)"></div>
+            <span>{{ formatMonth(m.month) }}</span>
+          </div>
+        }
+      </div>
+      <p class="muted small disclaimer">
+        Estimativa pelas notas no Taxify (valor dos itens, canceladas fora). Não considera folha (fator R),
+        segregação de ST/monofásico nem receitas sem nota — confira no PGDAS/DCTFWeb antes de emitir a guia.
+      </p>
+    </section>
+  } @else if (detailLoading()) {
+    <p class="muted"><span class="spinner-border spinner-border-sm me-2"></span>Carregando empresa...</p>
+  }
+
+  @if (loading()) {
+    <p class="muted"><span class="spinner-border spinner-border-sm me-2"></span>Calculando apuração...</p>
+  } @else if (!filtered().length) {
+    <p class="muted">Nenhuma empresa encontrada.</p>
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-sm table-hover assessment-table">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Regime</th>
+            <th class="num">Notas</th>
+            <th class="num">Faturamento</th>
+            <th class="num">RBT12 / ano</th>
+            <th class="num">Impostos est.</th>
+            <th>Alertas</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filtered(); track row.companyId) {
+            <tr (click)="openCompany(row.companyId)" [class.active-row]="selected()?.companyId === row.companyId">
+              <td>
+                <div>{{ row.companyName }}</div>
+                <div class="muted small">{{ formatDocument(row.companyDocument) }}</div>
+              </td>
+              <td>{{ regimeLabel(row) }}</td>
+              <td class="num" [class.text-warning]="!row.invoicesIssued">{{ row.invoicesIssued }}</td>
+              <td class="num">{{ formatCurrency(row.revenue.net) }}</td>
+              <td class="num">
+                {{ formatCurrency(row.taxRegime === 'MEI' ? row.yearToDate : row.rbt12) }}
+                @if (row.rbt12Proportional && row.taxRegime === 'SIMPLES_NACIONAL') {
+                  <span class="muted" title="RBT12 proporcional: menos de 12 meses de notas">*</span>
+                }
+              </td>
+              <td class="num">{{ formatCurrency(row.totalTaxes) }}</td>
+              <td>
+                @let level = worstLevel(row);
+                @if (level) {
+                  <span class="alert-badge" [class]="'level-' + level" [title]="relevantAlerts(row)[0].message">
+                    {{ relevantAlerts(row).length }} {{ relevantAlerts(row).length === 1 ? 'alerta' : 'alertas' }}
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</app-page>

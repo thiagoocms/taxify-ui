@@ -30,9 +30,17 @@
     <div class="col-md-2 col-sm-4">
       <app-input formControlName="uf" label="UF" [maxLength]="2"></app-input>
     </div>
-    <div class="col-md-6 col-sm-12">
-      <app-input formControlName="taxRegime" label="Regime tributário"></app-input>
+    <div class="col-md-4 col-sm-12">
+      <app-input formControlName="taxRegimeType" label="Regime tributário" type="select" [options]="taxRegimeOptions"></app-input>
     </div>
+    <div class="col-md-4 col-sm-6">
+      <app-input formControlName="businessActivity" label="Atividade" type="select" [options]="activityOptions"></app-input>
+    </div>
+    @if (form.controls.taxRegimeType.value === 'SIMPLES_NACIONAL') {
+      <div class="col-md-4 col-sm-6">
+        <app-input formControlName="simplesServiceAnnex" label="Anexo dos serviços" type="select" [options]="serviceAnnexOptions"></app-input>
+      </div>
+    }
     <div class="col-md-6 col-sm-12">
       <app-input formControlName="stateRegistration" label="Inscrição estadual"></app-input>
     </div>

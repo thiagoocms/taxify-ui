@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
   faBuilding,
+  faCalculator,
   faChevronDown,
   faFileInvoice,
   faFolderOpen,
@@ -28,6 +29,7 @@ export class SidebarComponent {
   readonly homeIcon = faHouse;
   readonly buildingIcon = faBuilding;
   readonly invoiceIcon = faFileInvoice;
+  readonly assessmentIcon = faCalculator;
   readonly folderIcon = faFolderOpen;
   readonly tagsIcon = faTags;
   readonly usersIcon = faUsers;
@@ -36,6 +38,7 @@ export class SidebarComponent {
   readonly canCompanies = this.authService.can('COMPANIES_VIEW');
   readonly canPlans = this.authService.can('PLANS_VIEW');
   readonly canInvoices = this.authService.can('INVOICES_VIEW');
+  readonly canAssessment = this.authService.can('TAX_ASSESSMENT_VIEW');
   /** "Cadastro" aparece se o usuário puder abrir pelo menos um dos itens. */
   readonly showRegistry = this.canCompanies || this.canPlans || this.isAdmin;
 

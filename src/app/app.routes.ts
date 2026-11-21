@@ -60,6 +60,12 @@ export const routes: Routes = [
             (m) => m.InvoiceDetailComponent,
           ),
       },
+      {
+        path: 'apuracao',
+        canActivate: [permissionGuard('TAX_ASSESSMENT_VIEW')],
+        loadComponent: () =>
+          import('./features/assessment/tax-assessment.component').then((m) => m.TaxAssessmentComponent),
+      },
       // Compatibilidade com links antigos.
       { path: 'companies', redirectTo: 'cadastro/empresas' },
       { path: 'planos', redirectTo: 'cadastro/planos' },

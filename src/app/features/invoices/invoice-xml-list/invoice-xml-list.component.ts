@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { Component, computed, inject, OnDestroy, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastrService } from 'ngx-toastr';
 import { map, Observable, Subject } from 'rxjs';
@@ -96,6 +96,7 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
 
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly toastr = inject(ToastrService);
   private readonly companyService = inject(CompanyService);
   private readonly fiscalXmlService = inject(FiscalXmlService);
@@ -191,7 +192,10 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const saved = this.state.search();
-    if (saved) {
+    const linkedCompanyId = this.route.snapshot.queryParamMap.get('empresa');
+    if (linkedCompanyId) {
+      this.openLinkedCompany(linkedCompanyId, this.route.snapshot.queryParamMap.get('mes'));
+    } else if (saved) {
       this.form.setValue({
         company: saved.company,
         dataEmissaoInicio: saved.dataEmissaoInicio,
@@ -232,6 +236,31 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
           }
         });
     }
+  }
+
+  /**
+   * Opened from another screen (Apuração → "Ver notas"): that company, that month
+   * ("2026-10"), searched right away - instead of the last search.
+   */
+  private openLinkedCompany(companyId: string, month: string | null): void {
+    if (month && /^\d{4}-\d{2}$/.test(month)) {
+      const [year, value] = month.split('-').map(Number);
+      this.period.set('custom');
+      this.form.patchValue(
+        {
+          dataEmissaoInicio: toIsoDate(new Date(year, value - 1, 1)),
+          dataEmissaoFim: toIsoDate(new Date(year, value, 0)),
+        },
+        { emitEvent: false },
+      );
+    } else {
+      this.applyPeriod('current-month', false);
+    }
+    this.companyService.getById(companyId).subscribe((company) => {
+      this.form.controls.company.setValue(company, { emitEvent: false });
+      this.pageIndex.set(0);
+      this.loadXmls();
+    });
   }
 
   ngOnDestroy(): void {
