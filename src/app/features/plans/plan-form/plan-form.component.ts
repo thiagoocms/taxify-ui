@@ -3,8 +3,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent } from '../../../shared/components/input/input';
 import { Toggle } from '../../../shared/components/toggle/toggle';
+import { BILLING_CYCLE_OPTIONS, BillingCycle } from '../../../core/models/billing.model';
 import { PLAN_SERVICE_OPTIONS, PlanDTO, PlanServiceType } from '../../../core/models/plan.model';
 import { PlanService } from '../../../core/services/plan.service';
+import { toNumber } from '../../../shared/utils/to-number';
 
 @Component({
   selector: 'app-plan-form',
@@ -26,10 +28,13 @@ export class PlanFormComponent implements OnChanges {
 
   readonly loading = signal(false);
   readonly serviceOptions = PLAN_SERVICE_OPTIONS;
+  readonly cycleOptions = BILLING_CYCLE_OPTIONS;
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
     description: [''],
+    listPrice: [''],
+    billingCycle: [''],
     services: this.fb.nonNullable.group(
       Object.fromEntries(this.serviceOptions.map((option) => [option.value, this.fb.nonNullable.control(false)])),
     ),
@@ -41,6 +46,8 @@ export class PlanFormComponent implements OnChanges {
       this.form.reset({
         name: this.plan?.name ?? '',
         description: this.plan?.description ?? '',
+        listPrice: this.plan?.listPrice != null ? String(this.plan.listPrice) : '',
+        billingCycle: this.plan?.billingCycle ?? '',
         services: Object.fromEntries(
           this.serviceOptions.map((option) => [option.value, activeServices.has(option.value)]),
         ),
@@ -59,9 +66,11 @@ export class PlanFormComponent implements OnChanges {
     }
 
     this.loading.set(true);
-    const { services, ...rest } = this.form.getRawValue();
+    const { services, listPrice, billingCycle, ...rest } = this.form.getRawValue();
     const value: PlanDTO = {
       ...rest,
+      listPrice: toNumber(listPrice),
+      billingCycle: (billingCycle || null) as BillingCycle | null,
       services: Object.entries(services)
         .filter(([, enabled]) => enabled)
         .map(([service]) => service as PlanServiceType),
@@ -86,3 +95,4 @@ export class PlanFormComponent implements OnChanges {
     this.cancelled.emit();
   }
 }
+

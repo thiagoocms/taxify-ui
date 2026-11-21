@@ -1,3 +1,5 @@
+import { BillingCycle } from './billing.model';
+
 export type PlanServiceType =
   | 'FISCAL_XML_IMPORT'
   | 'INVOICE_AUDIT'
@@ -10,6 +12,9 @@ export interface PlanDTO {
   name: string;
   description?: string;
   services?: PlanServiceType[];
+  /** Preço de tabela; o honorário de cada assinatura pode ser diferente (negociado). */
+  listPrice?: number | null;
+  billingCycle?: BillingCycle | null;
   deleted?: boolean;
 }
 

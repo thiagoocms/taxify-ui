@@ -13,6 +13,17 @@ export const routes: Routes = [
   { path: 'login', redirectTo: 'auth/login' },
   { path: 'register', redirectTo: 'auth/register' },
 
+  // Retorno do login OAuth da Conta Azul (CONTA_AZUL_REDIRECT_URI aponta para cá).
+  // Fora do layout: normalmente abre na janela pop-up do login, sem menu/cabeçalho.
+  {
+    path: 'integracoes/conta-azul/callback',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/integrations/conta-azul-callback/conta-azul-callback.component').then(
+        (m) => m.ContaAzulCallbackComponent,
+      ),
+  },
+
   // ------------------------------------------------------------------------
   // Área autenticada.
   // ------------------------------------------------------------------------
@@ -44,14 +55,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/invoices/invoice-detail/invoice-detail.component').then(
             (m) => m.InvoiceDetailComponent,
-          ),
-      },
-      // Retorno do login OAuth da Conta Azul (CONTA_AZUL_REDIRECT_URI aponta para cá).
-      {
-        path: 'integracoes/conta-azul/callback',
-        loadComponent: () =>
-          import('./features/integrations/conta-azul-callback/conta-azul-callback.component').then(
-            (m) => m.ContaAzulCallbackComponent,
           ),
       },
       // Compatibilidade com links antigos.

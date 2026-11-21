@@ -3,40 +3,7 @@
     <div class="col-12">
       <app-input formControlName="name" label="Nome do escritório"></app-input>
     </div>
-    <div class="col-12">
-      <app-input formControlName="siegApiKey" label="Chave de integração SIEG"></app-input>
-    </div>
-    <div class="col-12">
-      <app-input formControlName="acessoriasApiToken" label="Token de API do Acessórias"></app-input>
-    </div>
   </div>
-
-  @if (isEdit && contaAzul(); as ca) {
-    <div class="border rounded p-3 mt-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-      <div>
-        <div class="fw-semibold">Conta Azul</div>
-        @if (!ca.configured) {
-          <small class="text-muted">Integração ainda não configurada no servidor.</small>
-        } @else if (ca.connected) {
-          <small class="text-success">
-            Conectada{{ ca.connectedAt ? ' desde ' + (ca.connectedAt | date: 'dd/MM/yyyy HH:mm') : '' }}
-          </small>
-        } @else {
-          <small class="text-muted">Não conectada — faça login na Conta Azul para autorizar o Taxify.</small>
-        }
-      </div>
-      @if (ca.configured) {
-        <div class="d-flex gap-2">
-          @if (ca.connected) {
-            <app-button label="Desconectar" variant="text" severity="danger" [disabled]="contaAzulBusy()" (onClick)="disconnectContaAzul()"></app-button>
-            <app-button label="Reconectar" variant="outlined" [disabled]="contaAzulBusy()" (onClick)="connectContaAzul()"></app-button>
-          } @else {
-            <app-button [label]="contaAzulBusy() ? 'Abrindo...' : 'Conectar Conta Azul'" icon="link" [disabled]="contaAzulBusy()" (onClick)="connectContaAzul()"></app-button>
-          }
-        </div>
-      }
-    </div>
-  }
 
   <div class="d-flex justify-content-end gap-2 mt-3">
     <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
@@ -47,3 +14,7 @@
     ></app-button>
   </div>
 </form>
+
+@if (isEdit) {
+  <app-firm-integrations></app-firm-integrations>
+}

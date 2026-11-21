@@ -1,0 +1,268 @@
+import { DatePipe } from '@angular/common';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { Button } from '../../../shared/components/button/button';
+import {
+  BILLING_PROVIDER_LABELS,
+  BillingCategoryDTO,
+  BillingProviderType,
+  BillingSettingsDTO,
+  BillingSyncResultDTO,
+} from '../../../core/models/billing.model';
+import { ContaAzulConnectionStatusDTO } from '../../../core/models/conta-azul.model';
+import { INTEGRATION_LABELS, IntegrationType } from '../../../core/models/integration.model';
+import { BillingService } from '../../../core/services/billing.service';
+import { CONTA_AZUL_CHANNEL, ContaAzulPopupMessage, openContaAzulPopup } from '../../../core/services/conta-azul-popup';
+import { ContaAzulService } from '../../../core/services/conta-azul.service';
+import { IntegrationService } from '../../../core/services/integration.service';
+
+/**
+ * Integrações do escritório num só lugar: chaves da SIEG / Acessórias (nunca exibidas
+ * inteiras), conexão com a Conta Azul (login em janela pop-up) e de onde vêm contratos e
+ * honorários (Manual ou um sistema integrado), com a sincronização manual.
+ */
+@Component({
+  selector: 'app-firm-integrations',
+  standalone: true,
+  imports: [DatePipe, FormsModule, Button],
+  templateUrl: './firm-integrations.component.html',
+  styleUrl: './firm-integrations.component.scss',
+})
+export class FirmIntegrationsComponent implements OnInit, OnDestroy {
+  private readonly integrationService = inject(IntegrationService);
+  private readonly contaAzulService = inject(ContaAzulService);
+  private readonly billingService = inject(BillingService);
+  private readonly toastr = inject(ToastrService);
+
+  readonly labels = INTEGRATION_LABELS;
+  readonly providerLabels = BILLING_PROVIDER_LABELS;
+  readonly keyIntegrations: IntegrationType[] = ['SIEG', 'ACESSORIAS'];
+
+  // ---- chaves de API
+  readonly editingKey = signal<IntegrationType | null>(null);
+  keyDraft = '';
+  readonly savingKey = signal(false);
+
+  // ---- Conta Azul
+  readonly contaAzul = signal<ContaAzulConnectionStatusDTO | null>(null);
+  readonly contaAzulBusy = signal(false);
+  private contaAzulChannel: BroadcastChannel | null = null;
+  private contaAzulPopupWatch: ReturnType<typeof setInterval> | null = null;
+
+  // ---- cobrança
+  readonly billing = signal<BillingSettingsDTO | null>(null);
+  readonly categories = signal<BillingCategoryDTO[] | null>(null);
+  readonly categoriesLoading = signal(false);
+  readonly selectedCategories = signal<Set<string>>(new Set());
+  providerDraft: BillingProviderType = 'MANUAL';
+  readonly savingBilling = signal(false);
+  readonly syncing = signal(false);
+  readonly syncResult = signal<BillingSyncResultDTO | null>(null);
+
+  readonly providerIsIntegrated = computed(() => (this.billing()?.provider ?? 'MANUAL') !== 'MANUAL');
+
+  ngOnInit(): void {
+    this.integrationService.load();
+    this.loadContaAzulStatus();
+    this.loadBilling();
+  }
+
+  ngOnDestroy(): void {
+    this.stopListening();
+  }
+
+  status(type: IntegrationType) {
+    return this.integrationService.statusOf(type);
+  }
+
+  // ------------------------------------------------------------------ chaves de API
+
+  startEditKey(type: IntegrationType): void {
+    this.keyDraft = '';
+    this.editingKey.set(type);
+  }
+
+  cancelEditKey(): void {
+    this.editingKey.set(null);
+  }
+
+  saveKey(type: IntegrationType, remove = false): void {
+    if (remove && !confirm(`Remover a chave da ${this.labels[type]}? A integração para de funcionar até informar outra.`)) {
+      return;
+    }
+    this.savingKey.set(true);
+    this.integrationService.saveApiKey(type, remove ? '' : this.keyDraft).subscribe({
+      next: () => {
+        this.savingKey.set(false);
+        this.editingKey.set(null);
+        this.toastr.success(remove ? 'Chave removida.' : 'Chave salva.');
+      },
+      error: () => this.savingKey.set(false),
+    });
+  }
+
+  // ------------------------------------------------------------------ Conta Azul
+
+  private loadContaAzulStatus(): void {
+    this.contaAzulService.status().subscribe({
+      next: (status) => this.contaAzul.set(status),
+      error: () => this.contaAzul.set(null),
+    });
+  }
+
+  /** Login da Conta Azul em janela pop-up; sem pop-up (bloqueado), segue na própria aba. */
+  connectContaAzul(): void {
+    // A janela precisa abrir já no clique - depois da chamada HTTP o navegador bloquearia.
+    const popup = openContaAzulPopup();
+    this.contaAzulBusy.set(true);
+    this.contaAzulService.authorizeUrl().subscribe({
+      next: ({ url }) => {
+        if (!popup || popup.closed) {
+          window.location.href = url;
+          return;
+        }
+        this.listenForPopupResult(popup);
+        popup.location.href = url;
+        popup.focus();
+      },
+      error: () => {
+        popup?.close();
+        this.contaAzulBusy.set(false);
+      },
+    });
+  }
+
+  disconnectContaAzul(): void {
+    if (!confirm('Desconectar a Conta Azul deste escritório? O Taxify deixa de acessar os dados até conectar de novo.')) {
+      return;
+    }
+    this.contaAzulBusy.set(true);
+    this.contaAzulService.disconnect().subscribe({
+      next: () => {
+        this.contaAzulBusy.set(false);
+        this.loadContaAzulStatus();
+        this.loadBilling();
+      },
+      error: () => this.contaAzulBusy.set(false),
+    });
+  }
+
+  private listenForPopupResult(popup: Window): void {
+    this.stopListening();
+    if (typeof BroadcastChannel !== 'undefined') {
+      this.contaAzulChannel = new BroadcastChannel(CONTA_AZUL_CHANNEL);
+      this.contaAzulChannel.addEventListener('message', (event: MessageEvent<ContaAzulPopupMessage>) => {
+        const data = event.data;
+        if (data?.type !== 'result') {
+          return;
+        }
+        this.contaAzulChannel?.postMessage({ type: 'ack' } satisfies ContaAzulPopupMessage);
+        this.stopListening();
+        this.contaAzulBusy.set(false);
+        if (data.ok) {
+          this.toastr.success('Conta Azul conectada.');
+          this.loadContaAzulStatus();
+          this.integrationService.load();
+          this.loadBilling();
+        } else {
+          this.toastr.error(data.message || 'Não foi possível conectar a Conta Azul.');
+        }
+      });
+    }
+    // Janela fechada sem concluir: libera o botão. A página de login pode fazer "closed" virar
+    // true antes da hora (isolamento entre origens), então o canal continua ouvindo.
+    this.contaAzulPopupWatch = setInterval(() => {
+      if (popup.closed) {
+        this.contaAzulBusy.set(false);
+        this.clearPopupWatch();
+      }
+    }, 800);
+  }
+
+  private clearPopupWatch(): void {
+    if (this.contaAzulPopupWatch) {
+      clearInterval(this.contaAzulPopupWatch);
+      this.contaAzulPopupWatch = null;
+    }
+  }
+
+  private stopListening(): void {
+    this.contaAzulChannel?.close();
+    this.contaAzulChannel = null;
+    this.clearPopupWatch();
+  }
+
+  // ------------------------------------------------------------------ cobrança
+
+  private loadBilling(): void {
+    this.billingService.getSettings().subscribe({
+      next: (settings) => {
+        this.billing.set(settings);
+        this.providerDraft = settings.provider;
+        this.selectedCategories.set(new Set(settings.feeCategoryIds));
+        if (settings.provider !== 'MANUAL' && settings.connected) {
+          this.loadCategories();
+        } else {
+          this.categories.set(null);
+        }
+      },
+      error: () => this.billing.set(null),
+    });
+  }
+
+  private loadCategories(): void {
+    this.categoriesLoading.set(true);
+    this.billingService.listCategories().subscribe({
+      next: (categories) => {
+        this.categories.set(categories);
+        this.categoriesLoading.set(false);
+      },
+      error: () => {
+        this.categories.set(null);
+        this.categoriesLoading.set(false);
+      },
+    });
+  }
+
+  toggleCategory(id: string, checked: boolean): void {
+    const next = new Set(this.selectedCategories());
+    if (checked) {
+      next.add(id);
+    } else {
+      next.delete(id);
+    }
+    this.selectedCategories.set(next);
+  }
+
+  saveBilling(): void {
+    this.savingBilling.set(true);
+    const categories = this.providerDraft === 'MANUAL' ? [] : [...this.selectedCategories()];
+    this.billingService.updateSettings(this.providerDraft, categories).subscribe({
+      next: () => {
+        this.savingBilling.set(false);
+        this.toastr.success('Configuração de cobrança salva.');
+        this.loadBilling();
+      },
+      error: () => this.savingBilling.set(false),
+    });
+  }
+
+  syncBilling(): void {
+    this.syncing.set(true);
+    this.syncResult.set(null);
+    this.billingService.sync().subscribe({
+      next: (result) => {
+        this.syncing.set(false);
+        this.syncResult.set(result);
+        if (result.errors.length) {
+          this.toastr.warning('Sincronização concluída com erros — veja o resumo.');
+        } else {
+          this.toastr.success('Contratos e honorários sincronizados.');
+        }
+        this.loadBilling();
+      },
+      error: () => this.syncing.set(false),
+    });
+  }
+}

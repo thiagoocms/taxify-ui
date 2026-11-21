@@ -1,0 +1,45 @@
+.section-title {
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.integration-card {
+  border: 1px solid var(--border-color, #dfe3ea);
+  border-radius: var(--border-radius, 8px);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.integration-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.key-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+
+  input {
+    flex: 1 1 220px;
+  }
+}
+
+.category-list {
+  max-height: 180px;
+  overflow: auto;
+  padding: 4px 0;
+}
+
+.sync-result {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: var(--border-radius, 8px);
+  background: var(--surface-muted, #f4f6fa);
+  font-size: 0.85rem;
+}

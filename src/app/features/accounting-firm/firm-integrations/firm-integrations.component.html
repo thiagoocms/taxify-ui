@@ -1,0 +1,158 @@
+<div class="integrations">
+  <h6 class="section-title">Integrações</h6>
+
+  <!-- SIEG / Acessórias: chave de API -->
+  @for (type of keyIntegrations; track type) {
+    @let current = status(type);
+    <div class="integration-card">
+      <div class="integration-head">
+        <div>
+          <div class="fw-semibold">{{ labels[type] }}</div>
+          @if (current?.configured) {
+            <small class="text-success">Chave configurada {{ current?.apiKeyHint }}</small>
+            @if (current?.lastSyncAt) {
+              <small class="text-muted d-block">Última sincronização: {{ current?.lastSyncAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+            }
+          } @else {
+            <small class="text-muted">Não configurada</small>
+          }
+        </div>
+        @if (editingKey() !== type) {
+          <div class="d-flex gap-2">
+            @if (current?.configured) {
+              <app-button label="Remover" variant="text" severity="danger" [disabled]="savingKey()" (onClick)="saveKey(type, true)"></app-button>
+            }
+            <app-button [label]="current?.configured ? 'Trocar chave' : 'Informar chave'" variant="outlined" (onClick)="startEditKey(type)"></app-button>
+          </div>
+        }
+      </div>
+      @if (editingKey() === type) {
+        <div class="key-edit">
+          <input
+            class="form-control form-control-sm"
+            type="password"
+            autocomplete="off"
+            [(ngModel)]="keyDraft"
+            [placeholder]="type === 'SIEG' ? 'X-API-Key da SIEG' : 'Token de API do Acessórias'"
+          />
+          <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancelEditKey()"></app-button>
+          <app-button [label]="savingKey() ? 'Salvando...' : 'Salvar'" [disabled]="savingKey() || !keyDraft.trim()" (onClick)="saveKey(type)"></app-button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Conta Azul: OAuth -->
+  @if (contaAzul(); as ca) {
+    <div class="integration-card">
+      <div class="integration-head">
+        <div>
+          <div class="fw-semibold">Conta Azul</div>
+          @if (!ca.configured) {
+            <small class="text-muted">Integração ainda não configurada no servidor.</small>
+          } @else if (ca.connected) {
+            <small class="text-success">
+              Conectada{{ ca.connectedAt ? ' desde ' + (ca.connectedAt | date: 'dd/MM/yyyy HH:mm') : '' }}
+            </small>
+          } @else {
+            <small class="text-muted">Não conectada — faça login na Conta Azul para autorizar o Taxify.</small>
+          }
+        </div>
+        @if (ca.configured) {
+          <div class="d-flex gap-2">
+            @if (ca.connected) {
+              <app-button label="Desconectar" variant="text" severity="danger" [disabled]="contaAzulBusy()" (onClick)="disconnectContaAzul()"></app-button>
+              <app-button label="Reconectar" variant="outlined" [disabled]="contaAzulBusy()" (onClick)="connectContaAzul()"></app-button>
+            } @else {
+              <app-button [label]="contaAzulBusy() ? 'Abrindo...' : 'Conectar Conta Azul'" icon="link" [disabled]="contaAzulBusy()" (onClick)="connectContaAzul()"></app-button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Contratos e honorários -->
+  @if (billing(); as settings) {
+    <h6 class="section-title mt-4">Contratos e honorários</h6>
+    <div class="integration-card">
+      <label class="form-label small mb-1" for="billing-provider">De onde vêm os contratos e honorários</label>
+      <select id="billing-provider" class="form-select form-select-sm" [(ngModel)]="providerDraft">
+        @for (provider of settings.availableProviders; track provider) {
+          <option [value]="provider">{{ providerLabels[provider] }}</option>
+        }
+      </select>
+      <small class="text-muted d-block mt-1">
+        @if (providerDraft === 'MANUAL') {
+          O valor do honorário e o status são informados à mão em cada assinatura.
+        } @else {
+          Contrato, valor do honorário e cobranças vêm do sistema escolhido e são atualizados todo dia.
+        }
+      </small>
+
+      @if (providerDraft !== 'MANUAL' && providerDraft === settings.provider) {
+        @if (!settings.connected) {
+          <p class="text-warning small mt-2 mb-0">Conecte o sistema acima para escolher as categorias e sincronizar.</p>
+        } @else {
+          <div class="mt-3">
+            <div class="small fw-semibold">Categorias que contam como honorário</div>
+            <small class="text-muted d-block mb-1">Nenhuma marcada = todas as contas a receber do cliente.</small>
+            @if (categoriesLoading()) {
+              <small class="text-muted">Carregando categorias...</small>
+            } @else if (categories()) {
+              @let list = categories()!;
+              <div class="category-list">
+                @for (category of list; track category.id) {
+                  <label class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      [checked]="selectedCategories().has(category.id)"
+                      (change)="toggleCategory(category.id, $any($event.target).checked)"
+                    />
+                    <span class="form-check-label">{{ category.name }}</span>
+                  </label>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+        <small class="text-muted">
+          @if (settings.lastSyncAt) {
+            Última sincronização: {{ settings.lastSyncAt | date: 'dd/MM/yyyy HH:mm' }}
+          }
+        </small>
+        <div class="d-flex gap-2">
+          @if (settings.provider !== 'MANUAL' && settings.connected && providerDraft === settings.provider) {
+            <app-button [label]="syncing() ? 'Sincronizando...' : 'Sincronizar agora'" variant="outlined" [disabled]="syncing()" (onClick)="syncBilling()"></app-button>
+          }
+          <app-button [label]="savingBilling() ? 'Salvando...' : 'Salvar cobrança'" [disabled]="savingBilling()" (onClick)="saveBilling()"></app-button>
+        </div>
+      </div>
+
+      @if (syncResult(); as result) {
+        <div class="sync-result">
+          <div>
+            {{ result.linked }} de {{ result.companies }} empresas vinculadas ({{ result.newlyLinked }} novas) ·
+            {{ result.subscriptionsUpdated }} assinaturas atualizadas · {{ result.chargesSynced }} cobranças
+          </div>
+          @if (result.unmatched.length) {
+            <div class="mt-1"><strong>Sem cliente com o mesmo CNPJ/CPF:</strong> {{ result.unmatched.join(', ') }}</div>
+          }
+          @if (result.withoutSubscription.length) {
+            <div class="mt-1"><strong>Sem assinatura vigente no Taxify:</strong> {{ result.withoutSubscription.join(', ') }}</div>
+          }
+          @for (warning of result.warnings; track warning) {
+            <div class="mt-1 text-warning">{{ warning }}</div>
+          }
+          @for (error of result.errors; track error) {
+            <div class="mt-1 text-danger">{{ error }}</div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

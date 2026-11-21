@@ -1,0 +1,62 @@
+@use '../../../shared/styles/accordion-section' as shared;
+
+@include shared.accordion-section;
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 160px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, #dfe3ea);
+  border-radius: var(--border-radius, 8px);
+
+  .label {
+    font-size: 0.75rem;
+    color: #6c757d;
+  }
+
+  .value {
+    font-weight: 600;
+  }
+
+  &.danger {
+    border-color: #f1aeb5;
+    background: #fdf3f4;
+
+    .value,
+    small {
+      color: #b02a37;
+    }
+  }
+}
+
+.charges {
+  font-size: 0.85rem;
+
+  .description {
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.status {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: #eef1f6;
+
+  &[data-status='PAID'] { background: #d1e7dd; color: #0f5132; }
+  &[data-status='OVERDUE'] { background: #f8d7da; color: #842029; }
+  &[data-status='PARTIALLY_PAID'] { background: #fff3cd; color: #664d03; }
+  &[data-status='CANCELED'] { background: #e9ecef; color: #6c757d; }
+}

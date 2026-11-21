@@ -8,11 +8,15 @@ import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { PLAN_SERVICE_LABELS, PlanDTO } from '../../../core/models/plan.model';
 import { PlanService } from '../../../core/services/plan.service';
+import { BILLING_CYCLE_LABELS } from '../../../core/models/billing.model';
 import { PlanFormComponent } from '../plan-form/plan-form.component';
 
 interface PlanRow extends PlanDTO {
   servicesLabel: string;
+  priceLabel: string;
 }
+
+const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 type ViewMode = 'list' | 'form';
 
@@ -28,6 +32,7 @@ export class PlanListComponent implements OnInit {
     { name: 'Nome', property: 'name' },
     { name: 'Descrição', property: 'description', cellTextLength: 60 },
     { name: 'Serviços', property: 'servicesLabel', cellTextLength: 60 },
+    { name: 'Preço de tabela', property: 'priceLabel' },
   ];
 
   readonly tableConfig: TableConfig = {
@@ -96,6 +101,10 @@ export class PlanListComponent implements OnInit {
             page.content.map((plan) => ({
               ...plan,
               servicesLabel: (plan.services ?? []).map((service) => PLAN_SERVICE_LABELS[service]).join(', '),
+              priceLabel:
+                plan.listPrice != null
+                  ? currency.format(plan.listPrice) + (plan.billingCycle ? ` / ${BILLING_CYCLE_LABELS[plan.billingCycle].toLowerCase()}` : '')
+                  : '—',
             })),
           );
           this.totalPages.set(page.totalPages);

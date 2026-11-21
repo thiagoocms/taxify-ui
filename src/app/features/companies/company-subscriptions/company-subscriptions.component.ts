@@ -7,6 +7,7 @@ import { catchError, switchMap } from 'rxjs/operators';
 import { Button } from '../../../shared/components/button/button';
 import { Modal } from '../../../shared/components/modal/modal';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
+import { BILLING_PROVIDER_LABELS, SUBSCRIPTION_STATUS_LABELS } from '../../../core/models/billing.model';
 import { PlanDTO } from '../../../core/models/plan.model';
 import { SubscriptionDTO } from '../../../core/models/subscription.model';
 import { PlanService } from '../../../core/services/plan.service';
@@ -15,7 +16,12 @@ import { SubscriptionFormComponent } from './subscription-form/subscription-form
 
 interface SubscriptionRow extends SubscriptionDTO {
   planName: string;
+  feeLabel: string;
+  statusLabel: string;
+  sourceLabel: string;
 }
+
+const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 @Component({
   selector: 'app-company-subscriptions',
@@ -37,6 +43,9 @@ export class CompanySubscriptionsComponent implements OnChanges {
     { name: 'Plano', property: 'planName' },
     { name: 'Início', property: 'startDate' },
     { name: 'Término', property: 'endDate' },
+    { name: 'Honorário', property: 'feeLabel' },
+    { name: 'Status', property: 'statusLabel' },
+    { name: 'Origem', property: 'sourceLabel' },
   ];
 
   readonly tableConfig: TableConfig = {
@@ -79,7 +88,17 @@ export class CompanySubscriptionsComponent implements OnChanges {
           const enriched = page.content.map((subscription) =>
             this.planService.getById(subscription.planId).pipe(
               catchError(() => of<PlanDTO>({ id: subscription.planId, name: '(plano não encontrado)' })),
-              switchMap((plan) => of({ ...subscription, planName: plan.name })),
+              switchMap((plan) =>
+                of<SubscriptionRow>({
+                  ...subscription,
+                  planName: plan.name,
+                  feeLabel: subscription.fee != null ? currency.format(subscription.fee) : '—',
+                  statusLabel: SUBSCRIPTION_STATUS_LABELS[subscription.status ?? 'ACTIVE'],
+                  sourceLabel:
+                    BILLING_PROVIDER_LABELS[subscription.source ?? 'MANUAL'] +
+                    (subscription.externalContractNumber ? ` · nº ${subscription.externalContractNumber}` : ''),
+                }),
+              ),
             ),
           );
 

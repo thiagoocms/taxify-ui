@@ -1,0 +1,79 @@
+<div class="accordion-section">
+  <button type="button" class="accordion-toggle" (click)="toggle()">
+    <span>Honorários e cobranças</span>
+    <fa-icon class="chevron" [class.open]="open()" [icon]="chevronIcon"></fa-icon>
+  </button>
+
+  @if (open()) {
+    <div class="accordion-body">
+      @if (loading()) {
+        <p class="loading-text">Carregando...</p>
+      } @else if (failed()) {
+        <p class="text-muted small mb-0">Não foi possível carregar os honorários desta empresa.</p>
+      } @else if (billing()) {
+        @let b = billing()!;
+        <div class="summary">
+          <div class="summary-item">
+            <span class="label">Origem</span>
+            <span class="value">{{ providerLabels[b.provider] }}</span>
+            @if (b.provider !== 'MANUAL') {
+              <small class="text-muted">
+                {{ b.externalCustomerName ? 'Cliente: ' + b.externalCustomerName : 'Ainda não vinculada (mesmo CNPJ/CPF não encontrado)' }}
+              </small>
+            }
+          </div>
+          <div class="summary-item">
+            <span class="label">Em aberto</span>
+            <span class="value">{{ b.openAmount | currency: 'BRL' }}</span>
+          </div>
+          <div class="summary-item" [class.danger]="b.overdueCount > 0">
+            <span class="label">Atrasado</span>
+            <span class="value">{{ b.overdueAmount | currency: 'BRL' }}</span>
+            @if (b.overdueCount > 0) {
+              <small>{{ b.overdueCount }} {{ b.overdueCount === 1 ? 'cobrança' : 'cobranças' }}</small>
+            }
+          </div>
+        </div>
+
+        @if (b.charges.length) {
+          <div class="table-responsive">
+            <table class="table table-sm charges">
+              <thead>
+                <tr>
+                  <th>Vencimento</th>
+                  <th>Competência</th>
+                  <th>Descrição</th>
+                  <th class="text-end">Valor</th>
+                  <th class="text-end">Pago</th>
+                  <th class="text-end">Em aberto</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (charge of b.charges; track charge.id) {
+                  <tr>
+                    <td>{{ charge.dueDate | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ charge.competenceDate ? (charge.competenceDate | date: 'MM/yyyy') : '—' }}</td>
+                    <td class="description">{{ charge.description || '—' }}</td>
+                    <td class="text-end">{{ charge.amount | currency: 'BRL' }}</td>
+                    <td class="text-end">{{ (charge.paidAmount ?? 0) | currency: 'BRL' }}</td>
+                    <td class="text-end">{{ (charge.openAmount ?? 0) | currency: 'BRL' }}</td>
+                    <td><span class="status" [attr.data-status]="charge.status">{{ statusLabels[charge.status] }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="text-muted small mb-0">
+            @if (b.provider === 'MANUAL') {
+              Sem cobranças registradas. O escritório usa cobrança manual — o honorário fica na assinatura.
+            } @else {
+              Nenhuma cobrança sincronizada ainda. Use "Sincronizar agora" em Dados do escritório.
+            }
+          </p>
+        }
+      }
+    </div>
+  }
+</div>

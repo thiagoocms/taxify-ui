@@ -5,12 +5,13 @@ import { InputComponent, SelectOption } from '../../../shared/components/input/i
 import { CompanyDTO } from '../../../core/models/company.model';
 import { CompanyService } from '../../../core/services/company.service';
 import { CompanyProductFiscalRulesComponent } from '../company-product-fiscal-rules/company-product-fiscal-rules.component';
+import { CompanyBillingComponent } from '../company-billing/company-billing.component';
 import { CompanySubscriptionsComponent } from '../company-subscriptions/company-subscriptions.component';
 
 @Component({
   selector: 'app-company-form',
   standalone: true,
-  imports: [ReactiveFormsModule, InputComponent, Button, CompanySubscriptionsComponent, CompanyProductFiscalRulesComponent],
+  imports: [ReactiveFormsModule, InputComponent, Button, CompanySubscriptionsComponent, CompanyBillingComponent, CompanyProductFiscalRulesComponent],
   templateUrl: './company-form.component.html',
   styles: `
     .form-container { max-width: 900px; }

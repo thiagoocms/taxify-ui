@@ -8,6 +8,15 @@
     </div>
   </div>
 
+  <div class="row">
+    <div class="col-md-6 col-sm-12">
+      <app-input formControlName="listPrice" label="Preço de tabela (R$)" type="text"></app-input>
+    </div>
+    <div class="col-md-6 col-sm-12">
+      <app-input formControlName="billingCycle" label="Periodicidade" type="select" [options]="cycleOptions"></app-input>
+    </div>
+  </div>
+
   <div class="row" formGroupName="services">
     <label class="services-label col-12">Serviços incluídos</label>
     @for (option of serviceOptions; track option.value) {

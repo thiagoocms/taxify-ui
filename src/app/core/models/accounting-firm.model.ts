@@ -1,10 +1,7 @@
 export interface AccountingFirmDTO {
   id?: string;
   name: string;
-  siegApiKey?: string;
-  acessoriasApiToken?: string;
-  /** Somente leitura: quando rodou a última importação do Acessórias. */
-  acessoriasLastSyncAt?: string;
+  // Credenciais (SIEG, Acessórias, Conta Azul) ficam em /integrations — ver IntegrationService.
   deleted?: boolean;
 }
 
