@@ -1,12 +1,15 @@
 import { Injectable, signal } from '@angular/core';
 import { CompanyDTO } from '../../core/models/company.model';
-import { FiscalXmlSummaryDTO } from '../../core/models/fiscal-xml.model';
+import { FiscalDirection, FiscalXmlSummaryDTO, FiscalXmlTotalsDTO } from '../../core/models/fiscal-xml.model';
 
 export interface InvoiceSearchState {
   company: CompanyDTO | null;
   dataEmissaoInicio: string;
   dataEmissaoFim: string;
   numero: string;
+  participant: string;
+  direction: FiscalDirection | null;
+  totals: FiscalXmlTotalsDTO | null;
   period: string;
   pageIndex: number;
   totalPages: number;

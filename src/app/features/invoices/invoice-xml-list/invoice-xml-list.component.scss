@@ -265,3 +265,123 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.participant-field {
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.company-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+
+.direction-totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.direction-card {
+  text-align: left;
+  border: 1px solid #dde1ea;
+  border-radius: var(--border-radius, 8px);
+  background: #fff;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: #b9c2d3;
+  }
+
+  &.active {
+    box-shadow: 0 0 0 2px var(--direction-color) inset;
+    border-color: var(--direction-color);
+  }
+
+  &.inbound {
+    --direction-color: #2f7d4f;
+  }
+
+  &.outbound {
+    --direction-color: #1f5fb4;
+  }
+}
+
+.direction-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.direction-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--direction-color);
+}
+
+.direction-count {
+  margin-left: auto;
+  font-weight: 400;
+  color: #6c757d;
+}
+
+.direction-value {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 4px 0;
+}
+
+.direction-taxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.direction-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid #dde1ea;
+  margin-bottom: 8px;
+
+  button {
+    border: 0;
+    background: none;
+    padding: 8px 14px;
+    font-size: 14px;
+    color: #6c757d;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+
+    &.active {
+      color: var(--text-title);
+      font-weight: 600;
+      border-bottom-color: var(--text-title);
+    }
+  }
+}
+
+.tabs-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.own-badge {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #eef1f6;
+  color: #495057;
+}

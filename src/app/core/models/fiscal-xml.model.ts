@@ -1,8 +1,17 @@
+/** Entrada ou saída para a empresa (ver FiscalDirection.java). */
+export type FiscalDirection = 'INBOUND' | 'OUTBOUND';
+
+export const DIRECTION_LABELS: Record<FiscalDirection, string> = { INBOUND: 'Entrada', OUTBOUND: 'Saída' };
+
 export interface FiscalXmlSearchFilterDTO {
   companyId: string;
   dataEmissaoInicio?: string;
   dataEmissaoFim?: string;
   numero?: string;
+  /** Só entradas ou só saídas; vazio = todas. */
+  direction?: FiscalDirection;
+  /** Parte do nome do fornecedor/cliente, ou o CNPJ/CPF dele. */
+  participant?: string;
   // Unlike the other list endpoints, this one nests the page/size under a
   // "pagination" object in the request body instead of taking them flat.
   pagination?: { page: number; size: number; sort?: string; direction?: 'ASC' | 'DESC' };
@@ -160,6 +169,25 @@ export interface FiscalXmlSummaryDTO {
   valorTotalNota?: number;
   quantidadeItens: number;
   retificada: boolean;
+  direction?: FiscalDirection;
+  /** Emitida pela própria empresa (não pode ser retificada). */
+  ownIssue: boolean;
+}
+
+/** Totais do período por direção (cards acima da lista). */
+export interface FiscalXmlDirectionTotalsDTO {
+  count: number;
+  total: number;
+  icms: number;
+  icmsSt: number;
+  ipi: number;
+  pis: number;
+  cofins: number;
+}
+
+export interface FiscalXmlTotalsDTO {
+  inbound: FiscalXmlDirectionTotalsDTO;
+  outbound: FiscalXmlDirectionTotalsDTO;
 }
 
 /** Detail page header — items and raw XML come from their own endpoints. */
@@ -177,6 +205,8 @@ export interface FiscalXmlDetailDTO {
   emitente?: FiscalXmlEmitenteDTO;
   destinatario?: FiscalXmlDestinatarioDTO;
   totais?: FiscalXmlTotaisDTO;
+  direction?: FiscalDirection;
+  ownIssue: boolean;
 }
 
 export interface FiscalXmlDownloadResultDTO {

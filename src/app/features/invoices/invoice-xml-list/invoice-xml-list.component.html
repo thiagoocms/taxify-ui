@@ -20,6 +20,10 @@
         <app-input formControlName="numero" label="Nº da nota"></app-input>
       </div>
 
+      <div class="participant-field">
+        <app-input formControlName="participant" label="Fornecedor / cliente (nome ou CNPJ)"></app-input>
+      </div>
+
       <div class="period-chips" role="group" aria-label="Período de emissão">
         @for (option of periodOptions; track option.key) {
           <button
@@ -62,20 +66,49 @@
   }
 
   @if (hasSearched()) {
-    <div class="results-summary">
-      <div class="summary-item">
-        <span class="summary-label">Empresa</span>
-        <span class="summary-value">{{ queriedCompany()?.name }}</span>
-        <span class="summary-sub">{{ formatDocument(queriedCompany()?.documentNumber) }}</span>
+    <div class="company-strip">
+      <strong>{{ queriedCompany()?.name }}</strong>
+      <span class="text-muted">{{ formatDocument(queriedCompany()?.documentNumber) }}</span>
+    </div>
+
+    @if (totals(); as t) {
+      <div class="direction-totals">
+        <button type="button" class="direction-card inbound" [class.active]="direction() === 'INBOUND'" (click)="selectDirection('INBOUND')">
+          <div class="direction-card-head">
+            <span class="direction-dot"></span>
+            <span>Entradas</span>
+            <span class="direction-count">{{ t.inbound.count }} {{ t.inbound.count === 1 ? 'nota' : 'notas' }}</span>
+          </div>
+          <div class="direction-value">{{ formatCurrency(t.inbound.total) }}</div>
+          <div class="direction-taxes">
+            <span>ICMS {{ formatCurrency(t.inbound.icms) }}</span>
+            <span>ST {{ formatCurrency(t.inbound.icmsSt) }}</span>
+            <span>IPI {{ formatCurrency(t.inbound.ipi) }}</span>
+            <span>PIS/COFINS {{ formatCurrency(t.inbound.pis + t.inbound.cofins) }}</span>
+          </div>
+        </button>
+        <button type="button" class="direction-card outbound" [class.active]="direction() === 'OUTBOUND'" (click)="selectDirection('OUTBOUND')">
+          <div class="direction-card-head">
+            <span class="direction-dot"></span>
+            <span>Saídas</span>
+            <span class="direction-count">{{ t.outbound.count }} {{ t.outbound.count === 1 ? 'nota' : 'notas' }}</span>
+          </div>
+          <div class="direction-value">{{ formatCurrency(t.outbound.total) }}</div>
+          <div class="direction-taxes">
+            <span>ICMS {{ formatCurrency(t.outbound.icms) }}</span>
+            <span>ST {{ formatCurrency(t.outbound.icmsSt) }}</span>
+            <span>IPI {{ formatCurrency(t.outbound.ipi) }}</span>
+            <span>PIS/COFINS {{ formatCurrency(t.outbound.pis + t.outbound.cofins) }}</span>
+          </div>
+        </button>
       </div>
-      <div class="summary-item">
-        <span class="summary-label">Notas encontradas</span>
-        <span class="summary-value">{{ totalElements() }}</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-label">Valor nesta página</span>
-        <span class="summary-value">{{ formatCurrency(pageTotal()) }}</span>
-      </div>
+    }
+
+    <div class="direction-tabs" role="tablist">
+      <button type="button" role="tab" [class.active]="direction() === null" (click)="selectDirection(null)">Todas</button>
+      <button type="button" role="tab" [class.active]="direction() === 'INBOUND'" (click)="selectDirection('INBOUND')">Entradas</button>
+      <button type="button" role="tab" [class.active]="direction() === 'OUTBOUND'" (click)="selectDirection('OUTBOUND')">Saídas</button>
+      <span class="tabs-count">{{ totalElements() }} {{ totalElements() === 1 ? 'nota' : 'notas' }}</span>
     </div>
 
     <div class="table-wrapper" [class.is-loading]="loading()">
@@ -112,10 +145,16 @@
       } @else {
         <strong>Sem número</strong>
       }
-      @if (row.tipoOperacao) {
-        <span class="op-badge" [class.op-in]="row.tipoOperacao === '0'" [class.op-out]="row.tipoOperacao === '1'">
-          {{ tipoOperacaoLabel(row.tipoOperacao) }}
+      @if (row.direction) {
+        <span class="op-badge" [class.op-in]="row.direction === 'INBOUND'" [class.op-out]="row.direction === 'OUTBOUND'">
+          {{ directionLabel(row.direction) }}
         </span>
+      }
+      @if (row.ownIssue) {
+        <span class="own-badge" title="Emitida pela própria empresa">Emissão própria</span>
+      }
+      @if (row.retificada) {
+        <span class="own-badge" title="Existe uma versão retificada">Retificada</span>
       }
     </div>
     @if (row.naturezaOperacao) {
@@ -129,14 +168,9 @@
   <div class="cell-sub">{{ formatTime(row.issueDate) }}</div>
 </ng-template>
 
-<ng-template #partyCell let-row="row" let-column="column">
-  @if (column.property === 'emitente') {
-    <div class="party-name" [title]="issuerName(row)">{{ issuerName(row) }}</div>
-    <div class="cell-sub">{{ issuerDocument(row) }}</div>
-  } @else {
-    <div class="party-name" [title]="recipientName(row)">{{ recipientName(row) }}</div>
-    <div class="cell-sub">{{ recipientDocument(row) }}</div>
-  }
+<ng-template #partyCell let-row="row">
+  <div class="party-name" [title]="counterpartName(row)">{{ counterpartName(row) }}</div>
+  <div class="cell-sub">{{ counterpartRole(row) }} · {{ counterpartDocument(row) }}</div>
 </ng-template>
 
 <ng-template #valueCell let-row="row">

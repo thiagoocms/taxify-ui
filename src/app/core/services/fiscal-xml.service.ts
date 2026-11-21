@@ -10,6 +10,7 @@ import {
   FiscalXmlRectificationResultDTO,
   FiscalXmlSearchFilterDTO,
   FiscalXmlSummaryDTO,
+  FiscalXmlTotalsDTO,
 } from '../models/fiscal-xml.model';
 import { Page } from '../models/page.model';
 
@@ -31,6 +32,11 @@ export class FiscalXmlService {
   /** List rows of the XMLs already stored for a company (no live SIEG call, no XML content). */
   search(filter: FiscalXmlSearchFilterDTO): Observable<Page<FiscalXmlSummaryDTO>> {
     return this.http.post<Page<FiscalXmlSummaryDTO>>(this.baseUrl, filter);
+  }
+
+  /** Entradas e saídas do período (mesma empresa/período da lista), com os principais impostos. */
+  totals(filter: FiscalXmlSearchFilterDTO): Observable<FiscalXmlTotalsDTO> {
+    return this.http.post<FiscalXmlTotalsDTO>(`${this.baseUrl}/totais`, filter);
   }
 
   getDetail(documentId: string): Observable<FiscalXmlDetailDTO> {

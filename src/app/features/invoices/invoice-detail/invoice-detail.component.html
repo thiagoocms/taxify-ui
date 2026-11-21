@@ -301,7 +301,9 @@
                 Os itens abaixo estão com CFOP/NCM diferente do cadastrado nas regras fiscais de produto da empresa.
                 A retificação gera um novo XML corrigido — o original é mantido.
               </p>
-              @if (authService.can('INVOICES_RECTIFY')) {
+              @if (xml()?.ownIssue) {
+                <p class="muted mb-0">Nota emitida pela própria empresa: não pode ser retificada. Corrija com uma carta de correção (CC-e).</p>
+              } @else if (authService.can('INVOICES_RECTIFY')) {
                 <app-button
                   icon="wand-magic-sparkles"
                   [label]="rectifying() ? 'Retificando...' : 'Retificar nota'"

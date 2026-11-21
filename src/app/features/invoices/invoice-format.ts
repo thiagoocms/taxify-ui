@@ -181,3 +181,19 @@ export function issueDateOf(xml: FiscalXmlItemDTO): string | undefined {
 export function copyToClipboard(text: string): Promise<void> {
   return navigator.clipboard.writeText(text);
 }
+
+/**
+ * A outra parte da nota, do ponto de vista da empresa: em nota emitida por ela, o
+ * destinatário (cliente); em nota recebida, o emitente (fornecedor).
+ */
+export function counterpartName(row: FiscalXmlSummaryDTO): string {
+  return row.ownIssue ? summaryRecipientName(row) : summaryIssuerName(row);
+}
+
+export function counterpartDocument(row: FiscalXmlSummaryDTO): string {
+  return row.ownIssue ? summaryRecipientDocument(row) : summaryIssuerDocument(row);
+}
+
+export function counterpartRole(row: FiscalXmlSummaryDTO): string {
+  return row.ownIssue ? 'Cliente / destinatário' : 'Fornecedor / emitente';
+}

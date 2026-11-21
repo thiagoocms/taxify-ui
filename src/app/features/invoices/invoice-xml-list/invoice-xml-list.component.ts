@@ -14,7 +14,13 @@ import { Page, PageButton } from '../../../shared/components/page/page';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { CompanyDTO } from '../../../core/models/company.model';
-import { FiscalXmlDownloadResultDTO, FiscalXmlSummaryDTO } from '../../../core/models/fiscal-xml.model';
+import {
+  DIRECTION_LABELS,
+  FiscalDirection,
+  FiscalXmlDownloadResultDTO,
+  FiscalXmlSummaryDTO,
+  FiscalXmlTotalsDTO,
+} from '../../../core/models/fiscal-xml.model';
 import { downloadBlob } from '../../../shared/utils/download-blob';
 import { CompanyService } from '../../../core/services/company.service';
 import { FiscalXmlService } from '../../../core/services/fiscal-xml.service';
@@ -26,12 +32,10 @@ import {
   formatDate,
   formatDocument,
   formatTime,
-  summaryIssuerDocument,
-  summaryIssuerName,
-  summaryRecipientDocument,
-  summaryRecipientName,
-  tipoOperacaoLabel,
   toIsoDate,
+  counterpartDocument,
+  counterpartName,
+  counterpartRole,
 } from '../invoice-format';
 
 type PeriodKey = 'current-month' | 'last-month' | 'last-90' | 'all' | 'custom';
@@ -107,7 +111,13 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     dataEmissaoInicio: this.fb.nonNullable.control(''),
     dataEmissaoFim: this.fb.nonNullable.control(''),
     numero: this.fb.nonNullable.control(''),
+    participant: this.fb.nonNullable.control(''),
   });
+
+  /** Aba ativa: todas, só entradas ou só saídas. */
+  readonly direction = signal<FiscalDirection | null>(null);
+  readonly totals = signal<FiscalXmlTotalsDTO | null>(null);
+  readonly directionLabel = (direction: FiscalDirection): string => DIRECTION_LABELS[direction];
 
   readonly loading = signal(false);
   readonly exportingZip = signal(false);
@@ -119,9 +129,6 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
   readonly pageSize = 10;
   readonly queriedCompany = signal<CompanyDTO | null>(null);
 
-  readonly pageTotal = computed(() =>
-    this.xmls().reduce((sum, xml) => sum + (xml.valorTotalNota ?? 0), 0),
-  );
 
   readonly importModalOpen = signal(false);
   readonly importing = signal(false);
@@ -140,8 +147,7 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
   readonly xmlColumns = computed<TableColumn[]>(() => [
     { name: 'Nota', cellTemplate: this.noteCell() },
     { name: 'Emissão', cellTemplate: this.dateCell(), width: '120px' },
-    { name: 'Emitente', property: 'emitente', cellTemplate: this.partyCell() },
-    { name: 'Destinatário', property: 'destinatario', cellTemplate: this.partyCell() },
+    { name: 'Participante', cellTemplate: this.partyCell() },
     { name: 'Valor total', cellTemplate: this.valueCell(), headerClass: 'justify-content-end', width: '150px' },
   ]);
 
@@ -172,15 +178,13 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
 
   // Formatting helpers exposed to the template.
   readonly documentTypeLabel = documentTypeLabel;
-  readonly tipoOperacaoLabel = tipoOperacaoLabel;
   readonly formatCurrency = formatCurrency;
   readonly formatDate = formatDate;
   readonly formatDocument = formatDocument;
   readonly formatTime = formatTime;
-  readonly issuerName = summaryIssuerName;
-  readonly issuerDocument = summaryIssuerDocument;
-  readonly recipientName = summaryRecipientName;
-  readonly recipientDocument = summaryRecipientDocument;
+  readonly counterpartName = counterpartName;
+  readonly counterpartDocument = counterpartDocument;
+  readonly counterpartRole = counterpartRole;
 
   readonly searchCompanies = (term: string): Observable<CompanyDTO[]> =>
     this.companyService.getAll({ page: 0, size: 10 }, { name: term }).pipe(map((page) => page.content));
@@ -193,7 +197,10 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
         dataEmissaoInicio: saved.dataEmissaoInicio,
         dataEmissaoFim: saved.dataEmissaoFim,
         numero: saved.numero,
+        participant: saved.participant ?? '',
       });
+      this.direction.set(saved.direction ?? null);
+      this.totals.set(saved.totals ?? null);
       this.period.set(saved.period as PeriodKey);
       this.pageIndex.set(saved.pageIndex);
       this.totalPages.set(saved.totalPages);
@@ -215,14 +222,16 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Typing a note number filters as you go, once a company is already picked.
-    this.form.controls.numero.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroyed$))
-      .subscribe(() => {
-        if (this.queriedCompany()) {
-          this.buscarXmls();
-        }
-      });
+    // Typing a note number or a supplier/customer filters as you go, once a company is picked.
+    for (const control of [this.form.controls.numero, this.form.controls.participant]) {
+      control.valueChanges
+        .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroyed$))
+        .subscribe(() => {
+          if (this.queriedCompany()) {
+            this.buscarXmls();
+          }
+        });
+    }
   }
 
   ngOnDestroy(): void {
@@ -255,23 +264,48 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     this.loadXmls();
   }
 
-  onPageIndexChange(pageIndex: number): void {
-    this.pageIndex.set(pageIndex);
-    this.loadXmls();
+  /** Troca a aba (todas / entradas / saídas) e volta para a primeira página. */
+  selectDirection(direction: FiscalDirection | null): void {
+    if (direction === this.direction()) {
+      return;
+    }
+    this.direction.set(direction);
+    if (this.queriedCompany()) {
+      this.pageIndex.set(0);
+      this.loadXmls(false);
+    }
   }
 
-  private loadXmls(): void {
-    const { company, dataEmissaoInicio, dataEmissaoFim, numero } = this.form.getRawValue();
+  onPageIndexChange(pageIndex: number): void {
+    this.pageIndex.set(pageIndex);
+    this.loadXmls(false);
+  }
+
+  /** {@code withTotals}: the cards only change with company/period, not with tab, page or text filters. */
+  private loadXmls(withTotals = true): void {
+    const { company, dataEmissaoInicio, dataEmissaoFim, numero, participant } = this.form.getRawValue();
     const companyId = company!.id!;
+    const period = {
+      companyId,
+      dataEmissaoInicio: dataEmissaoInicio || undefined,
+      dataEmissaoFim: dataEmissaoFim || undefined,
+    };
 
     this.loading.set(true);
 
+    if (withTotals || company?.id !== this.queriedCompany()?.id) {
+      this.fiscalXmlService
+        .totals(period)
+        .pipe(takeUntil(this.destroyed$))
+        .subscribe({ next: (totals) => this.totals.set(totals), error: () => this.totals.set(null) });
+    }
+
     this.fiscalXmlService
       .search({
-        companyId,
-        dataEmissaoInicio: dataEmissaoInicio || undefined,
-        dataEmissaoFim: dataEmissaoFim || undefined,
+        ...period,
         numero: numero.trim() || undefined,
+        participant: participant.trim() || undefined,
+        direction: this.direction() ?? undefined,
         pagination: { page: this.pageIndex(), size: this.pageSize },
       })
       .pipe(takeUntil(this.destroyed$))
@@ -290,12 +324,15 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
   }
 
   private saveState(): void {
-    const { company, dataEmissaoInicio, dataEmissaoFim, numero } = this.form.getRawValue();
+    const { company, dataEmissaoInicio, dataEmissaoFim, numero, participant } = this.form.getRawValue();
     this.state.search.set({
       company,
       dataEmissaoInicio,
       dataEmissaoFim,
       numero,
+      participant,
+      direction: this.direction(),
+      totals: this.totals(),
       period: this.period(),
       pageIndex: this.pageIndex(),
       totalPages: this.totalPages(),
