@@ -27,6 +27,11 @@ import {
   faUser,
   faTriangleExclamation,
   faWandMagicSparkles,
+  faLock,
+  faLockOpen,
+  faChevronLeft,
+  faChevronRight,
+  faCalculator,
   faCloudArrowDown,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -40,7 +45,7 @@ export class AppComponent {
   title = 'taxify-front';
 
   constructor(library: FaIconLibrary) {
-    library.addIcons(faPlus, faPen, faTrash, faLink, faLinkSlash, faMagnifyingGlass, faUser, faRightFromBracket, faArrowLeft, faUpload, faFileZipper, faCloudArrowDown);
+    library.addIcons(faLock, faLockOpen, faChevronLeft, faChevronRight, faCalculator, faPlus, faPen, faTrash, faLink, faLinkSlash, faMagnifyingGlass, faUser, faRightFromBracket, faArrowLeft, faUpload, faFileZipper, faCloudArrowDown);
     library.addIcons(
       faArrowRight, faChevronDown, faChevronUp, faCircleCheck, faCopy, faDownload, faEye, faFileCode,
       faFileInvoice, faFilePdf, faUpRightFromSquare, faLocationDot, faTriangleExclamation, faWandMagicSparkles,

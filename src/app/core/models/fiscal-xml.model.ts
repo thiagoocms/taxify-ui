@@ -3,6 +3,15 @@ export type FiscalDirection = 'INBOUND' | 'OUTBOUND';
 
 export const DIRECTION_LABELS: Record<FiscalDirection, string> = { INBOUND: 'Entrada', OUTBOUND: 'Saída' };
 
+/** Conferência da nota pela equipe fiscal antes de escriturar. */
+export type ReviewStatus = 'PENDING' | 'REVIEWED' | 'DIVERGENT';
+
+export const REVIEW_LABELS: Record<ReviewStatus, string> = {
+  PENDING: 'A conferir',
+  REVIEWED: 'Conferida',
+  DIVERGENT: 'Divergência',
+};
+
 /** Situação na SEFAZ, pelos eventos: cancelada quando chega um cancelamento registrado. */
 export type FiscalDocumentStatus = 'AUTHORIZED' | 'CANCELED';
 
@@ -38,6 +47,8 @@ export interface FiscalXmlSearchFilterDTO {
   direction?: FiscalDirection;
   /** Parte do nome do fornecedor/cliente, ou o CNPJ/CPF dele. */
   participant?: string;
+  /** Situação da conferência; vazio = todas. */
+  reviewStatus?: ReviewStatus;
   // Unlike the other list endpoints, this one nests the page/size under a
   // "pagination" object in the request body instead of taking them flat.
   pagination?: { page: number; size: number; sort?: string; direction?: 'ASC' | 'DESC' };
@@ -199,6 +210,7 @@ export interface FiscalXmlSummaryDTO {
   /** Emitida pela própria empresa (não pode ser retificada). */
   ownIssue: boolean;
   status?: FiscalDocumentStatus;
+  reviewStatus?: ReviewStatus;
 }
 
 /** Totais do período por direção (cards acima da lista). */
@@ -238,6 +250,10 @@ export interface FiscalXmlDetailDTO {
   ownIssue: boolean;
   status?: FiscalDocumentStatus;
   canceledAt?: string | null;
+  reviewStatus?: ReviewStatus;
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
+  reviewNote?: string | null;
 }
 
 export interface FiscalXmlDownloadResultDTO {

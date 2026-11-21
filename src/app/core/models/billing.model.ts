@@ -43,6 +43,13 @@ export interface BillingChargeDTO {
   status: ChargeStatus;
 }
 
+/** Vínculo da empresa com o cliente no sistema de cobrança. */
+export interface ExternalLinkDTO {
+  provider?: BillingProviderType;
+  externalId: string;
+  externalName?: string | null;
+}
+
 export interface CompanyBillingDTO {
   provider: BillingProviderType;
   externalCustomerId?: string | null;

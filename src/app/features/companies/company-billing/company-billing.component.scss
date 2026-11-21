@@ -60,3 +60,52 @@
   &[data-status='PARTIALLY_PAID'] { background: #fff3cd; color: #664d03; }
   &[data-status='CANCELED'] { background: #e9ecef; color: #6c757d; }
 }
+
+.inline-form {
+  border: 1px solid #dde1ea;
+  border-radius: var(--border-radius);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+
+  h6 {
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+}
+
+.row-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-end;
+  margin-bottom: 6px;
+
+  input {
+    width: auto;
+  }
+
+  .grow {
+    flex: 1 1 240px;
+  }
+
+  label {
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    &.check {
+      flex-direction: row;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+}
+
+.actions {
+  white-space: nowrap;
+
+  button + button {
+    margin-left: 8px;
+  }
+}

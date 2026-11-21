@@ -20,7 +20,9 @@ import {
   FiscalXmlDownloadResultDTO,
   FiscalXmlSummaryDTO,
   FiscalXmlTotalsDTO,
+  ReviewStatus,
 } from '../../../core/models/fiscal-xml.model';
+
 import { downloadBlob } from '../../../shared/utils/download-blob';
 import { CompanyService } from '../../../core/services/company.service';
 import { FiscalXmlService } from '../../../core/services/fiscal-xml.service';
@@ -114,6 +116,15 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     numero: this.fb.nonNullable.control(''),
     participant: this.fb.nonNullable.control(''),
   });
+
+  /** Filtro de conferência (null = todas). */
+  readonly reviewFilter = signal<ReviewStatus | null>(null);
+  readonly reviewing = signal(false);
+  readonly canReview = this.auth.can('INVOICES_AUDIT');
+  /** Notas da página ainda a conferir (canceladas não precisam). */
+  readonly pendingOnPage = computed(() =>
+    this.xmls().filter((xml) => (xml.reviewStatus ?? 'PENDING') === 'PENDING' && xml.status !== 'CANCELED'),
+  );
 
   /** Aba ativa: todas, só entradas ou só saídas. */
   readonly direction = signal<FiscalDirection | null>(null);
@@ -293,6 +304,31 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     this.loadXmls();
   }
 
+  selectReviewFilter(value: string): void {
+    this.reviewFilter.set((value || null) as ReviewStatus | null);
+    if (this.queriedCompany()) {
+      this.pageIndex.set(0);
+      this.loadXmls();
+    }
+  }
+
+  /** Marca como conferidas as notas a conferir desta página. */
+  reviewPage(): void {
+    const ids = this.pendingOnPage().map((xml) => xml.id);
+    if (!ids.length) {
+      return;
+    }
+    this.reviewing.set(true);
+    this.fiscalXmlService.reviewMany(ids, 'REVIEWED').subscribe({
+      next: (count) => {
+        this.reviewing.set(false);
+        this.toastr.success(`${count} ${count === 1 ? 'nota conferida' : 'notas conferidas'}.`);
+        this.loadXmls();
+      },
+      error: () => this.reviewing.set(false),
+    });
+  }
+
   /** Troca a aba (todas / entradas / saídas) e volta para a primeira página. */
   selectDirection(direction: FiscalDirection | null): void {
     if (direction === this.direction()) {
@@ -335,6 +371,7 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
         numero: numero.trim() || undefined,
         participant: participant.trim() || undefined,
         direction: this.direction() ?? undefined,
+        reviewStatus: this.reviewFilter() ?? undefined,
         pagination: { page: this.pageIndex(), size: this.pageSize },
       })
       .pipe(takeUntil(this.destroyed$))

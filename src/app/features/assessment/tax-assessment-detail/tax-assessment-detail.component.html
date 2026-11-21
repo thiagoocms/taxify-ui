@@ -1,0 +1,184 @@
+<app-page
+  [pageTitle]="assessment()?.companyName ?? 'Apuração da empresa'"
+  [pageDescription]="assessment() ? formatDocument(assessment()!.companyDocument) + ' · apuração de ' + monthLabel(month()) : ''"
+  [pageButtons]="pageButtons()"
+>
+  <div class="month-nav mb-3" role="group" aria-label="Mês de apuração">
+    <button type="button" class="chip icon-chip" (click)="shift(-1)" aria-label="Mês anterior">
+      <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
+    </button>
+    <span class="month-label">{{ monthLabel(month()) }}</span>
+    <button type="button" class="chip icon-chip" (click)="shift(1)" aria-label="Próximo mês">
+      <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
+    </button>
+  </div>
+
+  @if (loading() && !assessment()) {
+    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Calculando a apuração...</p>
+  } @else if (assessment()) {
+    @let a = assessment()!;
+    <!-- Cabeçalho: regime, situação e os números do mês -->
+    <section class="hero" [class.is-loading]="loading()">
+      <div class="hero-main">
+        <div class="hero-badges">
+          @if (a.taxRegime) {
+            <span class="type-badge">{{ regimeLabels[a.taxRegime] }}</span>
+          } @else {
+            <span class="level-badge level-WARNING">Regime não cadastrado</span>
+          }
+          @if (a.businessActivity && a.taxRegime !== 'MEI') {
+            <span class="op-badge">{{ activityLabels[a.businessActivity] }}</span>
+          }
+          @if (a.taxRegime === 'SIMPLES_NACIONAL') {
+            <span class="op-badge">Serviços no anexo {{ a.simplesServiceAnnex ?? 'III' }}</span>
+          }
+          @if (closed()) {
+            <span class="state-badge closed"><fa-icon [icon]="['fas', 'lock']"></fa-icon> Mês fechado</span>
+          } @else {
+            <span class="state-badge">Mês aberto</span>
+          }
+        </div>
+
+        <div class="hero-figures">
+          <div>
+            <span class="figure-label">{{ a.taxRegime === 'MEI' ? 'Acumulado no ano' : 'RBT12' }}</span>
+            <span class="figure-value">{{ formatCurrency(a.taxRegime === 'MEI' ? a.yearToDate : a.rbt12) }}</span>
+            @if (a.rbt12Proportional && a.taxRegime === 'SIMPLES_NACIONAL') {
+              <span class="figure-sub">proporcional (menos de 12 meses de notas)</span>
+            }
+          </div>
+          <div>
+            <span class="figure-label">Notas de saída</span>
+            <span class="figure-value">{{ a.invoicesIssued }}</span>
+          </div>
+          <div>
+            <span class="figure-label">Impostos estimados</span>
+            <span class="figure-value">{{ formatCurrency(a.totalTaxes) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-total">
+        <span class="hero-total-label">Receita líquida do mês</span>
+        <span class="hero-total-value">{{ formatCurrency(a.revenue.net) }}</span>
+        @if (closed()) {
+          <span class="hero-total-sub">
+            congelada em {{ a.closing.closedAt | date: 'dd/MM/yyyy HH:mm' }} por {{ a.closing.closedBy }}
+          </span>
+        } @else {
+          <span class="hero-total-sub">acompanha as notas importadas</span>
+        }
+      </div>
+    </section>
+
+    @if (a.alerts.length) {
+      <div class="alerts">
+        @for (alert of a.alerts; track alert.code) {
+          <div class="alert-row" [class]="'alert-row level-' + alert.level">
+            <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+            <span>{{ alert.message }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="cards">
+      <section class="card-block">
+        <h6 class="card-title">Faturamento do mês</h6>
+        <dl class="kv">
+          <dt>Revenda de mercadorias</dt>
+          <dd>{{ formatCurrency(a.revenue.resales) }}</dd>
+          <dt>Venda de produção própria</dt>
+          <dd>{{ formatCurrency(a.revenue.ownProductionSales) }}</dd>
+          <dt>Serviços</dt>
+          <dd>{{ formatCurrency(a.revenue.services) }}</dd>
+          <dt>(−) Devoluções de venda</dt>
+          <dd>{{ formatCurrency(a.revenue.salesReturns) }}</dd>
+          <dt class="total">Receita líquida</dt>
+          <dd class="total">{{ formatCurrency(a.revenue.net) }}</dd>
+          <dt>Acumulado no ano</dt>
+          <dd>{{ formatCurrency(a.yearToDate) }}</dd>
+        </dl>
+      </section>
+
+      <section class="card-block">
+        <h6 class="card-title">Impostos estimados</h6>
+        @if (a.taxes.length) {
+          <table class="taxes">
+            <thead>
+              <tr><th>Imposto</th><th>Base</th><th>Alíquota</th><th>Valor</th></tr>
+            </thead>
+            <tbody>
+              @for (tax of a.taxes; track tax.code) {
+                <tr>
+                  <td>
+                    {{ tax.label }}
+                    @if (tax.note) {
+                      <div class="cell-sub">{{ tax.note }}</div>
+                    }
+                  </td>
+                  <td>{{ formatCurrency(tax.base) }}</td>
+                  <td>{{ formatRate(tax.rate) }}</td>
+                  <td>{{ formatCurrency(tax.amount) }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr><td colspan="3">Total estimado</td><td>{{ formatCurrency(a.totalTaxes) }}</td></tr>
+            </tfoot>
+          </table>
+        } @else {
+          <p class="muted">Cadastre o regime tributário da empresa para estimar os impostos.</p>
+        }
+      </section>
+
+      <section class="card-block wide">
+        <h6 class="card-title">Últimos 13 meses</h6>
+        <div class="history">
+          @for (m of a.history; track m.month) {
+            <div class="bar-col" [class.current]="m.month === a.month" [title]="shortMonthLabel(m.month) + ': ' + formatCurrency(m.net)">
+              <div class="bar" [style.height.%]="barHeight(m)"></div>
+              <span>{{ shortMonthLabel(m.month) }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card-block wide">
+        <h6 class="card-title">Fechamento</h6>
+        <ul class="checklist">
+          @for (item of checklist(); track item.label) {
+            <li [class.ok]="item.ok">
+              <fa-icon [icon]="['fas', item.ok ? 'circle-check' : 'triangle-exclamation']"></fa-icon>
+              {{ item.label }}
+            </li>
+          }
+        </ul>
+
+        <form class="guide-form" [formGroup]="guideForm" (ngSubmit)="saveGuide()">
+          <label class="guide-check">
+            <input type="checkbox" class="form-check-input" formControlName="guideIssued" />
+            Guia emitida
+          </label>
+          <div class="guide-field">
+            <app-input formControlName="guideAmount" label="Valor da guia" type="number"></app-input>
+          </div>
+          <div class="guide-field">
+            <app-input formControlName="guideDueDate" label="Vencimento" type="date"></app-input>
+          </div>
+          <div class="guide-notes">
+            <app-input formControlName="notes" label="Observações do fechamento"></app-input>
+          </div>
+          @if (canClose) {
+            <app-button type="submit" label="Salvar guia" variant="outlined" [disabled]="busy()"></app-button>
+          }
+        </form>
+      </section>
+    </div>
+
+    <p class="disclaimer">
+      Estimativa pelas notas importadas (valor dos itens, canceladas fora). Não considera folha (fator R), segregação de
+      ST/monofásico nem receita sem nota — confira no PGDAS/DCTFWeb antes de emitir a guia.
+    </p>
+  }
+</app-page>

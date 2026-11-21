@@ -41,6 +41,12 @@
         <app-input formControlName="simplesServiceAnnex" label="Anexo dos serviços" type="select" [options]="serviceAnnexOptions"></app-input>
       </div>
     }
+    @if (regimeChanged) {
+      <div class="col-md-4 col-sm-6">
+        <app-input formControlName="taxRegimeValidFrom" label="Novo regime vale a partir de" type="month"></app-input>
+        <p class="section-hint">Vazio = mês atual. Os meses anteriores continuam com o regime antigo.</p>
+      </div>
+    }
     <div class="col-md-6 col-sm-12">
       <app-input formControlName="stateRegistration" label="Inscrição estadual"></app-input>
     </div>
@@ -58,6 +64,58 @@
     </div>
   </div>
 
+  <div class="d-flex align-items-center justify-content-between mt-3">
+    <h6 class="section-title mb-0">Registro e endereço</h6>
+    @if (isEdit && !readonly) {
+      <app-button
+        [label]="filling() ? 'Buscando...' : 'Preencher pelas notas'"
+        variant="text"
+        icon="wand-magic-sparkles"
+        [disabled]="filling()"
+        (onClick)="fillFromNotes()"
+      ></app-button>
+    }
+  </div>
+  <p class="section-hint">"Preencher pelas notas" completa só os campos vazios com os dados da última nota emitida pela empresa.</p>
+  <div class="row">
+    <div class="col-md-3 col-sm-6">
+      <app-input formControlName="openingDate" label="Data de abertura" type="date"></app-input>
+    </div>
+    <div class="col-md-5 col-sm-6">
+      <app-input formControlName="email" label="E-mail"></app-input>
+    </div>
+    <div class="col-md-4 col-sm-6">
+      <app-input formControlName="municipalRegistration" label="Inscrição municipal"></app-input>
+    </div>
+    <div class="col-md-4 col-sm-6">
+      <app-input formControlName="mainCnae" label="CNAE principal"></app-input>
+    </div>
+    <div class="col-md-8 col-sm-12">
+      <app-input formControlName="secondaryCnaes" label="CNAEs secundários (separados por vírgula)"></app-input>
+    </div>
+    <div class="col-md-6 col-sm-12">
+      <app-input formControlName="addressStreet" label="Logradouro"></app-input>
+    </div>
+    <div class="col-md-2 col-sm-4">
+      <app-input formControlName="addressNumber" label="Número"></app-input>
+    </div>
+    <div class="col-md-4 col-sm-8">
+      <app-input formControlName="addressComplement" label="Complemento"></app-input>
+    </div>
+    <div class="col-md-4 col-sm-6">
+      <app-input formControlName="addressDistrict" label="Bairro"></app-input>
+    </div>
+    <div class="col-md-4 col-sm-6">
+      <app-input formControlName="addressCity" label="Município"></app-input>
+    </div>
+    <div class="col-md-2 col-sm-6">
+      <app-input formControlName="addressCityCode" label="Cód. IBGE"></app-input>
+    </div>
+    <div class="col-md-2 col-sm-6">
+      <app-input formControlName="addressZipCode" label="CEP"></app-input>
+    </div>
+  </div>
+
   @if (!readonly) {
     <div class="d-flex justify-content-end gap-2 mt-3">
       <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
@@ -71,6 +129,7 @@
 </form>
 
 @if (isEdit) {
+  <app-company-tax-regimes [companyId]="company!.id!" [readonly]="readonly"></app-company-tax-regimes>
   @if (auth.can('SUBSCRIPTIONS_VIEW')) {
     <app-company-subscriptions [companyId]="company!.id!"></app-company-subscriptions>
   }

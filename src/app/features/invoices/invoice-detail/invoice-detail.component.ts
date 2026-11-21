@@ -12,8 +12,8 @@ import { InputComponent } from '../../../shared/components/input/input';
 import { Modal } from '../../../shared/components/modal/modal';
 import { Page, PageButton } from '../../../shared/components/page/page';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
-import { EVENT_LABELS, FiscalXmlEventDTO, FiscalXmlDetailDTO, FiscalXmlProdutoDTO, FiscalXmlRectificationResultDTO } from '../../../core/models/fiscal-xml.model';
-import { InvoiceAuditLogDTO } from '../../../core/models/invoice-audit-log.model';
+import { EVENT_LABELS, REVIEW_LABELS, ReviewStatus, FiscalXmlEventDTO, FiscalXmlDetailDTO, FiscalXmlProdutoDTO, FiscalXmlRectificationResultDTO } from '../../../core/models/fiscal-xml.model';
+import { AUDIT_STATUS_LABELS, InvoiceAuditLogDTO, InvoiceAuditStatus, MANUAL_AUDIT_STATUSES } from '../../../core/models/invoice-audit-log.model';
 import { ProductFiscalDivergenceDTO } from '../../../core/models/product-fiscal-rule.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { FiscalXmlService } from '../../../core/services/fiscal-xml.service';
@@ -59,7 +59,6 @@ interface AmountLine {
   strong?: boolean;
 }
 
-const AUDIT_STATUS_SUGGESTIONS = ['Conferida', 'Pendente', 'Com divergência', 'Retificada', 'Cancelada'];
 
 /** Line breaks + indentation for a one-line XML, so it's readable in the XML tab. */
 function prettyXml(xml: string): string {
@@ -135,9 +134,9 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
 
   readonly auditLogs = signal<InvoiceAuditLogDTO[]>([]);
   readonly auditLoading = signal(false);
-  readonly editingLog = signal<InvoiceAuditLogDTO | null>(null);
   readonly auditFormDialogOpen = signal(false);
-  readonly statusSuggestions = AUDIT_STATUS_SUGGESTIONS;
+  readonly statusSuggestions = MANUAL_AUDIT_STATUSES;
+  readonly auditStatusLabel = (status: InvoiceAuditStatus): string => AUDIT_STATUS_LABELS[status] ?? status;
 
   readonly auditForm = this.fb.group({
     status: this.fb.nonNullable.control('', Validators.required),
@@ -145,20 +144,18 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   });
 
   private readonly statusCell = viewChild.required<TemplateRef<unknown>>('statusCell');
+  private readonly auditWhoCell = viewChild.required<TemplateRef<unknown>>('auditWhoCell');
 
   readonly auditColumns = computed<TableColumn[]>(() => [
-    { name: 'Status', cellTemplate: this.statusCell(), width: '180px' },
+    { name: 'Situação', cellTemplate: this.statusCell(), width: '200px' },
     { name: 'Observações', property: 'notes', cellTextLength: 120 },
+    { name: 'Quando / quem', cellTemplate: this.auditWhoCell(), width: '220px' },
   ]);
 
   readonly auditTableConfig: TableConfig = {
     headerVisible: true,
-    actions: this.authService.can('INVOICES_AUDIT')
-      ? [
-          { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.editAuditEntry(row) },
-          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.removeAuditEntry(row) },
-        ]
-      : [],
+    // histórico só de inclusão: sem editar nem excluir
+    actions: [],
   };
 
   readonly title = computed(() => {
@@ -377,6 +374,34 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
     } else if (tab === 'eventos') {
       this.loadEvents();
     }
+  }
+
+  // Conferência da nota.
+  readonly reviewSaving = signal(false);
+  readonly divergenceOpen = signal(false);
+  readonly divergenceNote = signal('');
+  readonly reviewLabel = (status: ReviewStatus): string => REVIEW_LABELS[status];
+
+  openDivergence(): void {
+    this.divergenceNote.set(this.xml()?.reviewNote ?? '');
+    this.divergenceOpen.set(true);
+  }
+
+  review(status: ReviewStatus): void {
+    const documentId = this.documentId();
+    if (!documentId) {
+      return;
+    }
+    this.reviewSaving.set(true);
+    const note = status === 'DIVERGENT' ? this.divergenceNote().trim() : null;
+    this.fiscalXmlService.review(documentId, status, note).subscribe({
+      next: (detail) => {
+        this.xml.set(detail);
+        this.reviewSaving.set(false);
+        this.divergenceOpen.set(false);
+      },
+      error: () => this.reviewSaving.set(false),
+    });
   }
 
   // Eventos SEFAZ (cancelamento, carta de correção...) - carregados ao abrir a aba.
@@ -600,13 +625,7 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
     this.auditFormDialogOpen.set(true);
   }
 
-  editAuditEntry(log: InvoiceAuditLogDTO): void {
-    this.editingLog.set(log);
-    this.auditForm.setValue({ status: log.status, notes: log.notes });
-    this.auditFormDialogOpen.set(true);
-  }
-
-  pickStatus(status: string): void {
+  pickStatus(status: InvoiceAuditStatus): void {
     this.auditForm.controls.status.setValue(status);
   }
 
@@ -616,7 +635,6 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   }
 
   private resetAuditForm(): void {
-    this.editingLog.set(null);
     this.auditForm.reset({ status: '', notes: '' });
   }
 
@@ -627,27 +645,14 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
     }
 
     const { status, notes } = this.auditForm.getRawValue();
-    const log = this.editingLog();
-
-    if (log) {
-      this.invoiceAuditLogService
-        .update(log.id!, { ...log, status, notes })
-        .pipe(takeUntil(this.destroyed$))
-        .subscribe(() => {
-          this.closeAuditForm();
-          this.loadAuditLogs();
-        });
-      return;
-    }
 
     const companyId = this.companyId();
-    const userId = this.authService.userId();
-    if (!companyId || !userId) {
+    if (!companyId) {
       return;
     }
 
     this.invoiceAuditLogService
-      .create({ externalInvoiceKey: this.accessKey(), userId, companyId, status, notes })
+      .create({ externalInvoiceKey: this.accessKey(), companyId, status: status as InvoiceAuditStatus, notes })
       .pipe(takeUntil(this.destroyed$))
       .subscribe(() => {
         this.closeAuditForm();
@@ -655,28 +660,20 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  removeAuditEntry(log: InvoiceAuditLogDTO): void {
-    if (!confirm('Remover este registro de auditoria?')) {
-      return;
+  statusClass(status?: InvoiceAuditStatus): string {
+    switch (status) {
+      case 'OK':
+      case 'RECTIFIED':
+        return 'status-ok';
+      case 'DIVERGENT':
+      case 'CANCELED':
+      case 'REJECTED':
+        return 'status-bad';
+      case 'PENDING_DOCUMENTATION':
+      case 'NEEDS_RECTIFICATION':
+        return 'status-warn';
+      default:
+        return '';
     }
-
-    this.invoiceAuditLogService
-      .delete(log.id!)
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe(() => this.loadAuditLogs());
-  }
-
-  statusClass(status?: string): string {
-    const normalized = (status ?? '').toLowerCase();
-    if (normalized.includes('conferid') || normalized.includes('ok') || normalized.includes('retificad')) {
-      return 'status-ok';
-    }
-    if (normalized.includes('diverg') || normalized.includes('cancel') || normalized.includes('erro')) {
-      return 'status-bad';
-    }
-    if (normalized.includes('pend')) {
-      return 'status-warn';
-    }
-    return '';
   }
 }

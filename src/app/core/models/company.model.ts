@@ -15,7 +15,26 @@ export interface CompanyDTO {
   businessActivity?: BusinessActivity | null;
   /** Anexo do Simples para serviços (III, IV ou V); vazio = III. */
   simplesServiceAnnex?: SimplesAnnex | null;
+  /** "IE/UF; IE/UF" */
   stateRegistration?: string | null;
+  /** Data de abertura (AAAA-MM-DD) — início de atividade para o RBT12 proporcional. */
+  openingDate?: string | null;
+  email?: string | null;
+  municipalRegistration?: string | null;
+  /** Só dígitos. */
+  mainCnae?: string | null;
+  /** Só dígitos, separados por vírgula. */
+  secondaryCnaes?: string | null;
+  addressStreet?: string | null;
+  addressNumber?: string | null;
+  addressComplement?: string | null;
+  addressDistrict?: string | null;
+  /** Código IBGE do município. */
+  addressCityCode?: string | null;
+  addressCity?: string | null;
+  addressZipCode?: string | null;
+  /** Só no envio: mês ("2026-01") em que a mudança de regime passa a valer; vazio = mês atual. */
+  taxRegimeValidFrom?: string | null;
   companyGroup?: string | null;
   active?: boolean | null;
   clientSince?: string | null;
@@ -31,4 +50,15 @@ export interface CompanyFilterDTO {
   documentType?: string;
   name?: string;
   deleted?: boolean;
+}
+
+/** Um período do histórico de regime; validFrom/validUntil em "AAAA-MM", null = sempre / atual. */
+export interface CompanyTaxRegimeDTO {
+  id?: string;
+  taxRegime: TaxRegime;
+  businessActivity?: BusinessActivity | null;
+  simplesServiceAnnex?: SimplesAnnex | null;
+  validFrom?: string | null;
+  validUntil?: string | null;
+  label?: string | null;
 }

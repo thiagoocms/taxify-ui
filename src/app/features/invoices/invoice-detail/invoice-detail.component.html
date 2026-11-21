@@ -18,6 +18,37 @@
       </div>
     }
 
+    @let reviewState = nota.reviewStatus ?? 'PENDING';
+    <div class="review-bar" [class]="'review-' + reviewState">
+      <div>
+        <strong>{{ reviewLabel(reviewState) }}</strong>
+        @if (nota.reviewedBy) {
+          <span class="muted"> · {{ nota.reviewedBy }}{{ nota.reviewedAt ? ' em ' + formatDate(nota.reviewedAt, true) : '' }}</span>
+        }
+        @if (nota.reviewNote) {
+          <div class="review-note">{{ nota.reviewNote }}</div>
+        }
+      </div>
+      @if (authService.can('INVOICES_AUDIT') && nota.status !== 'CANCELED') {
+        <div class="review-actions">
+          @if (divergenceOpen()) {
+            <input type="text" class="form-control form-control-sm" placeholder="O que está divergente?" maxlength="500"
+                   [value]="divergenceNote()" (input)="divergenceNote.set($any($event.target).value)" />
+            <button type="button" class="btn btn-sm btn-warning" [disabled]="!divergenceNote().trim() || reviewSaving()" (click)="review('DIVERGENT')">Salvar</button>
+            <button type="button" class="btn btn-sm btn-link" (click)="divergenceOpen.set(false)">Cancelar</button>
+          } @else {
+            @if (reviewState !== 'REVIEWED') {
+              <button type="button" class="btn btn-sm btn-success" [disabled]="reviewSaving()" (click)="review('REVIEWED')">Marcar como conferida</button>
+            }
+            <button type="button" class="btn btn-sm btn-outline-warning" [disabled]="reviewSaving()" (click)="openDivergence()">Divergência</button>
+            @if (reviewState !== 'PENDING') {
+              <button type="button" class="btn btn-sm btn-link" [disabled]="reviewSaving()" (click)="review('PENDING')">Voltar para a conferir</button>
+            }
+          }
+        </div>
+      }
+    </div>
+
     <!-- Cabeçalho: valor, partes e chave -->
     <section class="hero">
       <div class="hero-main">
@@ -362,7 +393,7 @@
 
         @case ('auditoria') {
           <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
-            <p class="muted mb-0">Registre conferências e observações sobre esta nota.</p>
+            <p class="muted mb-0">Histórico da nota: conferência, retificação e cancelamento entram sozinhos. Registros não são editados nem excluídos.</p>
             @if (authService.can('INVOICES_AUDIT')) {
               <app-button label="Adicionar registro" icon="plus" (onClick)="openCreateAuditForm()"></app-button>
             }
@@ -440,12 +471,17 @@
 </app-page>
 
 <ng-template #statusCell let-row="row">
-  <span class="status-pill" [ngClass]="statusClass(row.status)">{{ row.status }}</span>
+  <span class="status-pill" [ngClass]="statusClass(row.status)">{{ auditStatusLabel(row.status) }}</span>
+</ng-template>
+
+<ng-template #auditWhoCell let-row="row">
+  <span>{{ row.createdDate ? formatDate(row.createdDate, true) : '—' }}</span>
+  <span class="muted"> · {{ row.userLogin ?? 'rotina automática' }}</span>
 </ng-template>
 
 <app-modal
   [open]="auditFormDialogOpen()"
-  [title]="editingLog() ? 'Editar registro de auditoria' : 'Novo registro de auditoria'"
+  title="Novo registro de auditoria"
   (closed)="closeAuditForm()"
 >
   @if (auditFormDialogOpen()) {
@@ -457,15 +493,14 @@
             class="chip"
             [class.active]="auditForm.controls.status.value === s"
             (click)="pickStatus(s)"
-          >{{ s }}</button>
+          >{{ auditStatusLabel(s) }}</button>
         }
       </div>
-      <app-input formControlName="status" label="Status"></app-input>
       <app-input formControlName="notes" label="Observações" type="textarea"></app-input>
 
       <div class="d-flex justify-content-end gap-2 mt-3">
         <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="closeAuditForm()"></app-button>
-        <app-button type="submit" [label]="editingLog() ? 'Atualizar' : 'Adicionar'"></app-button>
+        <app-button type="submit" label="Adicionar" [disabled]="!auditForm.controls.status.value"></app-button>
       </div>
     </form>
   }

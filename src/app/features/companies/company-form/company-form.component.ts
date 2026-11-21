@@ -16,11 +16,12 @@ import { CompanyService } from '../../../core/services/company.service';
 import { CompanyProductFiscalRulesComponent } from '../company-product-fiscal-rules/company-product-fiscal-rules.component';
 import { CompanyBillingComponent } from '../company-billing/company-billing.component';
 import { CompanySubscriptionsComponent } from '../company-subscriptions/company-subscriptions.component';
+import { CompanyTaxRegimesComponent } from '../company-tax-regimes/company-tax-regimes.component';
 
 @Component({
   selector: 'app-company-form',
   standalone: true,
-  imports: [ReactiveFormsModule, InputComponent, Button, CompanySubscriptionsComponent, CompanyBillingComponent, CompanyProductFiscalRulesComponent],
+  imports: [ReactiveFormsModule, InputComponent, Button, CompanySubscriptionsComponent, CompanyTaxRegimesComponent, CompanyBillingComponent, CompanyProductFiscalRulesComponent],
   templateUrl: './company-form.component.html',
   styles: `
     .form-container { max-width: 900px; }
@@ -79,6 +80,19 @@ export class CompanyFormComponent implements OnChanges {
     taxRegimeType: [''],
     businessActivity: [''],
     simplesServiceAnnex: [''],
+    taxRegimeValidFrom: [''],
+    openingDate: [''],
+    email: [''],
+    municipalRegistration: [''],
+    mainCnae: [''],
+    secondaryCnaes: [''],
+    addressStreet: [''],
+    addressNumber: [''],
+    addressComplement: [''],
+    addressDistrict: [''],
+    addressCityCode: [''],
+    addressCity: [''],
+    addressZipCode: [''],
     stateRegistration: [''],
     companyGroup: [''],
     active: [''],
@@ -98,6 +112,19 @@ export class CompanyFormComponent implements OnChanges {
         taxRegimeType: this.company?.taxRegimeType ?? '',
         businessActivity: this.company?.businessActivity ?? '',
         simplesServiceAnnex: this.company?.simplesServiceAnnex ?? '',
+        taxRegimeValidFrom: '',
+        openingDate: this.company?.openingDate ?? '',
+        email: this.company?.email ?? '',
+        municipalRegistration: this.company?.municipalRegistration ?? '',
+        mainCnae: this.company?.mainCnae ?? '',
+        secondaryCnaes: this.company?.secondaryCnaes ?? '',
+        addressStreet: this.company?.addressStreet ?? '',
+        addressNumber: this.company?.addressNumber ?? '',
+        addressComplement: this.company?.addressComplement ?? '',
+        addressDistrict: this.company?.addressDistrict ?? '',
+        addressCityCode: this.company?.addressCityCode ?? '',
+        addressCity: this.company?.addressCity ?? '',
+        addressZipCode: this.company?.addressZipCode ?? '',
         stateRegistration: this.company?.stateRegistration ?? '',
         companyGroup: this.company?.companyGroup ?? '',
         active: this.company?.active == null ? '' : String(this.company.active),
@@ -112,6 +139,37 @@ export class CompanyFormComponent implements OnChanges {
         this.form.enable();
       }
     }
+  }
+
+  readonly filling = signal(false);
+
+  /** O regime escolhido difere do atual — pede o mês em que a mudança vale. */
+  get regimeChanged(): boolean {
+    if (!this.isEdit || !this.company?.taxRegimeType) {
+      return false;
+    }
+    const raw = this.form.getRawValue();
+    return (
+      (raw.taxRegimeType || null) !== (this.company.taxRegimeType ?? null) ||
+      (raw.businessActivity || null) !== (this.company.businessActivity ?? null) ||
+      (raw.taxRegimeType === 'SIMPLES_NACIONAL' && (raw.simplesServiceAnnex || null) !== (this.company.simplesServiceAnnex ?? null))
+    );
+  }
+
+  /** Completa os campos vazios pela última nota emitida pela empresa (o que já está preenchido fica). */
+  fillFromNotes(): void {
+    if (!this.company?.id) {
+      return;
+    }
+    this.filling.set(true);
+    this.companyService.fillFromNotes(this.company.id).subscribe({
+      next: (company) => {
+        this.filling.set(false);
+        this.company = company;
+        this.ngOnChanges({ company: {} as never });
+      },
+      error: () => this.filling.set(false),
+    });
   }
 
   get isEdit(): boolean {
@@ -138,6 +196,19 @@ export class CompanyFormComponent implements OnChanges {
       taxRegimeType: (raw.taxRegimeType || null) as TaxRegime | null,
       businessActivity: (raw.businessActivity || null) as BusinessActivity | null,
       simplesServiceAnnex: raw.taxRegimeType === 'SIMPLES_NACIONAL' ? ((raw.simplesServiceAnnex || null) as SimplesAnnex | null) : null,
+      taxRegimeValidFrom: raw.taxRegimeValidFrom || null,
+      openingDate: raw.openingDate || null,
+      email: raw.email || null,
+      municipalRegistration: raw.municipalRegistration || null,
+      mainCnae: raw.mainCnae || null,
+      secondaryCnaes: raw.secondaryCnaes || null,
+      addressStreet: raw.addressStreet || null,
+      addressNumber: raw.addressNumber || null,
+      addressComplement: raw.addressComplement || null,
+      addressDistrict: raw.addressDistrict || null,
+      addressCityCode: raw.addressCityCode || null,
+      addressCity: raw.addressCity || null,
+      addressZipCode: raw.addressZipCode || null,
       stateRegistration: raw.stateRegistration || null,
       companyGroup: raw.companyGroup || null,
       active: raw.active === '' ? null : raw.active === 'true',

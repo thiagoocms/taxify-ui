@@ -24,12 +24,4 @@ export class InvoiceAuditLogService {
   create(log: InvoiceAuditLogDTO): Observable<InvoiceAuditLogDTO> {
     return this.http.post<InvoiceAuditLogDTO>(this.baseUrl, log);
   }
-
-  update(id: string, log: InvoiceAuditLogDTO): Observable<InvoiceAuditLogDTO> {
-    return this.http.put<InvoiceAuditLogDTO>(`${this.baseUrl}/${id}`, log);
-  }
-
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
-  }
 }

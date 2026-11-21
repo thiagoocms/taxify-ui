@@ -12,6 +12,7 @@ import {
   FiscalXmlSummaryDTO,
   FiscalXmlTotalsDTO,
   FiscalXmlEventDTO,
+  ReviewStatus,
 } from '../models/fiscal-xml.model';
 import { Page } from '../models/page.model';
 
@@ -42,6 +43,16 @@ export class FiscalXmlService {
 
   getDetail(documentId: string): Observable<FiscalXmlDetailDTO> {
     return this.http.get<FiscalXmlDetailDTO>(`${this.baseUrl}/${documentId}`);
+  }
+
+  /** Conferência de uma nota; DIVERGENT exige a descrição. */
+  review(documentId: string, status: ReviewStatus, note?: string | null): Observable<FiscalXmlDetailDTO> {
+    return this.http.put<FiscalXmlDetailDTO>(`${this.baseUrl}/${documentId}/conferencia`, { status, note });
+  }
+
+  /** Mesma situação para várias notas; retorna quantas foram atualizadas. */
+  reviewMany(documentIds: string[], status: ReviewStatus): Observable<number> {
+    return this.http.post<number>(`${this.baseUrl}/conferencia`, { documentIds, status });
   }
 
   /** Eventos SEFAZ da nota (cancelamento, carta de correção...). */

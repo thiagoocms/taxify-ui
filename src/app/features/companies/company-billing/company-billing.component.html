@@ -18,8 +18,13 @@
             <span class="value">{{ providerLabels[b.provider] }}</span>
             @if (b.provider !== 'MANUAL') {
               <small class="text-muted">
-                {{ b.externalCustomerName ? 'Cliente: ' + b.externalCustomerName : 'Ainda não vinculada (mesmo CNPJ/CPF não encontrado)' }}
+                {{ b.externalCustomerName ? 'Cliente: ' + b.externalCustomerName : (b.externalCustomerId ? 'Cliente: ' + b.externalCustomerId : 'Ainda não vinculada (mesmo CNPJ/CPF não encontrado)') }}
               </small>
+              @if (canManage) {
+                <button type="button" class="btn btn-link btn-sm p-0 text-start" (click)="openLinkForm()">
+                  {{ b.externalCustomerId ? 'Corrigir vínculo' : 'Vincular cliente' }}
+                </button>
+              }
             }
           </div>
           <div class="summary-item">
@@ -35,6 +40,52 @@
           </div>
         </div>
 
+        @if (linkFormOpen()) {
+          <div class="inline-form">
+            <h6>Vínculo com o cliente no {{ providerLabels[b.provider] }}</h6>
+            <div class="row-fields">
+              <input type="text" class="form-control form-control-sm" placeholder="CNPJ/CPF do cliente lá" [(ngModel)]="linkForm.document" />
+              <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="saving()" (click)="lookupLink()">Procurar e vincular</button>
+            </div>
+            <p class="text-muted small mb-1">Ou informe o cliente direto:</p>
+            <div class="row-fields">
+              <input type="text" class="form-control form-control-sm" placeholder="ID do cliente" [(ngModel)]="linkForm.externalId" />
+              <input type="text" class="form-control form-control-sm" placeholder="Nome (opcional)" [(ngModel)]="linkForm.externalName" />
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="saving() || !linkForm.externalId.trim()" (click)="saveLink()">Salvar</button>
+            </div>
+            <div class="d-flex gap-2 mt-1">
+              @if (b.externalCustomerId) {
+                <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="removeLink()">Desfazer vínculo</button>
+              }
+              <button type="button" class="btn btn-sm btn-link p-0" (click)="linkFormOpen.set(false)">Fechar</button>
+            </div>
+          </div>
+        }
+
+        @if (canManage) {
+          <div class="d-flex justify-content-end mb-2">
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="newCharge()">Nova cobrança manual</button>
+          </div>
+        }
+
+        @if (chargeFormOpen()) {
+          <div class="inline-form">
+            <h6>{{ chargeForm.id ? 'Editar cobrança manual' : 'Nova cobrança manual' }}</h6>
+            <div class="row-fields">
+              <input type="text" class="form-control form-control-sm grow" placeholder="Descrição (ex.: Honorário outubro)" maxlength="500" [(ngModel)]="chargeForm.description" />
+              <label>Competência <input type="month" class="form-control form-control-sm" [(ngModel)]="chargeForm.competenceDate" /></label>
+              <label>Vencimento <input type="date" class="form-control form-control-sm" [(ngModel)]="chargeForm.dueDate" /></label>
+              <label>Valor <input type="number" min="0.01" step="0.01" class="form-control form-control-sm" [(ngModel)]="chargeForm.amount" /></label>
+              <label>Pago <input type="number" min="0" step="0.01" class="form-control form-control-sm" [(ngModel)]="chargeForm.paidAmount" /></label>
+              <label class="check"><input type="checkbox" [(ngModel)]="chargeForm.canceled" /> Cancelada</label>
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-sm btn-link" (click)="chargeFormOpen.set(false)">Cancelar</button>
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="saving() || !chargeForm.dueDate || !chargeForm.amount" (click)="saveCharge()">Salvar</button>
+            </div>
+          </div>
+        }
+
         @if (b.charges.length) {
           <div class="table-responsive">
             <table class="table table-sm charges">
@@ -47,6 +98,7 @@
                   <th class="text-end">Pago</th>
                   <th class="text-end">Em aberto</th>
                   <th>Status</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -59,6 +111,17 @@
                     <td class="text-end">{{ (charge.paidAmount ?? 0) | currency: 'BRL' }}</td>
                     <td class="text-end">{{ (charge.openAmount ?? 0) | currency: 'BRL' }}</td>
                     <td><span class="status" [attr.data-status]="charge.status">{{ statusLabels[charge.status] }}</span></td>
+                    <td class="text-end actions">
+                      @if (canManage && charge.source === 'MANUAL') {
+                        @if (charge.status !== 'PAID' && charge.status !== 'CANCELED') {
+                          <button type="button" class="btn btn-link btn-sm p-0" [disabled]="saving()" (click)="markPaid(charge)">Pago</button>
+                        }
+                        <button type="button" class="btn btn-link btn-sm p-0" (click)="editCharge(charge)">Editar</button>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-danger" (click)="removeCharge(charge)">Excluir</button>
+                      } @else if (charge.source !== 'MANUAL') {
+                        <small class="text-muted" title="Altere no sistema de cobrança">{{ providerLabels[charge.source] }}</small>
+                      }
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -67,7 +130,7 @@
         } @else {
           <p class="text-muted small mb-0">
             @if (b.provider === 'MANUAL') {
-              Sem cobranças registradas. O escritório usa cobrança manual — o honorário fica na assinatura.
+              Sem cobranças registradas. Com cobrança manual, lance os honorários em "Nova cobrança manual"
             } @else {
               Nenhuma cobrança sincronizada ainda. Use "Sincronizar agora" em Dados do escritório.
             }

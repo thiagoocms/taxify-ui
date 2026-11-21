@@ -740,3 +740,40 @@ $line: #eef0f4;
   font-size: 12px;
   color: #842029;
 }
+
+.review-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid #dde1ea;
+
+  &.review-REVIEWED {
+    background: #eaf6ef;
+    border-color: #badbcc;
+  }
+
+  &.review-DIVERGENT {
+    background: #fff8e1;
+    border-color: #ffe08a;
+  }
+}
+
+.review-note {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.review-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+
+  input {
+    width: 280px;
+  }
+}

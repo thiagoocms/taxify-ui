@@ -118,6 +118,17 @@
       <button type="button" role="tab" [class.active]="direction() === null" (click)="selectDirection(null)">Todas</button>
       <button type="button" role="tab" [class.active]="direction() === 'INBOUND'" (click)="selectDirection('INBOUND')">Entradas</button>
       <button type="button" role="tab" [class.active]="direction() === 'OUTBOUND'" (click)="selectDirection('OUTBOUND')">Saídas</button>
+      <select class="form-select form-select-sm review-filter" [value]="reviewFilter() ?? ''" (change)="selectReviewFilter($any($event.target).value)">
+        <option value="">Toda conferência</option>
+        <option value="PENDING">A conferir</option>
+        <option value="REVIEWED">Conferidas</option>
+        <option value="DIVERGENT">Com divergência</option>
+      </select>
+      @if (canReview && pendingOnPage().length) {
+        <button type="button" class="btn btn-sm btn-outline-success" [disabled]="reviewing()" (click)="reviewPage()">
+          Marcar {{ pendingOnPage().length }} da página como conferidas
+        </button>
+      }
       <span class="tabs-count">{{ totalElements() }} {{ totalElements() === 1 ? 'nota' : 'notas' }}</span>
     </div>
 
@@ -159,6 +170,11 @@
         <span class="op-badge" [class.op-in]="row.direction === 'INBOUND'" [class.op-out]="row.direction === 'OUTBOUND'">
           {{ directionLabel(row.direction) }}
         </span>
+      }
+      @if (row.reviewStatus === 'REVIEWED') {
+        <span class="review-badge reviewed" title="Conferida">Conferida</span>
+      } @else if (row.reviewStatus === 'DIVERGENT') {
+        <span class="review-badge divergent" title="Conferida com divergência">Divergência</span>
       }
       @if (row.status === 'CANCELED') {
         <span class="canceled-badge" title="Cancelada na SEFAZ - fora dos totais">Cancelada</span>

@@ -54,6 +54,27 @@ export interface AssessmentAlertDTO {
   message: string;
 }
 
+/** Fechamento do mês; status OPEN quando nunca foi fechado. */
+export interface PeriodClosingDTO {
+  status: 'OPEN' | 'CLOSED';
+  closedAt?: string | null;
+  closedBy?: string | null;
+  guideIssued: boolean;
+  guideAmount?: number | null;
+  /** AAAA-MM-DD */
+  guideDueDate?: string | null;
+  notes?: string | null;
+  /** Entradas do mês ainda a conferir. */
+  pendingReviews: number;
+}
+
+export interface GuideUpdateDTO {
+  guideIssued: boolean;
+  guideAmount?: number | null;
+  guideDueDate?: string | null;
+  notes?: string | null;
+}
+
 export interface TaxAssessmentDTO {
   companyId: string;
   companyName: string;
@@ -73,4 +94,6 @@ export interface TaxAssessmentDTO {
   alerts: AssessmentAlertDTO[];
   /** 12 meses anteriores + o período; vazio na lista do escritório. */
   history: MonthRevenueDTO[];
+  /** Quando CLOSED, todos os valores acima são os congelados no fechamento. */
+  closing: PeriodClosingDTO;
 }

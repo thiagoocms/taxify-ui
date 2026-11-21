@@ -8,11 +8,13 @@ export type Permission =
   | 'FISCAL_RULES_VIEW'
   | 'FISCAL_RULES_MANAGE'
   | 'TAX_ASSESSMENT_VIEW'
+  | 'TAX_ASSESSMENT_CLOSE'
   | 'PLANS_VIEW'
   | 'SUBSCRIPTIONS_VIEW'
   | 'SUBSCRIPTIONS_MANAGE'
   | 'BILLING_VIEW'
-  | 'BILLING_SYNC';
+  | 'BILLING_SYNC'
+  | 'BILLING_MANAGE';
 
 /** Perfis fixos de acesso (ver AccessProfile.java); um colaborador pode ter vários. */
 export type AccessProfile = 'FISCAL' | 'ACCOUNTING' | 'FINANCIAL' | 'PAYROLL' | 'MANAGEMENT';

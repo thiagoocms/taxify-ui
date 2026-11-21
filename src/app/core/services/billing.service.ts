@@ -7,7 +7,9 @@ import {
   BillingProviderType,
   BillingSettingsDTO,
   BillingSyncResultDTO,
+  BillingChargeDTO,
   CompanyBillingDTO,
+  ExternalLinkDTO,
 } from '../models/billing.model';
 import { SyncJobStatusDTO } from '../models/sync-job.model';
 
@@ -42,5 +44,32 @@ export class BillingService {
 
   companyBilling(companyId: string): Observable<CompanyBillingDTO> {
     return this.http.get<CompanyBillingDTO>(`${this.baseUrl}/companies/${companyId}`);
+  }
+
+  /** Cobrança manual (as sincronizadas só são alteradas no sistema de cobrança). */
+  createCharge(charge: Partial<BillingChargeDTO>): Observable<BillingChargeDTO> {
+    return this.http.post<BillingChargeDTO>(`${this.baseUrl}/charges`, charge);
+  }
+
+  updateCharge(id: string, charge: Partial<BillingChargeDTO>): Observable<BillingChargeDTO> {
+    return this.http.put<BillingChargeDTO>(`${this.baseUrl}/charges/${id}`, { ...charge, id });
+  }
+
+  deleteCharge(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/charges/${id}`);
+  }
+
+  /** Vincula a empresa a um cliente do sistema de cobrança pelo ID dele. */
+  saveLink(companyId: string, link: ExternalLinkDTO): Observable<ExternalLinkDTO> {
+    return this.http.put<ExternalLinkDTO>(`${this.baseUrl}/companies/${companyId}/link`, link);
+  }
+
+  /** Procura o cliente no sistema de cobrança por outro CNPJ/CPF e vincula. */
+  lookupLink(companyId: string, document: string): Observable<ExternalLinkDTO> {
+    return this.http.post<ExternalLinkDTO>(`${this.baseUrl}/companies/${companyId}/link/lookup`, { document });
+  }
+
+  deleteLink(companyId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/companies/${companyId}/link`);
   }
 }
