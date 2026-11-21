@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth.service';
 import { Component, computed, inject, OnDestroy, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -87,6 +88,8 @@ function periodRange(key: PeriodKey): { inicio: string; fim: string } | null {
   styleUrl: './invoice-xml-list.component.scss',
 })
 export class InvoiceXmlListComponent implements OnInit, OnDestroy {
+  protected readonly auth = inject(AuthService);
+
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
@@ -162,6 +165,7 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     {
       label: 'Importar XML',
       icon: 'upload',
+      isShow: this.auth.can('INVOICES_SYNC'),
       handler: () => this.openImportModal(),
     },
   ]);

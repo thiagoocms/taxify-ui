@@ -4,8 +4,8 @@
     <span>Início</span>
   </a>
 
-  <!-- Menu "Cadastro" com submenu: Empresas, Planos e Usuários (área administrativa). -->
-  <ng-container *ngIf="isAdmin">
+  <!-- Menu "Cadastro": cada item aparece conforme as permissões do usuário (Usuários: só administrador). -->
+  <ng-container *ngIf="showRegistry">
     <button type="button" class="nav-link nav-group-toggle" (click)="toggleCadastro()">
       <fa-icon [icon]="folderIcon"></fa-icon>
       <span>Cadastro</span>
@@ -14,6 +14,7 @@
 
     <div class="nav-group" [class.open]="cadastroOpen()">
       <a
+        *ngIf="canCompanies"
         class="nav-link nav-sublink"
         routerLink="/cadastro/empresas"
         routerLinkActive="active"
@@ -23,6 +24,7 @@
         <span>Empresas</span>
       </a>
       <a
+        *ngIf="canPlans"
         class="nav-link nav-sublink"
         routerLink="/cadastro/planos"
         routerLinkActive="active"
@@ -32,6 +34,7 @@
         <span>Planos</span>
       </a>
       <a
+        *ngIf="isAdmin"
         class="nav-link nav-sublink"
         routerLink="/cadastro/usuarios"
         routerLinkActive="active"
@@ -43,7 +46,7 @@
     </div>
   </ng-container>
 
-  <a class="nav-link" routerLink="/notas-fiscais" routerLinkActive="active" (click)="linkClicked.emit()">
+  <a *ngIf="canInvoices" class="nav-link" routerLink="/notas-fiscais" routerLinkActive="active" (click)="linkClicked.emit()">
     <fa-icon [icon]="invoiceIcon"></fa-icon>
     <span>Notas fiscais</span>
   </a>

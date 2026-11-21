@@ -33,6 +33,11 @@ export class SidebarComponent {
   readonly usersIcon = faUsers;
   readonly chevronIcon = faChevronDown;
   readonly isAdmin = this.authService.isAdmin;
+  readonly canCompanies = this.authService.can('COMPANIES_VIEW');
+  readonly canPlans = this.authService.can('PLANS_VIEW');
+  readonly canInvoices = this.authService.can('INVOICES_VIEW');
+  /** "Cadastro" aparece se o usuário puder abrir pelo menos um dos itens. */
+  readonly showRegistry = this.canCompanies || this.canPlans || this.isAdmin;
 
   readonly cadastroOpen = signal(true);
 

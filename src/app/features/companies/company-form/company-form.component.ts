@@ -1,4 +1,5 @@
 import { Component, EventEmitter, inject, Input, OnChanges, Output, SimpleChanges, signal } from '@angular/core';
+import { AuthService } from '../../../core/services/auth.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent, SelectOption } from '../../../shared/components/input/input';
@@ -20,10 +21,14 @@ import { CompanySubscriptionsComponent } from '../company-subscriptions/company-
   `,
 })
 export class CompanyFormComponent implements OnChanges {
+  protected readonly auth = inject(AuthService);
+
   private readonly fb = inject(FormBuilder);
   private readonly companyService = inject(CompanyService);
 
   @Input() company: CompanyDTO | null = null;
+  /** Quem não é administrador vê o cadastro sem editar (e só as seções do perfil dele). */
+  @Input() readonly = false;
   @Output() saved = new EventEmitter<CompanyDTO>();
   @Output() cancelled = new EventEmitter<void>();
 
@@ -72,6 +77,13 @@ export class CompanyFormComponent implements OnChanges {
         clientSince: this.company?.clientSince ?? '',
         clientUntil: this.company?.clientUntil ?? '',
       });
+    }
+    if (changes['readonly'] || changes['company']) {
+      if (this.readonly) {
+        this.form.disable();
+      } else {
+        this.form.enable();
+      }
     }
   }
 

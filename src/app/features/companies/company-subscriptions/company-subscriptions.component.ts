@@ -1,4 +1,5 @@
 import { formatCurrency } from '../../../shared/utils/format';
+import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnChanges, signal, SimpleChanges } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -31,6 +32,8 @@ interface SubscriptionRow extends SubscriptionDTO {
   styleUrl: './company-subscriptions.component.scss',
 })
 export class CompanySubscriptionsComponent implements OnChanges {
+  protected readonly auth = inject(AuthService);
+
   private readonly subscriptionService = inject(SubscriptionService);
   private readonly planService = inject(PlanService);
 
@@ -50,10 +53,12 @@ export class CompanySubscriptionsComponent implements OnChanges {
 
   readonly tableConfig: TableConfig = {
     headerVisible: true,
-    actions: [
-      { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditDialog(row) },
-      { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
-    ],
+    actions: this.auth.can('SUBSCRIPTIONS_MANAGE')
+      ? [
+          { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditDialog(row) },
+          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+        ]
+      : [],
   };
 
   readonly subscriptions = signal<SubscriptionRow[]>([]);

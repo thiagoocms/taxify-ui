@@ -50,18 +50,26 @@
     </div>
   </div>
 
-  <div class="d-flex justify-content-end gap-2 mt-3">
-    <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
-    <app-button
-      type="submit"
-      [label]="loading() ? 'Salvando...' : 'Salvar'"
-      [disabled]="loading()"
-    ></app-button>
-  </div>
+  @if (!readonly) {
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
+      <app-button
+        type="submit"
+        [label]="loading() ? 'Salvando...' : 'Salvar'"
+        [disabled]="loading()"
+      ></app-button>
+    </div>
+  }
 </form>
 
 @if (isEdit) {
-  <app-company-subscriptions [companyId]="company!.id!"></app-company-subscriptions>
-  <app-company-billing [companyId]="company!.id!"></app-company-billing>
-  <app-company-product-fiscal-rules [companyId]="company!.id!"></app-company-product-fiscal-rules>
+  @if (auth.can('SUBSCRIPTIONS_VIEW')) {
+    <app-company-subscriptions [companyId]="company!.id!"></app-company-subscriptions>
+  }
+  @if (auth.can('BILLING_VIEW')) {
+    <app-company-billing [companyId]="company!.id!"></app-company-billing>
+  }
+  @if (auth.can('FISCAL_RULES_VIEW')) {
+    <app-company-product-fiscal-rules [companyId]="company!.id!"></app-company-product-fiscal-rules>
+  }
 }

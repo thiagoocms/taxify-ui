@@ -38,6 +38,40 @@
     </div>
   </div>
 
+  <div class="row mt-3">
+    <div class="col-md-6 col-sm-12">
+      <app-input formControlName="profile" label="Tipo de usuário" type="select" [options]="userTypeOptions"></app-input>
+    </div>
+  </div>
+
+  @if (!isAdminType) {
+    <div class="mt-3">
+      <div class="fw-semibold small mb-1">Perfis de acesso</div>
+      <small class="text-muted d-block mb-2">
+        Definem quais módulos a pessoa vê. Pode marcar mais de um; sem nenhum, ela só entra no sistema.
+        As empresas que ela enxerga continuam sendo as da carteira.
+      </small>
+      <div class="row">
+        @for (option of accessProfileOptions; track option.value) {
+          <div class="col-md-6 col-sm-12">
+            <label class="form-check mb-2">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [checked]="selectedProfiles().has(option.value)"
+                (change)="toggleProfile(option.value, $any($event.target).checked)"
+              />
+              <span class="form-check-label">
+                {{ option.label }}
+                <small class="text-muted d-block">{{ option.description }}</small>
+              </span>
+            </label>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
   <div class="d-flex justify-content-end gap-2 mt-3">
     <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
     <app-button

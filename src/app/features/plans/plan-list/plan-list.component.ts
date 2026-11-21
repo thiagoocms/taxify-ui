@@ -1,6 +1,7 @@
 import { formatCurrency } from '../../../shared/utils/format';
+import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
-import { Component, computed, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { InputComponent } from '../../../shared/components/input/input';
@@ -28,6 +29,8 @@ type ViewMode = 'list' | 'form';
   styleUrl: './plan-list.component.scss',
 })
 export class PlanListComponent implements OnInit {
+  protected readonly auth = inject(AuthService);
+
   readonly columns: TableColumn[] = [
     { name: 'Nome', property: 'name' },
     { name: 'Descrição', property: 'description', cellTextLength: 60 },
@@ -37,10 +40,12 @@ export class PlanListComponent implements OnInit {
 
   readonly tableConfig: TableConfig = {
     headerVisible: true,
-    actions: [
-      { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditForm(row) },
-      { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
-    ],
+    actions: this.auth.isAdmin
+      ? [
+          { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditForm(row) },
+          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+        ]
+      : [],
   };
 
   readonly plans = signal<PlanRow[]>([]);
@@ -68,7 +73,7 @@ export class PlanListComponent implements OnInit {
 
   readonly pageButtons = computed<PageButton[]>(() => {
     if (this.viewMode() === 'list') {
-      return [{ label: 'Novo plano', icon: 'plus', handler: () => this.openCreateForm() }];
+      return [{ label: 'Novo plano', icon: 'plus', isShow: this.auth.isAdmin, handler: () => this.openCreateForm() }];
     }
     return [{ label: 'Voltar', icon: 'arrow-left', variant: 'outlined', severity: 'secondary', handler: () => this.closeForm() }];
   });

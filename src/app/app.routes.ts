@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { permissionGuard } from './core/guards/permission.guard';
 
 export const routes: Routes = [
   // ------------------------------------------------------------------------
@@ -45,6 +46,7 @@ export const routes: Routes = [
       },
       {
         path: 'notas-fiscais',
+        canActivate: [permissionGuard('INVOICES_VIEW')],
         loadComponent: () =>
           import('./features/invoices/invoice-xml-list/invoice-xml-list.component').then(
             (m) => m.InvoiceXmlListComponent,
@@ -52,6 +54,7 @@ export const routes: Routes = [
       },
       {
         path: 'notas-fiscais/:id',
+        canActivate: [permissionGuard('INVOICES_VIEW')],
         loadComponent: () =>
           import('./features/invoices/invoice-detail/invoice-detail.component').then(
             (m) => m.InvoiceDetailComponent,

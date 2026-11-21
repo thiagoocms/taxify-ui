@@ -93,7 +93,7 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly toastr = inject(ToastrService);
-  private readonly authService = inject(AuthService);
+  protected readonly authService = inject(AuthService);
   private readonly fiscalXmlService = inject(FiscalXmlService);
   private readonly invoiceAuditLogService = inject(InvoiceAuditLogService);
   private readonly productFiscalRuleService = inject(ProductFiscalRuleService);
@@ -153,10 +153,12 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
 
   readonly auditTableConfig: TableConfig = {
     headerVisible: true,
-    actions: [
-      { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.editAuditEntry(row) },
-      { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.removeAuditEntry(row) },
-    ],
+    actions: this.authService.can('INVOICES_AUDIT')
+      ? [
+          { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.editAuditEntry(row) },
+          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.removeAuditEntry(row) },
+        ]
+      : [],
   };
 
   readonly title = computed(() => {

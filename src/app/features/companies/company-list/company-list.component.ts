@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth.service';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -28,6 +29,8 @@ type ViewMode = 'list' | 'form';
   styleUrl: './company-list.component.scss',
 })
 export class CompanyListComponent implements OnInit {
+  protected readonly auth = inject(AuthService);
+
   readonly columns: TableColumn[] = [
     { name: 'Nome', property: 'name' },
     { name: 'Tipo doc.', property: 'documentType' },
@@ -39,10 +42,13 @@ export class CompanyListComponent implements OnInit {
 
   readonly tableConfig: TableConfig = {
     headerVisible: true,
-    actions: [
-      { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditForm(row) },
-      { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
-    ],
+    // Só o administrador altera o cadastro; os demais abrem a empresa para ver as seções do perfil deles.
+    actions: this.auth.isAdmin
+      ? [
+          { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditForm(row) },
+          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+        ]
+      : [{ name: 'open', icon: 'eye', tooltip: 'Abrir', variant: 'text', handler: (row) => this.openEditForm(row) }],
   };
 
   private readonly acessoriasService = inject(AcessoriasService);
@@ -67,6 +73,9 @@ export class CompanyListComponent implements OnInit {
     if (this.viewMode() === 'list') {
       return 'Empresas';
     }
+    if (!this.auth.isAdmin) {
+      return this.editingCompany()?.name ?? 'Empresa';
+    }
     return this.editingCompany() ? 'Editar empresa' : 'Nova empresa';
   });
 
@@ -85,10 +94,10 @@ export class CompanyListComponent implements OnInit {
           icon: 'cloud-arrow-down',
           variant: 'outlined',
           isDisabled: this.importing(),
-          isShow: this.accountingFirmService.hasAcessoriasToken(),
+          isShow: this.auth.isAdmin && this.accountingFirmService.hasAcessoriasToken(),
           handler: () => this.importFromAcessorias(),
         },
-        { label: 'Nova empresa', icon: 'plus', handler: () => this.openCreateForm() },
+        { label: 'Nova empresa', icon: 'plus', isShow: this.auth.isAdmin, handler: () => this.openCreateForm() },
       ];
     }
     return [{ label: 'Voltar', icon: 'arrow-left', variant: 'outlined', severity: 'secondary', handler: () => this.closeForm() }];

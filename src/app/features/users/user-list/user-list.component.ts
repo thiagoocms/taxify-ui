@@ -9,6 +9,7 @@ import { Page, PageButton } from '../../../shared/components/page/page';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { AcessoriasUserSummaryDTO } from '../../../core/models/acessorias.model';
+import { ACCESS_PROFILE_LABELS } from '../../../core/models/access.model';
 import { UserDTO } from '../../../core/models/user.model';
 import { AccountingFirmService } from '../../../core/services/accounting-firm.service';
 import { AcessoriasService } from '../../../core/services/acessorias.service';
@@ -17,8 +18,17 @@ import { UserFormComponent } from '../user-form/user-form.component';
 
 const PROFILE_LABELS: Record<string, string> = {
   ADMIN: 'Administrador',
-  EMPLOYEE: 'Funcionário',
+  EMPLOYEE: 'Colaborador',
 };
+
+/** "Administrador" / "Fiscal, Financeiro" / "Colaborador (sem perfil)". */
+function profileLabel(user: UserDTO): string {
+  if (user.profile === 'ADMIN') {
+    return PROFILE_LABELS['ADMIN'];
+  }
+  const profiles = (user.accessProfiles ?? []).map((profile) => ACCESS_PROFILE_LABELS[profile] ?? profile);
+  return profiles.length ? profiles.join(', ') : `${PROFILE_LABELS[user.profile] ?? user.profile} (sem perfil)`;
+}
 
 interface UserRow extends UserDTO {
   profileLabel: string;
@@ -132,7 +142,7 @@ export class UserListComponent implements OnInit {
           this.users.set(
             page.content.map((user) => ({
               ...user,
-              profileLabel: PROFILE_LABELS[user.profile] ?? user.profile,
+              profileLabel: profileLabel(user),
             })),
           );
           this.totalPages.set(page.totalPages);

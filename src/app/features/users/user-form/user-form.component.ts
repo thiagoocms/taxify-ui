@@ -3,11 +3,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent, SelectOption } from '../../../shared/components/input/input';
+import { ACCESS_PROFILE_OPTIONS, AccessProfile } from '../../../core/models/access.model';
 import { UserDTO } from '../../../core/models/user.model';
 import { UserService } from '../../../core/services/user.service';
 import { UserLinksComponent } from '../user-links/user-links.component';
 
 const EMPLOYEE_PROFILE = 'EMPLOYEE';
+const ADMIN_PROFILE = 'ADMIN';
 
 @Component({
   selector: 'app-user-form',
@@ -30,6 +32,14 @@ export class UserFormComponent implements OnChanges {
   readonly hidePassword = signal(true);
   readonly eyeIcon = computed(() => (this.hidePassword() ? faEye : faEyeSlash));
 
+  readonly accessProfileOptions = ACCESS_PROFILE_OPTIONS;
+  readonly userTypeOptions: SelectOption[] = [
+    { value: EMPLOYEE_PROFILE, label: 'Colaborador (acessa conforme os perfis)' },
+    { value: ADMIN_PROFILE, label: 'Administrador (acessa tudo)' },
+  ];
+  /** Perfis marcados - um colaborador pode ter vários; as permissões se somam. */
+  readonly selectedProfiles = signal<Set<AccessProfile>>(new Set());
+
   readonly documentTypeOptions: SelectOption[] = [
     { value: 'CPF', label: 'CPF' },
     { value: 'CNPJ', label: 'CNPJ' },
@@ -42,7 +52,22 @@ export class UserFormComponent implements OnChanges {
     login: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     password: [''],
+    profile: [EMPLOYEE_PROFILE, [Validators.required]],
   });
+
+  get isAdminType(): boolean {
+    return this.form.controls.profile.value === ADMIN_PROFILE;
+  }
+
+  toggleProfile(profile: AccessProfile, checked: boolean): void {
+    const next = new Set(this.selectedProfiles());
+    if (checked) {
+      next.add(profile);
+    } else {
+      next.delete(profile);
+    }
+    this.selectedProfiles.set(next);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['user']) {
@@ -53,7 +78,9 @@ export class UserFormComponent implements OnChanges {
         login: this.user?.login ?? '',
         email: this.user?.email ?? '',
         password: '',
+        profile: this.user?.profile === ADMIN_PROFILE ? ADMIN_PROFILE : EMPLOYEE_PROFILE,
       });
+      this.selectedProfiles.set(new Set(this.user?.accessProfiles ?? []));
 
       const passwordControl = this.form.get('password');
       passwordControl?.setValidators(this.isEdit ? [] : [Validators.required, Validators.minLength(6)]);
@@ -72,13 +99,14 @@ export class UserFormComponent implements OnChanges {
     }
 
     this.loading.set(true);
-    const { password, ...rest } = this.form.getRawValue();
+    const { password, profile, ...rest } = this.form.getRawValue();
 
-    // Usuários criados aqui pelo admin são sempre EMPLOYEE; o perfil ADMIN só
-    // é atribuído no cadastro público (dono da conta) — ver AuthComponent.
+    // Administrador acessa tudo - perfis só valem para colaborador. O backend impede que o
+    // escritório fique sem nenhum administrador.
     const value: UserDTO = {
       ...rest,
-      profile: this.user?.profile ?? EMPLOYEE_PROFILE,
+      profile,
+      accessProfiles: profile === ADMIN_PROFILE ? [] : [...this.selectedProfiles()],
       ...(password ? { password } : {}),
     };
 

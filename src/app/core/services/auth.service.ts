@@ -3,6 +3,7 @@ import {computed, Injectable, signal} from '@angular/core';
 import {jwtDecode} from 'jwt-decode';
 import {Observable, tap} from 'rxjs';
 import {environment} from '../../../environments/environment';
+import {AccessProfile, Permission} from '../models/access.model';
 import {AuthenticatedDTO, AuthLoginDTO} from '../models/auth.model';
 
 const TOKEN_KEY = 'taxify_token';
@@ -65,6 +66,29 @@ export class AuthService {
 
   get isAdmin(): boolean {
     return this.profile === ADMIN_PROFILE;
+  }
+
+  /** Permissões do usuário (todas, para ADMIN) - vêm no token, ver TokenService. */
+  readonly permissions = computed<Set<Permission>>(() => new Set(this.claim<Permission[]>('permissions') ?? []));
+
+  /** Perfis de acesso do colaborador (Fiscal, Financeiro...). */
+  readonly accessProfiles = computed<AccessProfile[]>(() => this.claim<AccessProfile[]>('accessProfiles') ?? []);
+
+  /** Pode fazer isto? ADMIN sempre pode. Use nas telas em vez de checar o perfil pelo nome. */
+  can(permission: Permission): boolean {
+    return this.isAdmin || this.permissions().has(permission);
+  }
+
+  private claim<T>(name: string): T | null {
+    const token = this.tokenSignal();
+    if (!token) {
+      return null;
+    }
+    try {
+      return (jwtDecode<Record<string, unknown>>(token)[name] as T) ?? null;
+    } catch {
+      return null;
+    }
   }
 
   private setSession(result: AuthenticatedDTO): void {

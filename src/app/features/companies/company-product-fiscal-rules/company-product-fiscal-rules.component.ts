@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth.service';
 import { Component, inject, Input, OnChanges, signal, SimpleChanges } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -21,6 +22,8 @@ import { RuleFormComponent } from './rule-form/rule-form.component';
   styleUrl: './company-product-fiscal-rules.component.scss',
 })
 export class CompanyProductFiscalRulesComponent implements OnChanges {
+  protected readonly auth = inject(AuthService);
+
   private readonly productFiscalRuleService = inject(ProductFiscalRuleService);
 
   @Input() companyId = '';
@@ -37,10 +40,12 @@ export class CompanyProductFiscalRulesComponent implements OnChanges {
 
   readonly tableConfig: TableConfig = {
     headerVisible: true,
-    actions: [
-      { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditDialog(row) },
-      { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
-    ],
+    actions: this.auth.can('FISCAL_RULES_MANAGE')
+      ? [
+          { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditDialog(row) },
+          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+        ]
+      : [],
   };
 
   readonly searchControl = new FormControl('', { nonNullable: true });
