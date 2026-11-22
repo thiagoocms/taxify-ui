@@ -3,3 +3,27 @@
 
 @include accordion.accordion-section;
 @include toolbar.list-toolbar;
+
+.suggestions-help {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.suggestions-list {
+  max-height: 60vh;
+  overflow: auto;
+
+  .cell-sub {
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+
+  .mono {
+    font-family: monospace;
+  }
+
+  .low-agreement {
+    color: #b45309;
+    font-weight: 600;
+  }
+}

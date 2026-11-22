@@ -1,0 +1,87 @@
+@use '../../../shared/styles/accordion-section' as accordion;
+
+@include accordion.accordion-section;
+
+.help {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+
+  app-input {
+    min-width: 170px;
+  }
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+
+  .summary-filters {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+
+    app-input {
+      min-width: 190px;
+    }
+  }
+}
+
+.chip {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 10px;
+  background: #eef2f7;
+  white-space: nowrap;
+
+  &.error {
+    background: #fdecec;
+    color: #b42318;
+  }
+
+  &.warning {
+    background: #fff4e5;
+    color: #b45309;
+  }
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.findings {
+  max-height: 60vh;
+  overflow: auto;
+  font-size: 0.85rem;
+
+  .cell-sub {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  .mono {
+    font-family: monospace;
+  }
+
+  .message {
+    min-width: 260px;
+  }
+}
+
+.loading-text {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}

@@ -14,7 +14,8 @@ import { Page, PageButton } from '../../../shared/components/page/page';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { DIRECTION_LABELS, EVENT_LABELS, REVIEW_LABELS, ReviewStatus, FiscalXmlEventDTO, FiscalXmlDetailDTO, FiscalXmlProdutoDTO, FiscalXmlRectificationResultDTO } from '../../../core/models/fiscal-xml.model';
 import { AUDIT_STATUS_LABELS, InvoiceAuditLogDTO, InvoiceAuditStatus, MANUAL_AUDIT_STATUSES } from '../../../core/models/invoice-audit-log.model';
-import { ProductFiscalDivergenceDTO } from '../../../core/models/product-fiscal-rule.model';
+import { FiscalCheckFindingDTO, ProductFiscalDivergenceDTO } from '../../../core/models/product-fiscal-rule.model';
+import { findingGroupLabel } from '../../companies/company-fiscal-conference/finding-groups';
 import { AuthService } from '../../../core/services/auth.service';
 import { FiscalXmlService } from '../../../core/services/fiscal-xml.service';
 import { InvoiceAuditLogService } from '../../../core/services/invoice-audit-log.service';
@@ -129,6 +130,14 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
 
   readonly divergences = signal<ProductFiscalDivergenceDTO[]>([]);
   readonly divergencesLoading = signal(false);
+  /** Demais achados da conferência fiscal desta nota (CFOP/NCM já estão em divergences). */
+  readonly findings = signal<FiscalCheckFindingDTO[]>([]);
+  readonly findingsLoading = signal(false);
+  /** Divergências de CFOP/NCM + achados da conferência - o que o selo e a aba contam. */
+  readonly issueCount = computed(() => this.divergences().length + this.findings().length);
+  readonly findingGroupLabel = findingGroupLabel;
+  /** Há divergência de código com a regra do produto além de CFOP/NCM - a retificação pode corrigir. */
+  readonly ruleFindings = computed(() => this.findings().some((f) => f.codigo.startsWith('RULE_')));
   readonly rectifying = signal(false);
   readonly rectificationResult = signal<FiscalXmlRectificationResultDTO | null>(null);
 
@@ -570,6 +579,20 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
         },
         error: () => this.divergencesLoading.set(false),
       });
+
+    this.findingsLoading.set(true);
+    this.productFiscalRuleService
+      .conferencia(companyId, issueDate, issueDate)
+      .pipe(takeUntil(this.destroyed$))
+      .subscribe({
+        next: (findings) => {
+          this.findings.set(
+            findings.filter((f) => f.documentId === this.documentId() && f.codigo !== 'RULE_CFOP' && f.codigo !== 'RULE_NCM'),
+          );
+          this.findingsLoading.set(false);
+        },
+        error: () => this.findingsLoading.set(false),
+      });
   }
 
   retificar(): void {
@@ -577,7 +600,7 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
     if (!documentId) {
       return;
     }
-    if (!confirm('Gerar uma versão retificada desta nota aplicando o CFOP/NCM das regras fiscais cadastradas? O XML original é preservado.')) {
+    if (!confirm('Gerar uma versão retificada desta nota aplicando as regras fiscais cadastradas (CFOP, NCM e códigos tributários)? Alíquotas e valores não são alterados. O XML original é preservado.')) {
       return;
     }
 

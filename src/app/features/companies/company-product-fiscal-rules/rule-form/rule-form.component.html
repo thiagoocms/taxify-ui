@@ -32,6 +32,83 @@
     </div>
   </div>
 
+  <div class="d-flex align-items-center gap-3 flex-wrap">
+    <button type="button" class="tax-toggle" (click)="toggleTax()">
+      {{ showTax() ? '▾' : '▸' }} Classificação tributária (opcional)
+    </button>
+    @if (form.controls.codigoProduto.value) {
+      <button type="button" class="tax-toggle" [disabled]="suggesting()" (click)="fillFromNotes()">
+        {{ suggesting() ? 'Buscando nas notas...' : 'Preencher com o que aparece nas notas' }}
+      </button>
+    }
+  </div>
+
+  @if (appliedSuggestion().length) {
+    <div class="suggestion-box">
+      Nas notas deste produto:
+      @for (item of appliedSuggestion(); track item.label; let last = $last) {
+        <span [class.low]="item.value.percentual < 90">{{ item.label }} {{ item.value.valor }} ({{ item.value.percentual }}%)</span>{{ last ? '' : ' · ' }}
+      }
+      <div class="mt-1">Abaixo de 90%, as notas não concordam entre si — confira antes de salvar.</div>
+    </div>
+  }
+
+  @if (showTax()) {
+    <div class="tax-section">
+      <p class="tax-help">
+        Deixe em branco o que não quiser conferir. O CST vale para notas do regime normal e o CSOSN para notas do Simples;
+        a alíquota de ICMS é a da operação interna (a interestadual é conferida automaticamente).
+      </p>
+      <div class="row">
+        <div class="col-md-6 col-sm-12">
+          <app-input formControlName="origemMercadoria" label="Origem da mercadoria" type="select" [options]="originOptions"></app-input>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="cest" label="CEST" [maxLength]="7"></app-input>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="aliquotaIcms" label="Alíq. ICMS interna (%)"></app-input>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="cstIcms" label="CST ICMS" [maxLength]="2"></app-input>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="csosn" label="CSOSN" [maxLength]="3"></app-input>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="cstIpi" label="CST IPI" [maxLength]="2"></app-input>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="aliquotaIpi" label="Alíq. IPI (%)"></app-input>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="cstPis" label="CST PIS" [maxLength]="2"></app-input>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="aliquotaPis" label="Alíq. PIS (%)"></app-input>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="cstCofins" label="CST COFINS" [maxLength]="2"></app-input>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="aliquotaCofins" label="Alíq. COFINS (%)"></app-input>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="cstIbsCbs" label="CST IBS/CBS" [maxLength]="3"></app-input>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <app-input formControlName="classificacaoTributaria" label="cClassTrib" [maxLength]="6"></app-input>
+        </div>
+      </div>
+    </div>
+  }
+
   <div class="row">
     <div class="col-12">
       <app-input formControlName="observacoes" label="Observações" type="textarea"></app-input>

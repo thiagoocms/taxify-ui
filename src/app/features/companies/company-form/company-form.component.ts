@@ -14,6 +14,7 @@ import {
 } from '../../../core/models/tax-assessment.model';
 import { CompanyService } from '../../../core/services/company.service';
 import { CompanyProductFiscalRulesComponent } from '../company-product-fiscal-rules/company-product-fiscal-rules.component';
+import { CompanyFiscalConferenceComponent } from '../company-fiscal-conference/company-fiscal-conference.component';
 import { CompanyBillingComponent } from '../company-billing/company-billing.component';
 import { CompanySubscriptionsComponent } from '../company-subscriptions/company-subscriptions.component';
 import { CompanyTaxRegimesComponent } from '../company-tax-regimes/company-tax-regimes.component';
@@ -21,7 +22,7 @@ import { CompanyTaxRegimesComponent } from '../company-tax-regimes/company-tax-r
 @Component({
   selector: 'app-company-form',
   standalone: true,
-  imports: [ReactiveFormsModule, InputComponent, Button, CompanySubscriptionsComponent, CompanyTaxRegimesComponent, CompanyBillingComponent, CompanyProductFiscalRulesComponent],
+  imports: [ReactiveFormsModule, InputComponent, Button, CompanySubscriptionsComponent, CompanyTaxRegimesComponent, CompanyBillingComponent, CompanyProductFiscalRulesComponent, CompanyFiscalConferenceComponent],
   templateUrl: './company-form.component.html',
   styles: `
     .form-container { max-width: 900px; }

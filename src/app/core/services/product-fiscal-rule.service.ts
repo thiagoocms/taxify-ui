@@ -3,7 +3,14 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Page, Pageable } from '../models/page.model';
-import { ProductFiscalDivergenceDTO, ProductFiscalRuleDTO, ProductFiscalRuleFilterDTO, CompanyProductDTO } from '../models/product-fiscal-rule.model';
+import {
+  CompanyProductDTO,
+  FiscalCheckFindingDTO,
+  ProductFiscalDivergenceDTO,
+  ProductFiscalRuleDTO,
+  ProductFiscalRuleFilterDTO,
+  ProductRuleSuggestionDTO,
+} from '../models/product-fiscal-rule.model';
 import { buildParams } from './user.service';
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +49,27 @@ export class ProductFiscalRuleService {
       params = params.set('dataEmissaoFim', dataEmissaoFim);
     }
     return this.http.get<ProductFiscalDivergenceDTO[]>(`${this.baseUrl}/divergencias`, { params });
+  }
+
+  /** Conferência fiscal do período: um achado por linha (regra do produto, cálculos, IBS/CBS...). */
+  conferencia(companyId: string, dataEmissaoInicio?: string, dataEmissaoFim?: string): Observable<FiscalCheckFindingDTO[]> {
+    let params = new HttpParams().set('companyId', companyId);
+    if (dataEmissaoInicio) {
+      params = params.set('dataEmissaoInicio', dataEmissaoInicio);
+    }
+    if (dataEmissaoFim) {
+      params = params.set('dataEmissaoFim', dataEmissaoFim);
+    }
+    return this.http.get<FiscalCheckFindingDTO[]>(`${this.baseUrl}/conferencia`, { params });
+  }
+
+  /** Regras sugeridas a partir das notas (valor mais frequente de cada campo por produto). */
+  sugestoes(companyId: string, somenteSemRegra = true, direcao?: 'INBOUND' | 'OUTBOUND'): Observable<ProductRuleSuggestionDTO[]> {
+    let params = new HttpParams().set('companyId', companyId).set('somenteSemRegra', somenteSemRegra);
+    if (direcao) {
+      params = params.set('direcao', direcao);
+    }
+    return this.http.get<ProductRuleSuggestionDTO[]>(`${this.baseUrl}/sugestoes`, { params });
   }
 
   /** Produtos da empresa (códigos das notas importadas) que contêm o termo no código ou na descrição. */

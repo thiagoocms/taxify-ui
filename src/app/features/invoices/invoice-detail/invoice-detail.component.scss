@@ -777,3 +777,48 @@ $line: #eef0f4;
     width: 280px;
   }
 }
+
+.findings-title {
+  margin: 24px 0 8px;
+  font-weight: 600;
+}
+
+.finding-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.finding {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid #f3d9a4;
+  background: #fffaf0;
+  border-radius: 6px;
+  padding: 8px 12px;
+
+  &.is-error {
+    border-color: #f5c2c0;
+    background: #fff5f5;
+
+    .finding-severity {
+      background: #fdecec;
+      color: #b42318;
+    }
+  }
+
+  .finding-severity {
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 2px 8px;
+    background: #fff4e5;
+    color: #b45309;
+    white-space: nowrap;
+  }
+
+  .finding-message {
+    font-size: 13px;
+  }
+}

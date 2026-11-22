@@ -10,7 +10,7 @@ import { InputComponent } from '../../../shared/components/input/input';
 import { Modal } from '../../../shared/components/modal/modal';
 import { Pagination } from '../../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
-import { ProductFiscalRuleDTO } from '../../../core/models/product-fiscal-rule.model';
+import { ProductFiscalRuleDTO, ProductRuleSuggestionDTO } from '../../../core/models/product-fiscal-rule.model';
 import { ProductFiscalRuleService } from '../../../core/services/product-fiscal-rule.service';
 import { RuleFormComponent } from './rule-form/rule-form.component';
 
@@ -58,6 +58,12 @@ export class CompanyProductFiscalRulesComponent implements OnChanges {
 
   readonly dialogOpen = signal(false);
   readonly editingRule = signal<ProductFiscalRuleDTO | null>(null);
+  /** Sugestão que pré-preencheu a regra aberta no formulário. */
+  readonly editingSuggestion = signal<ProductRuleSuggestionDTO | null>(null);
+
+  readonly suggestionsOpen = signal(false);
+  readonly suggestionsLoading = signal(false);
+  readonly suggestions = signal<ProductRuleSuggestionDTO[]>([]);
 
   constructor() {
     this.searchControl.valueChanges.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => {
@@ -104,12 +110,57 @@ export class CompanyProductFiscalRulesComponent implements OnChanges {
 
   openCreateDialog(): void {
     this.editingRule.set(null);
+    this.editingSuggestion.set(null);
     this.dialogOpen.set(true);
   }
 
   openEditDialog(rule: ProductFiscalRuleDTO): void {
     this.editingRule.set(rule);
+    this.editingSuggestion.set(null);
     this.dialogOpen.set(true);
+  }
+
+  /** Produtos sem regra, com a classificação mais frequente nas notas de cada um. */
+  openSuggestions(): void {
+    this.suggestionsOpen.set(true);
+    this.suggestionsLoading.set(true);
+    this.productFiscalRuleService.sugestoes(this.companyId).subscribe({
+      next: (suggestions) => {
+        this.suggestions.set(suggestions);
+        this.suggestionsLoading.set(false);
+      },
+      error: () => this.suggestionsLoading.set(false),
+    });
+  }
+
+  closeSuggestions(): void {
+    this.suggestionsOpen.set(false);
+  }
+
+  /** Abre o formulário de nova regra já preenchido com a sugestão. */
+  createFromSuggestion(suggestion: ProductRuleSuggestionDTO): void {
+    const rule: ProductFiscalRuleDTO = {
+      companyId: this.companyId,
+      codigoProduto: suggestion.codigoProduto,
+      descricaoProduto: suggestion.descricaoProduto ?? '',
+      cfopCorreto: '',
+    };
+    const fields = rule as unknown as Record<string, string>;
+    for (const [field, value] of Object.entries(suggestion.campos)) {
+      if (value) {
+        fields[field] = value.valor;
+      }
+    }
+    this.suggestionsOpen.set(false);
+    this.editingRule.set(rule);
+    this.editingSuggestion.set(suggestion);
+    this.dialogOpen.set(true);
+  }
+
+  /** Menor concordância entre os campos sugeridos - quanto menor, mais a sugestão pede conferência. */
+  agreement(suggestion: ProductRuleSuggestionDTO): number {
+    const shares = Object.values(suggestion.campos).map((value) => value?.percentual ?? 100);
+    return shares.length ? Math.min(...shares) : 100;
   }
 
   closeDialog(): void {
@@ -118,6 +169,7 @@ export class CompanyProductFiscalRulesComponent implements OnChanges {
 
   onSaved(): void {
     this.dialogOpen.set(false);
+    this.editingSuggestion.set(null);
     this.loadRules();
   }
 

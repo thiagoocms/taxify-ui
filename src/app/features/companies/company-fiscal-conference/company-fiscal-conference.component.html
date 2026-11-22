@@ -1,0 +1,74 @@
+<div class="accordion-section">
+  <button type="button" class="accordion-toggle" (click)="toggle()">
+    <span>Conferência fiscal</span>
+    <fa-icon class="chevron" [class.open]="open()" [icon]="chevronIcon"></fa-icon>
+  </button>
+
+  @if (open()) {
+    <div class="accordion-body">
+      <p class="help">
+        Confere todas as notas do período: regras dos produtos, cálculo de ICMS/IPI/PIS/COFINS, alíquota interestadual,
+        código × regime do emitente, IBS/CBS e totais. Notas canceladas ficam de fora.
+      </p>
+
+      <div class="filters">
+        <app-input label="Emissão de" type="date" [formControl]="fromControl"></app-input>
+        <app-input label="até" type="date" [formControl]="toControl"></app-input>
+        <app-button [label]="loading() ? 'Conferindo...' : 'Conferir'" icon="magnifying-glass" [disabled]="loading()" (onClick)="load()"></app-button>
+      </div>
+
+      @if (loaded()) {
+        <div class="summary">
+          <span class="chip error">{{ errorCount() }} erro(s)</span>
+          <span class="chip warning">{{ warningCount() }} alerta(s)</span>
+          <span class="muted">em {{ noteCount() }} nota(s)</span>
+          <div class="summary-filters">
+            <app-input label="Severidade" type="select" [options]="severityOptions" [formControl]="severityControl"></app-input>
+            <app-input label="Tipo" type="select" [options]="groupOptions" [formControl]="groupControl"></app-input>
+          </div>
+        </div>
+
+        @if (!filtered().length) {
+          <p class="muted">{{ findings().length ? 'Nenhum achado com esses filtros.' : 'Nenhuma divergência encontrada no período.' }}</p>
+        } @else {
+          <div class="findings">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr><th></th><th>Nota</th><th>Item</th><th>Achado</th><th>Encontrado</th><th>Esperado</th><th></th></tr>
+              </thead>
+              <tbody>
+                @for (f of filtered(); track $index) {
+                  <tr>
+                    <td><span class="chip" [class.error]="f.severidade === 'ERROR'" [class.warning]="f.severidade === 'WARNING'">{{ severityLabel(f.severidade) }}</span></td>
+                    <td>
+                      {{ f.issueDate | date: 'dd/MM/yyyy' }}
+                      <div class="cell-sub">{{ f.emitenteNome || '—' }}</div>
+                    </td>
+                    <td>
+                      @if (f.numeroItem) {
+                        #{{ f.numeroItem }} {{ f.codigoProduto }}
+                        <div class="cell-sub">{{ f.descricaoProduto }}</div>
+                      } @else {
+                        <span class="muted">Nota inteira</span>
+                      }
+                    </td>
+                    <td class="message">{{ f.mensagem }}</td>
+                    <td class="mono">{{ f.valorEncontrado || '—' }}</td>
+                    <td class="mono">{{ f.valorEsperado || '—' }}</td>
+                    <td class="text-end">
+                      <app-button label="Abrir nota" variant="text" (onClick)="openNote(f)"></app-button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+
+      @if (loading()) {
+        <p class="loading-text">Conferindo as notas...</p>
+      }
+    </div>
+  }
+</div>

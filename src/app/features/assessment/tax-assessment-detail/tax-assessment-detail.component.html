@@ -132,6 +132,35 @@
         }
       </section>
 
+      @if (a.ibsCbs; as ibs) {
+        <section class="card-block">
+          <h6 class="card-title">IBS/CBS (Reforma Tributária)</h6>
+          <table class="taxes">
+            <thead>
+              <tr><th></th><th>IBS</th><th>CBS</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Débito das saídas<div class="cell-sub">{{ ibs.notasSaida }} nota(s)</div></td>
+                <td>{{ formatCurrency(ibs.debitoIbs) }}</td>
+                <td>{{ formatCurrency(ibs.debitoCbs) }}</td>
+              </tr>
+              <tr>
+                <td>(−) Crédito das entradas<div class="cell-sub">{{ ibs.notasEntrada }} nota(s)</div></td>
+                <td>{{ formatCurrency(ibs.creditoIbs) }}</td>
+                <td>{{ formatCurrency(ibs.creditoCbs) }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr><td>Saldo</td><td>{{ formatCurrency(ibs.saldoIbs) }}</td><td>{{ formatCurrency(ibs.saldoCbs) }}</td></tr>
+            </tfoot>
+          </table>
+          @if (ibs.observacao) {
+            <p class="muted ibs-note">{{ ibs.observacao }}</p>
+          }
+        </section>
+      }
+
       <section class="card-block wide">
         <h6 class="card-title">Últimos 13 meses</h6>
         <div class="history">

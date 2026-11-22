@@ -12,8 +12,9 @@
         </div>
       </div>
 
-      <div class="d-flex justify-content-end mb-2">
+      <div class="d-flex justify-content-end gap-2 mb-2">
         @if (auth.can('FISCAL_RULES_MANAGE')) {
+          <app-button label="Sugerir regras" icon="wand-magic-sparkles" variant="text" (onClick)="openSuggestions()"></app-button>
           <app-button label="Nova regra" icon="plus" (onClick)="openCreateDialog()"></app-button>
         }
       </div>
@@ -35,15 +36,57 @@
 
 <app-modal
   [open]="dialogOpen()"
-  [title]="editingRule() ? 'Editar regra fiscal' : 'Nova regra fiscal'"
+  [title]="editingRule()?.id ? 'Editar regra fiscal' : 'Nova regra fiscal'"
+  size="lg"
   (closed)="closeDialog()"
 >
   @if (dialogOpen()) {
     <app-rule-form
       [companyId]="companyId"
       [rule]="editingRule()"
+      [suggestion]="editingSuggestion()"
       (saved)="onSaved()"
       (cancelled)="closeDialog()"
     ></app-rule-form>
+  }
+</app-modal>
+
+<app-modal [open]="suggestionsOpen()" title="Sugestões de regras" size="xl" (closed)="closeSuggestions()">
+  @if (suggestionsOpen()) {
+    <p class="suggestions-help">
+      Produtos ainda sem regra, com o que aparece com mais frequência nas notas de cada um.
+      A concordância é o menor percentual entre os campos: abaixo de 90% as notas divergem e a sugestão merece conferência.
+    </p>
+    @if (suggestionsLoading()) {
+      <p class="loading-text">Analisando as notas...</p>
+    } @else if (!suggestions().length) {
+      <p class="loading-text">Nenhum produto sem regra nas notas importadas.</p>
+    } @else {
+      <div class="suggestions-list">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr><th>Produto</th><th>CFOP</th><th>NCM</th><th>CST/CSOSN</th><th>Itens</th><th>Concordância</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (s of suggestions(); track s.codigoProduto) {
+              <tr>
+                <td>
+                  <strong>{{ s.codigoProduto }}</strong>
+                  <div class="cell-sub">{{ s.descricaoProduto }}</div>
+                </td>
+                <td class="mono">{{ s.campos.cfopCorreto?.valor || '—' }}</td>
+                <td class="mono">{{ s.campos.ncmCorreto?.valor || '—' }}</td>
+                <td class="mono">{{ s.campos.cstIcms?.valor || s.campos.csosn?.valor || '—' }}</td>
+                <td>{{ s.ocorrencias }}</td>
+                <td [class.low-agreement]="agreement(s) < 90">{{ agreement(s) }}%</td>
+                <td class="text-end">
+                  <app-button label="Criar regra" variant="text" (onClick)="createFromSuggestion(s)"></app-button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   }
 </app-modal>

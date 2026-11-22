@@ -96,4 +96,19 @@ export interface TaxAssessmentDTO {
   history: MonthRevenueDTO[];
   /** Quando CLOSED, todos os valores acima são os congelados no fechamento. */
   closing: PeriodClosingDTO;
+  /** IBS/CBS do período (informativo); null quando nenhuma nota do mês tem o grupo. */
+  ibsCbs?: IbsCbsSummaryDTO | null;
+}
+
+/** IBS/CBS destacado nas notas do mês: débito das saídas, crédito das entradas e saldo. */
+export interface IbsCbsSummaryDTO {
+  debitoIbs: number;
+  debitoCbs: number;
+  creditoIbs: number;
+  creditoCbs: number;
+  saldoIbs: number;
+  saldoCbs: number;
+  notasSaida: number;
+  notasEntrada: number;
+  observacao?: string | null;
 }

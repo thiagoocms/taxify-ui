@@ -138,5 +138,6 @@
   }
   @if (auth.can('FISCAL_RULES_VIEW')) {
     <app-company-product-fiscal-rules [companyId]="company!.id!"></app-company-product-fiscal-rules>
+    <app-company-fiscal-conference [companyId]="company!.id!"></app-company-fiscal-conference>
   }
 }

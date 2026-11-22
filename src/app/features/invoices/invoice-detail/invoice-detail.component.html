@@ -71,10 +71,10 @@
           @if (nota.identificacao?.ambiente === '2') {
             <span class="op-badge op-out">Homologação</span>
           }
-          @if (divergences().length) {
+          @if (issueCount()) {
             <button type="button" class="alert-badge" (click)="selectTab('divergencias')">
               <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
-              {{ divergences().length }} {{ divergences().length === 1 ? 'divergência fiscal' : 'divergências fiscais' }}
+              {{ issueCount() }} {{ issueCount() === 1 ? 'divergência fiscal' : 'divergências fiscais' }}
             </button>
           }
         </div>
@@ -121,8 +121,8 @@
       <button type="button" role="tab" [class.active]="tab() === 'totais'" (click)="selectTab('totais')">Totais e impostos</button>
       <button type="button" role="tab" [class.active]="tab() === 'divergencias'" (click)="selectTab('divergencias')">
         Divergências
-        @if (divergences().length) {
-          <span class="tab-count warn">{{ divergences().length }}</span>
+        @if (issueCount()) {
+          <span class="tab-count warn">{{ issueCount() }}</span>
         }
       </button>
       <button type="button" role="tab" [class.active]="tab() === 'auditoria'" (click)="selectTab('auditoria')">
@@ -394,6 +394,43 @@
                 <p>Os CFOP/NCM dos itens estão de acordo com as regras fiscais de produto cadastradas para a empresa.</p>
               </div>
             </div>
+          }
+
+          <h6 class="findings-title">Conferência tributária</h6>
+          @if (findingsLoading()) {
+            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Conferindo impostos...</p>
+          } @else if (findings().length) {
+            <p class="muted">
+              Classificação, cálculo dos impostos, alíquota interestadual, IBS/CBS e totais. Na retificação, só os códigos que não mudam a
+              estrutura do XML são corrigidos; alíquotas e valores ficam para o emissor.
+            </p>
+            @if (ruleFindings() && !divergences().length && !xml()?.ownIssue && authService.can('INVOICES_RECTIFY')) {
+              <div class="mb-2">
+                <app-button
+                  icon="wand-magic-sparkles"
+                  [label]="rectifying() ? 'Retificando...' : 'Retificar códigos'"
+                  [disabled]="rectifying() || !documentId()"
+                  (onClick)="retificar()"
+                ></app-button>
+              </div>
+            }
+            <div class="finding-list">
+              @for (f of findings(); track $index) {
+                <div class="finding" [class.is-error]="f.severidade === 'ERROR'">
+                  <span class="finding-severity">{{ f.severidade === 'ERROR' ? 'Erro' : 'Alerta' }}</span>
+                  <div class="finding-body">
+                    <div class="finding-message">{{ f.mensagem }}</div>
+                    <div class="cell-sub">
+                      {{ findingGroupLabel(f.codigo) }}
+                      @if (f.numeroItem) { · item {{ f.numeroItem }} {{ f.codigoProduto }} }
+                      @if (f.valorEsperado) { · esperado <span class="mono">{{ f.valorEsperado }}</span> }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="muted">Nenhum problema de classificação, cálculo ou totais nesta nota.</p>
           }
         }
 
