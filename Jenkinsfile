@@ -1,7 +1,6 @@
 // Pipeline do frontend (taxify-ui): build Angular -> imagem Docker -> push no Docker Hub.
 // Requer no Jenkins: plugins Pipeline, Git, Docker Pipeline e Credentials Binding;
-// credenciais "dockerhub" (usuário + access token) e "taxify-monitoring-htpasswd"
-// (Secret file com o monitoring.htpasswd, que não fica no git); agente com Docker.
+// credencial "dockerhub" (usuário + access token); agente com Docker.
 pipeline {
     agent any
 
@@ -40,19 +39,7 @@ pipeline {
 
         stage('Build da imagem') {
             steps {
-                // O Dockerfile copia o monitoring.htpasswd (proteção do /grafana e /prometheus
-                // no nginx); ele vem de uma credencial do Jenkins e é apagado logo depois.
-                withCredentials([file(credentialsId: 'taxify-monitoring-htpasswd', variable: 'HTPASSWD')]) {
-                    sh '''
-                        cp "$HTPASSWD" monitoring.htpasswd
-                        docker build -t $IMAGE:$TAG -t $IMAGE:latest .
-                    '''
-                }
-            }
-            post {
-                always {
-                    sh 'rm -f monitoring.htpasswd'
-                }
+                sh 'docker build -t $IMAGE:$TAG -t $IMAGE:latest .'
             }
         }
 

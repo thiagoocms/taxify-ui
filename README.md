@@ -31,7 +31,7 @@ Este repositório contém o **front-end web** do Taxify. A API está em **[taxif
 - **Angular 19** (standalone components) + **TypeScript 5.7**
 - **Bootstrap 5**
 - **ngx-toastr** para notificações
-- **Nginx** como servidor da build e **proxy reverso** para a API, o Grafana e o Prometheus (com autenticação básica)
+- **Nginx** como servidor da build e **proxy reverso** para a API
 - **Docker**
 
 ### Telas
