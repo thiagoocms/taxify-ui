@@ -1,5 +1,7 @@
+import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import localePt from '@angular/common/locales/pt';
+import { ApplicationConfig, DEFAULT_CURRENCY_CODE, LOCALE_ID, provideZoneChangeDetection } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withNavigationErrorHandler, withViewTransitions } from '@angular/router';
 import { provideToastr } from 'ngx-toastr';
@@ -7,6 +9,9 @@ import { provideToastr } from 'ngx-toastr';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { ngrokInterceptor } from './core/interceptors/ngrok.interceptor';
 import { routes } from './app.routes';
+
+/** Pipes do Angular (date, number, currency) no formato brasileiro: 1.234,56 · R$ · nomes de meses em português. */
+registerLocaleData(localePt, 'pt-BR');
 
 const CHUNK_RELOAD_KEY = 'taxify:chunk-reload';
 
@@ -31,6 +36,8 @@ function reloadOnStaleChunk(error: { error?: unknown }): void {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    { provide: LOCALE_ID, useValue: 'pt-BR' },
+    { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' },
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withViewTransitions(), withNavigationErrorHandler(reloadOnStaleChunk)),
     provideHttpClient(withInterceptors([ngrokInterceptor, authInterceptor])),
