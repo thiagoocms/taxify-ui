@@ -49,6 +49,10 @@ export interface FiscalXmlSearchFilterDTO {
   participant?: string;
   /** Situação da conferência; vazio = todas. */
   reviewStatus?: ReviewStatus;
+  /** De onde a nota veio primeiro; vazio = qualquer. */
+  origem?: FiscalXmlOrigin;
+  /** Confronto SIEG × SEFAZ: SO_SIEG / SO_SEFAZ = há mais de 48h numa fonte e não na outra. */
+  fonte?: 'SO_SIEG' | 'SO_SEFAZ';
   // Unlike the other list endpoints, this one nests the page/size under a
   // "pagination" object in the request body instead of taking them flat.
   pagination?: { page: number; size: number; sort?: string; direction?: 'ASC' | 'DESC' };
@@ -215,6 +219,8 @@ export interface FiscalXmlSummaryDTO {
   reviewStatus?: ReviewStatus;
   /** CFOPs distintos dos itens: um só = a nota inteira usa ele; mais de um = segmentado. */
   cfops?: string[];
+  /** De onde a nota veio primeiro. */
+  origem?: FiscalXmlOrigin | null;
 }
 
 /** Totais do período por direção (cards acima da lista). */
@@ -258,7 +264,21 @@ export interface FiscalXmlDetailDTO {
   reviewedAt?: string | null;
   reviewedBy?: string | null;
   reviewNote?: string | null;
+  /** De onde a nota veio primeiro. */
+  origem?: FiscalXmlOrigin | null;
+  /** Quando o SIEG / a SEFAZ trouxe a nota (vazio = a fonte nunca trouxe, ou é anterior a esse controle). */
+  encontradaSiegEm?: string | null;
+  encontradaSefazEm?: string | null;
 }
+
+/** Fonte de onde a nota veio primeiro. */
+export type FiscalXmlOrigin = 'SIEG' | 'SEFAZ_DIST' | 'UPLOAD';
+
+export const ORIGIN_LABELS: Record<FiscalXmlOrigin, string> = {
+  SIEG: 'SIEG',
+  SEFAZ_DIST: 'SEFAZ',
+  UPLOAD: 'Upload',
+};
 
 export interface FiscalXmlDownloadResultDTO {
   totalItemsFound?: number;

@@ -65,6 +65,36 @@ export interface CompanyTaxRegimeDTO {
   label?: string | null;
 }
 
+/** Uma nota que a SEFAZ entregou só como resumo (a empresa é destinatária e o XML completo ainda não veio). */
+export interface SefazNoteSummaryDTO {
+  chave: string;
+  emitenteDocumento?: string | null;
+  emitenteNome?: string | null;
+  dataEmissao?: string | null;
+  valorTotal?: number | null;
+  /** cSitNFe: 1 autorizada, 2 denegada, 3 cancelada. */
+  situacao?: string | null;
+  ciencia: 'PENDENTE' | 'ENVIADA' | 'ERRO';
+  cienciaEm?: string | null;
+  cienciaDetalhe?: string | null;
+  cienciaTentativas: number;
+  ultimaBuscaEm?: string | null;
+  buscaDetalhe?: string | null;
+  recebidoEm?: string | null;
+}
+
+/** Notas só com resumo, a Ciência da Operação delas e o confronto SIEG × SEFAZ. */
+export interface SefazNotesDTO {
+  autoCiencia: boolean;
+  aguardandoCiencia: number;
+  aguardandoXml: number;
+  comErro: number;
+  /** null = o plano não tem as duas fontes. */
+  soSieg?: number | null;
+  soSefaz?: number | null;
+  notas: SefazNoteSummaryDTO[];
+}
+
 /** Situação da última captura de XML pela SEFAZ (NFeDistribuicaoDFe). */
 export interface SefazDistStatusDTO {
   lastRunAt?: string | null;

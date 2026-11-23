@@ -12,7 +12,17 @@ import { InputComponent } from '../../../shared/components/input/input';
 import { Modal } from '../../../shared/components/modal/modal';
 import { Page, PageButton } from '../../../shared/components/page/page';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
-import { DIRECTION_LABELS, EVENT_LABELS, REVIEW_LABELS, ReviewStatus, FiscalXmlEventDTO, FiscalXmlDetailDTO, FiscalXmlProdutoDTO, FiscalXmlRectificationResultDTO } from '../../../core/models/fiscal-xml.model';
+import {
+  DIRECTION_LABELS,
+  EVENT_LABELS,
+  REVIEW_LABELS,
+  ReviewStatus,
+  FiscalXmlEventDTO,
+  FiscalXmlDetailDTO,
+  FiscalXmlProdutoDTO,
+  FiscalXmlRectificationResultDTO,
+  ORIGIN_LABELS,
+} from '../../../core/models/fiscal-xml.model';
 import { AUDIT_STATUS_LABELS, InvoiceAuditLogDTO, InvoiceAuditStatus, MANUAL_AUDIT_STATUSES } from '../../../core/models/invoice-audit-log.model';
 import { FiscalCheckFindingDTO, ProductFiscalDivergenceDTO } from '../../../core/models/product-fiscal-rule.model';
 import { findingGroupLabel } from '../../companies/company-fiscal-conference/finding-groups';
@@ -240,8 +250,25 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
       { label: 'Tipo de emissão', value: tipoEmissaoLabel(ide.tipoEmissao) },
       { label: 'Ambiente', value: ambienteLabel(ide.ambiente) },
       { label: 'Versão do emissor', value: ide.versaoProcessoEmissao },
+      { label: 'Origem no Taxify', value: this.originText() },
     ].filter((field) => !!field.value);
   });
+
+  /** "SEFAZ · também no SIEG desde 20/11/2026 10:00" - de onde a nota veio e quando cada fonte a trouxe. */
+  private originText(): string | null {
+    const nota = this.xml();
+    if (!nota?.origem) {
+      return null;
+    }
+    const parts = [ORIGIN_LABELS[nota.origem] ?? nota.origem];
+    if (nota.encontradaSiegEm && nota.origem !== 'SIEG') {
+      parts.push(`também no SIEG desde ${formatDate(nota.encontradaSiegEm, true)}`);
+    }
+    if (nota.encontradaSefazEm && nota.origem !== 'SEFAZ_DIST') {
+      parts.push(`também na SEFAZ desde ${formatDate(nota.encontradaSefazEm, true)}`);
+    }
+    return parts.join(' · ');
+  }
 
   readonly emitenteFields = computed<InfoField[]>(() => {
     const emit = this.xml()?.emitente;

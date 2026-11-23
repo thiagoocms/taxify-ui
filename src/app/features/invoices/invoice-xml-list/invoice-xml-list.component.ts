@@ -21,6 +21,8 @@ import {
   FiscalXmlSummaryDTO,
   FiscalXmlTotalsDTO,
   ReviewStatus,
+  FiscalXmlOrigin,
+  ORIGIN_LABELS,
 } from '../../../core/models/fiscal-xml.model';
 
 import { downloadBlob } from '../../../shared/utils/download-blob';
@@ -117,6 +119,8 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     participant: this.fb.nonNullable.control(''),
   });
 
+  /** Origem da nota ou confronto SIEG × SEFAZ ('' = tudo). */
+  readonly sourceFilter = signal<string>('');
   /** Filtro de conferência (null = todas). */
   readonly reviewFilter = signal<ReviewStatus | null>(null);
   readonly reviewing = signal(false);
@@ -311,6 +315,19 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     this.loadXmls();
   }
 
+  /** Origem (SIEG / SEFAZ / upload) ou confronto entre as fontes (SO_SIEG / SO_SEFAZ); vazio = tudo. */
+  selectSourceFilter(value: string): void {
+    this.sourceFilter.set(value ?? '');
+    if (this.queriedCompany()) {
+      this.pageIndex.set(0);
+      this.loadXmls(false);
+    }
+  }
+
+  originLabel(origin: FiscalXmlOrigin): string {
+    return ORIGIN_LABELS[origin] ?? origin;
+  }
+
   selectReviewFilter(value: string): void {
     this.reviewFilter.set((value || null) as ReviewStatus | null);
     if (this.queriedCompany()) {
@@ -379,6 +396,10 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
         participant: participant.trim() || undefined,
         direction: this.direction() ?? undefined,
         reviewStatus: this.reviewFilter() ?? undefined,
+        origem: ['SIEG', 'SEFAZ_DIST', 'UPLOAD'].includes(this.sourceFilter())
+          ? (this.sourceFilter() as FiscalXmlOrigin)
+          : undefined,
+        fonte: ['SO_SIEG', 'SO_SEFAZ'].includes(this.sourceFilter()) ? (this.sourceFilter() as 'SO_SIEG' | 'SO_SEFAZ') : undefined,
         pagination: { page: this.pageIndex(), size: this.pageSize },
       })
       .pipe(takeUntil(this.destroyed$))

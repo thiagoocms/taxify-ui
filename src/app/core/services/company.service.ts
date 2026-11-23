@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CompanyCertificateDTO, CompanyDTO, CompanyFilterDTO, CompanyTaxRegimeDTO } from '../models/company.model';
+import { CompanyCertificateDTO, CompanyDTO, CompanyFilterDTO, CompanyTaxRegimeDTO, SefazNotesDTO } from '../models/company.model';
 import { Page, Pageable } from '../models/page.model';
 import { buildParams } from './user.service';
 
@@ -62,6 +62,16 @@ export class CompanyService {
   /** Captura agora na SEFAZ (respeita a pausa de 1h que a SEFAZ exige). */
   captureFromSefaz(id: string): Observable<CompanyCertificateDTO> {
     return this.http.post<CompanyCertificateDTO>(`${this.baseUrl}/${id}/sefaz/capturar`, {});
+  }
+
+  /** Notas que a SEFAZ entregou só como resumo, a ciência delas e o confronto SIEG × SEFAZ. */
+  getSefazSummaries(id: string): Observable<SefazNotesDTO> {
+    return this.http.get<SefazNotesDTO>(`${this.baseUrl}/${id}/sefaz/resumos`);
+  }
+
+  /** Recoloca na fila a ciência recusada de uma nota - vai na próxima captura. */
+  retryCiencia(id: string, chave: string): Observable<SefazNotesDTO> {
+    return this.http.post<SefazNotesDTO>(`${this.baseUrl}/${id}/sefaz/resumos/${chave}/reenviar-ciencia`, {});
   }
 
   /** Completa endereço, CNAE, IE e IM vazios pela última nota emitida pela empresa. */

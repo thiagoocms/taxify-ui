@@ -125,6 +125,15 @@
         <option value="REVIEWED">Conferidas</option>
         <option value="DIVERGENT">Com divergência</option>
       </select>
+      <select class="form-select form-select-sm review-filter" [value]="sourceFilter()" (change)="selectSourceFilter($any($event.target).value)"
+        title="De onde a nota veio, ou o confronto entre SIEG e SEFAZ">
+        <option value="">Toda origem</option>
+        <option value="SIEG">Veio do SIEG</option>
+        <option value="SEFAZ_DIST">Veio da SEFAZ</option>
+        <option value="UPLOAD">Upload manual</option>
+        <option value="SO_SIEG">Só no SIEG (48h+)</option>
+        <option value="SO_SEFAZ">Só na SEFAZ (48h+)</option>
+      </select>
       @if (canReview && pendingOnPage().length) {
         <button type="button" class="btn btn-sm btn-outline-success" [disabled]="reviewing()" (click)="reviewPage()">
           Marcar {{ pendingOnPage().length }} da página como conferidas
@@ -185,6 +194,9 @@
       }
       @if (row.retificada) {
         <span class="own-badge" title="Existe uma versão retificada">Retificada</span>
+      }
+      @if (row.origem && row.origem !== 'SIEG') {
+        <span class="own-badge" title="De onde a nota veio">{{ originLabel(row.origem) }}</span>
       }
     </div>
     @if (row.naturezaOperacao) {

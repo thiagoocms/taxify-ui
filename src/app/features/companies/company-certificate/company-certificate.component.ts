@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnChanges, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { CompanyCertificateDTO } from '../../../core/models/company.model';
+import { CompanyCertificateDTO, SefazNotesDTO, SefazNoteSummaryDTO } from '../../../core/models/company.model';
 import { CompanyService } from '../../../core/services/company.service';
 
 /**
@@ -71,6 +71,73 @@ import { CompanyService } from '../../../core/services/company.service';
           </div>
         }
 
+        @if (notes(); as n) {
+          @if (n.notas.length || n.soSieg || n.soSefaz) {
+            <div class="summaries mt-3">
+              <div class="small fw-semibold">Entradas que a SEFAZ entregou só como resumo</div>
+              <p class="small muted mb-1">
+                Sem a Ciência da Operação a SEFAZ não libera o XML completo (itens, CFOP, NCM) — sem ele a nota não entra
+                nas regras nem na retificação.
+                @if (n.autoCiencia) {
+                  O Taxify envia a ciência sozinho e busca o XML na consulta seguinte.
+                } @else {
+                  O plano não inclui "Manifestação do destinatário" (junto com a Integração SEFAZ): a ciência não é
+                  enviada pelo Taxify — as notas só ficam completas se vierem pelo SIEG ou por upload.
+                }
+              </p>
+              <div class="counters small">
+                <span class="badge text-bg-secondary">{{ n.aguardandoCiencia }} aguardando ciência</span>
+                <span class="badge text-bg-info">{{ n.aguardandoXml }} com ciência, aguardando XML</span>
+                @if (n.comErro) {
+                  <span class="badge text-bg-danger">{{ n.comErro }} com ciência recusada</span>
+                }
+                @if (n.soSieg != null) {
+                  <span class="badge text-bg-light border" title="Notas de terceiros que o SIEG trouxe há mais de 48h e a SEFAZ não entregou">
+                    Só no SIEG: {{ n.soSieg }}
+                  </span>
+                  <span class="badge text-bg-light border" title="Notas que a SEFAZ entregou há mais de 48h e o SIEG não trouxe">
+                    Só na SEFAZ: {{ n.soSefaz }}
+                  </span>
+                }
+              </div>
+              @if (n.notas.length) {
+                <div class="table-responsive mt-2">
+                  <table class="table table-sm small mb-0">
+                    <thead>
+                      <tr><th>Emissão</th><th>Emitente</th><th class="text-end">Valor</th><th>Ciência</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      @for (nota of n.notas; track nota.chave) {
+                        <tr>
+                          <td>{{ nota.dataEmissao | date: 'dd/MM/yyyy' }}</td>
+                          <td>
+                            {{ nota.emitenteNome || '—' }}
+                            <div class="muted mono">{{ nota.chave }}</div>
+                          </td>
+                          <td class="text-end">{{ nota.valorTotal | currency: 'BRL' }}</td>
+                          <td>
+                            <span class="badge" [ngClass]="cienciaClass(nota)">{{ cienciaLabel(nota) }}</span>
+                            @if (nota.cienciaDetalhe || nota.buscaDetalhe) {
+                              <div class="muted">{{ nota.cienciaDetalhe || nota.buscaDetalhe }}</div>
+                            }
+                          </td>
+                          <td class="text-end">
+                            @if (!readonly && nota.ciencia === 'ERRO') {
+                              <button type="button" class="btn btn-sm btn-link p-0" [disabled]="retrying() === nota.chave" (click)="retry(nota.chave)">
+                                Reenviar ciência
+                              </button>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          }
+        }
+
         @if (!readonly) {
           @if (!s.encryptionConfigured) {
             <p class="small muted mt-2 mb-1">
@@ -120,6 +187,9 @@ import { CompanyService } from '../../../core/services/company.service';
     .add-row { display: flex; flex-wrap: wrap; gap: 6px; max-width: 900px; }
     .add-row input[type='file'] { max-width: 320px; }
     .add-row input[type='password'] { max-width: 220px; }
+    .summaries { max-width: 900px; }
+    .counters { display: flex; flex-wrap: wrap; gap: 6px; }
+    .mono { font-family: var(--bs-font-monospace, monospace); font-size: 0.75rem; }
   `,
 })
 export class CompanyCertificateComponent implements OnChanges {
@@ -134,6 +204,8 @@ export class CompanyCertificateComponent implements OnChanges {
   readonly saving = signal(false);
   readonly capturing = signal(false);
   readonly confirmingDelete = signal(false);
+  readonly notes = signal<SefazNotesDTO | null>(null);
+  readonly retrying = signal<string | null>(null);
 
   file: File | null = null;
   password = '';
@@ -147,6 +219,43 @@ export class CompanyCertificateComponent implements OnChanges {
       },
       error: () => this.loading.set(false),
     });
+    this.loadNotes();
+  }
+
+  private loadNotes(): void {
+    this.companyService.getSefazSummaries(this.companyId).subscribe({
+      next: (notes) => this.notes.set(notes),
+      error: () => this.notes.set(null),
+    });
+  }
+
+  retry(chave: string): void {
+    this.retrying.set(chave);
+    this.companyService.retryCiencia(this.companyId, chave).subscribe({
+      next: (notes) => {
+        this.notes.set(notes);
+        this.retrying.set(null);
+        this.toastr.success('Ciência recolocada na fila — vai na próxima captura.');
+      },
+      error: () => this.retrying.set(null),
+    });
+  }
+
+  cienciaLabel(nota: SefazNoteSummaryDTO): string {
+    if (nota.situacao === '3') {
+      return 'Cancelada';
+    }
+    if (nota.situacao === '2') {
+      return 'Denegada';
+    }
+    return nota.ciencia === 'ENVIADA' ? 'Enviada — aguardando XML' : nota.ciencia === 'ERRO' ? 'Recusada' : 'Aguardando envio';
+  }
+
+  cienciaClass(nota: SefazNoteSummaryDTO): string {
+    if (nota.situacao === '2' || nota.situacao === '3') {
+      return 'text-bg-secondary';
+    }
+    return nota.ciencia === 'ENVIADA' ? 'text-bg-info' : nota.ciencia === 'ERRO' ? 'text-bg-danger' : 'text-bg-light border';
   }
 
   pick(event: Event): void {
@@ -179,6 +288,7 @@ export class CompanyCertificateComponent implements OnChanges {
       next: (status) => {
         this.status.set(status);
         this.capturing.set(false);
+        this.loadNotes();
       },
       error: () => this.capturing.set(false),
     });
