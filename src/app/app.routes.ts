@@ -53,6 +53,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'notas-servico',
+        canActivate: [permissionGuard('INVOICES_VIEW')],
+        loadComponent: () =>
+          import('./features/service-invoices/service-invoices.component').then((m) => m.ServiceInvoicesComponent),
+      },
+      {
         path: 'pendencias',
         canActivate: [permissionGuard('INVOICES_VIEW')],
         loadComponent: () => import('./features/pendencies/pendencies.component').then((m) => m.PendenciesComponent),
