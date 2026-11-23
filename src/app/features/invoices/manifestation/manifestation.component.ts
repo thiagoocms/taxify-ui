@@ -1,3 +1,4 @@
+import { HelpTipComponent } from '../../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -38,7 +39,7 @@ const DEADLINE_WARNING_DAYS = 15;
 @Component({
   selector: 'app-manifestation',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, FaIconComponent, Button, InputComponent, Modal, Page, Table],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, FaIconComponent, Button, InputComponent, Modal, Page, Table, HelpTipComponent],
   templateUrl: './manifestation.component.html',
   styleUrl: './manifestation.component.scss',
 })

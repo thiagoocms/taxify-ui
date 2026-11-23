@@ -1,4 +1,4 @@
-<app-page pageTitle="Pendências" pageDescription="O que falta em cada empresa da carteira, por prioridade" [pageButtons]="pageButtons()">
+<app-page pageTitle="Pendências" helpId="pendencias" pageDescription="O que falta em cada empresa da carteira, por prioridade" [pageButtons]="pageButtons()">
   <div class="filters">
     <div class="filters-main">
       <div class="month-nav" role="group" aria-label="Competência">
@@ -42,7 +42,8 @@
   @if (summary(); as s) {
     <div class="results-summary">
       <div class="summary-item">
-        <span class="summary-label">Pendências abertas</span>
+        <span class="summary-label">Pendências abertas
+          <app-help-tip text="Recalculadas de hora em hora. Fecham sozinhas quando a causa some e reabrem se ela voltar."></app-help-tip></span>
         <span class="summary-value">{{ s.totalOpen }}</span>
         <span class="summary-sub">{{ companyId() ? 'nesta empresa' : 'em toda a carteira' }}</span>
       </div>

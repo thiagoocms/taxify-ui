@@ -1,4 +1,4 @@
-<app-page pageTitle="Notas de serviço" pageDescription="NFS-e prestadas e tomadas, com ISS e retenções" [pageButtons]="pageButtons()">
+<app-page pageTitle="Notas de serviço" helpId="notas-servico" pageDescription="NFS-e prestadas e tomadas, com ISS e retenções" [pageButtons]="pageButtons()">
   <div class="filters">
     <div class="filters-main">
       <div class="month-nav" role="group" aria-label="Mês de emissão">
@@ -35,7 +35,8 @@
           <span class="summary-sub">ISS {{ formatCurrency(t.prestadas.valorIss) }}</span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">Retido pelos tomadores</span>
+          <span class="summary-label">Retido pelos tomadores
+            <app-help-tip text="Nas notas que a empresa prestou, o que o tomador reteve - a empresa pode compensar. Veja em Retenções."></app-help-tip></span>
           <span class="summary-value">{{ formatCurrency(t.prestadas.totalRetido) }}</span>
           <span class="summary-sub">a compensar</span>
         </div>
@@ -45,7 +46,8 @@
           <span class="summary-sub">ISS {{ formatCurrency(t.tomadas.valorIss) }}</span>
         </div>
         <div class="summary-item">
-          <span class="summary-label">Retido pela empresa</span>
+          <span class="summary-label">Retido pela empresa
+            <app-help-tip text="Nas notas que a empresa tomou, o que ela reteve do prestador - precisa recolher. Veja em Retenções." align="left"></app-help-tip></span>
           <span class="summary-value">{{ formatCurrency(t.tomadas.totalRetido) }}</span>
           <span class="summary-sub">a recolher</span>
         </div>

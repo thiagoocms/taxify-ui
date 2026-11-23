@@ -1,3 +1,4 @@
+import { HelpTipComponent } from '../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -33,7 +34,7 @@ import { monthLabel, shiftMonth, toMonth } from '../assessment/assessment-format
 @Component({
   selector: 'app-service-invoices',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table],
+  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
   templateUrl: './service-invoices.component.html',
   styleUrl: './service-invoices.component.scss',
 })

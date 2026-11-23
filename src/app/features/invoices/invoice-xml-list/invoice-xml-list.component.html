@@ -1,5 +1,5 @@
 <app-page
-  pageTitle="Notas fiscais"
+  pageTitle="Notas fiscais" helpId="notas-fiscais"
   pageDescription="Consulte, audite e exporte os XMLs de notas fiscais das empresas"
   [pageButtons]="pageButtons()"
 >
@@ -134,6 +134,7 @@
         <option value="SO_SIEG">Só no SIEG (48h+)</option>
         <option value="SO_SEFAZ">Só na SEFAZ (48h+)</option>
       </select>
+      <app-help-tip text="Origem: de onde a nota veio primeiro. 'Só no SIEG' / 'Só na SEFAZ': está numa fonte e não na outra há mais de 48h (a SEFAZ não entrega as notas emitidas pela própria empresa)."></app-help-tip>
       @if (canReview && pendingOnPage().length) {
         <button type="button" class="btn btn-sm btn-outline-success" [disabled]="reviewing()" (click)="reviewPage()">
           Marcar {{ pendingOnPage().length }} da página como conferidas

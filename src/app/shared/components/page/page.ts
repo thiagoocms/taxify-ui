@@ -1,3 +1,5 @@
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { HelpPanelComponent } from '../../help/help-panel.component';
 import { CommonModule } from '@angular/common';
 import { Component, inject, Input } from '@angular/core';
 import { Button } from '../button/button';
@@ -22,7 +24,7 @@ const CONFIRM_MESSAGES: Record<string, string> = {
 @Component({
   selector: 'app-page',
   standalone: true,
-  imports: [CommonModule, Button],
+  imports: [CommonModule, Button, FaIconComponent, HelpPanelComponent],
   templateUrl: './page.html',
   styleUrl: './page.scss',
 })
@@ -32,6 +34,10 @@ export class Page {
   @Input() pageTitle = '';
   @Input() pageDescription = '';
   @Input() pageButtons: PageButton[] = [];
+  /** Artigo da Central de Ajuda desta tela (shared/help/help-content.ts) - mostra o "?" ao lado do título. */
+  @Input() helpId?: string;
+
+  helpOpen = false;
 
   async action(pageButton: PageButton): Promise<void> {
     const confirmMessage = pageButton.id ? CONFIRM_MESSAGES[pageButton.id] : undefined;

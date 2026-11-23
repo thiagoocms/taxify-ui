@@ -1,5 +1,5 @@
 <app-page
-  pageTitle="Manifestação do destinatário"
+  pageTitle="Manifestação do destinatário" helpId="manifestacao"
   pageDescription="Notas de entrada que ainda precisam de Confirmação, Desconhecimento ou Operação não Realizada"
   [pageButtons]="pageButtons()"
 >
@@ -80,10 +80,12 @@
         <button type="button" class="quick-card ok" [class.active]="quickFilter() === 'CIENCIA'" (click)="toggleQuick('CIENCIA')">
           <span class="quick-value">{{ s.total - s.withoutCiencia }}</span>
           <span class="quick-label">só com ciência</span>
+          <app-help-tip text="A Ciência libera o XML, mas não conclui: ainda falta Confirmação, Desconhecimento ou Operação não Realizada."></app-help-tip>
         </button>
         <button type="button" class="quick-card" [class.active]="quickFilter() === 'SUMMARY'" (click)="toggleQuick('SUMMARY')">
           <span class="quick-value">{{ s.onlySummary }}</span>
           <span class="quick-label">só resumo</span>
+          <app-help-tip text="A SEFAZ entregou só o resumo (sem itens). Qualquer manifestação libera o XML completo, que chega na captura seguinte."></app-help-tip>
         </button>
         @if (selected().length) {
           <span class="quick-note">{{ selected().length }} {{ selected().length === 1 ? 'nota selecionada' : 'notas selecionadas' }}</span>

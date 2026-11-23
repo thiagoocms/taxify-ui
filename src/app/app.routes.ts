@@ -59,6 +59,14 @@ export const routes: Routes = [
           import('./features/service-invoices/service-invoices.component').then((m) => m.ServiceInvoicesComponent),
       },
       {
+        path: 'ajuda',
+        loadComponent: () => import('./features/help/help-center.component').then((m) => m.HelpCenterComponent),
+      },
+      {
+        path: 'ajuda/:id',
+        loadComponent: () => import('./features/help/help-center.component').then((m) => m.HelpCenterComponent),
+      },
+      {
         path: 'retencoes',
         canActivate: [permissionGuard('INVOICES_VIEW')],
         loadComponent: () => import('./features/retentions/retentions.component').then((m) => m.RetentionsComponent),

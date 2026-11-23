@@ -1,4 +1,4 @@
-<app-page pageTitle="Retenções" pageDescription="O que cada cliente tem a recolher e a compensar na competência" [pageButtons]="pageButtons()">
+<app-page pageTitle="Retenções" helpId="retencoes" pageDescription="O que cada cliente tem a recolher e a compensar na competência" [pageButtons]="pageButtons()">
   <div class="filters">
     <div class="filters-main">
       <div class="month-nav" role="group" aria-label="Competência">
@@ -27,7 +27,8 @@
     <div class="results-summary">
       @for (card of s.cards; track card.nature) {
         <div class="summary-item">
-          <span class="summary-label">{{ natureLabel(card.nature) }} · {{ card.notes }} {{ card.notes === 1 ? 'nota' : 'notas' }}</span>
+          <span class="summary-label">{{ natureLabel(card.nature) }} · {{ card.notes }} {{ card.notes === 1 ? 'nota' : 'notas' }}
+            <app-help-tip [text]="hint(card.nature)"></app-help-tip></span>
           <span class="summary-value">{{ formatCurrency(card.total) }}</span>
           <span class="summary-sub">{{ taxSummary(card.byTax) || hint(card.nature) }}</span>
         </div>
@@ -45,6 +46,7 @@
       <button type="button" class="quick-card warn" [class.active]="quick() === 'UNDUE'" (click)="toggleQuick('UNDUE')">
         <span class="quick-value">{{ undueCount() }}</span>
         <span class="quick-label">prováveis indevidas</span>
+        <app-help-tip text="IRRF, PIS, COFINS ou CSLL retidos de prestador do Simples Nacional - salvo exceções, não deveriam ser retidos."></app-help-tip>
       </button>
       <button type="button" class="quick-card" [class.active]="quick() === 'PENDING'" (click)="toggleQuick('PENDING')">
         <span class="quick-value">{{ pendingCount() }}</span>

@@ -1,3 +1,4 @@
+import { HelpTipComponent } from '../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -36,7 +37,7 @@ type CloseAction = 'resolver' | 'desconsiderar';
 @Component({
   selector: 'app-pendencies',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
   templateUrl: './pendencies.component.html',
   styleUrl: './pendencies.component.scss',
 })

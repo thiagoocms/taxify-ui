@@ -1,3 +1,4 @@
+import { HelpTipComponent } from '../../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { Component, computed, inject, OnDestroy, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
@@ -91,7 +92,7 @@ function periodRange(key: PeriodKey): { inicio: string; fim: string } | null {
 @Component({
   selector: 'app-invoice-xml-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table],
+  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
   templateUrl: './invoice-xml-list.component.html',
   styleUrl: './invoice-xml-list.component.scss',
 })

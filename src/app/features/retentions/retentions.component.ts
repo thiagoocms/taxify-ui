@@ -1,3 +1,4 @@
+import { HelpTipComponent } from '../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -36,7 +37,7 @@ type QuickFilter = 'UNDUE' | 'PENDING';
 @Component({
   selector: 'app-retentions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, InputComponent, Page, Table],
+  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, InputComponent, Page, Table, HelpTipComponent],
   templateUrl: './retentions.component.html',
   styleUrl: './retentions.component.scss',
 })
