@@ -18,14 +18,20 @@ import { CompanyService } from '../../../core/services/company.service';
     <section class="mt-4">
       <h6 class="section-title">Certificado A1 e captura pela SEFAZ</h6>
       <p class="section-hint">
-        Com o certificado (e-CNPJ) da empresa, as notas também são buscadas direto na SEFAZ, junto com o SIEG,
-        de hora em hora (por enquanto, empresas de Pernambuco). Uma filial usa o certificado da matriz (mesma raiz de CNPJ).
+        Com o certificado (e-CNPJ) da empresa e a "Integração SEFAZ" no plano, as notas são buscadas direto na SEFAZ
+        de hora em hora (por enquanto, empresas de Pernambuco) — junto com o SIEG se o plano tiver os dois.
+        Uma filial usa o certificado da matriz (mesma raiz de CNPJ).
       </p>
 
       @if (loading()) {
         <p class="muted">Carregando...</p>
       }
       @if (!loading() && status(); as s) {
+        @if (!s.sefazInPlan) {
+          <p class="small text-warning-emphasis plan-note">
+            O plano atual não inclui "Importação de XML fiscal" + "Integração SEFAZ" — a captura pela SEFAZ não roda para esta empresa.
+          </p>
+        }
         @if (s.present) {
           <div class="cert-card" [class.expired]="s.expired">
             <div><strong>{{ s.subjectName ? holder(s.subjectName) : 'Certificado A1' }}</strong></div>
@@ -86,7 +92,7 @@ import { CompanyService } from '../../../core/services/company.service';
             </div>
           }
           <div class="d-flex gap-2 mt-2">
-            @if (s.present) {
+            @if (s.present && s.sefazInPlan) {
               <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="capturing()" (click)="capture()">
                 {{ capturing() ? 'Consultando a SEFAZ...' : 'Capturar agora' }}
               </button>
@@ -111,6 +117,7 @@ import { CompanyService } from '../../../core/services/company.service';
     .cert-card { max-width: 900px; border: 1px solid var(--bs-border-color, #dee2e6); border-left: 4px solid var(--color-primary); border-radius: 6px; padding: 8px 12px; }
     .cert-card.expired { border-left-color: var(--bs-danger, #dc3545); }
     .sefaz { max-width: 900px; }
+    .plan-note { max-width: 900px; }
     .add-row { display: flex; flex-wrap: wrap; gap: 6px; max-width: 900px; }
     .add-row input[type='file'] { max-width: 320px; }
     .add-row input[type='password'] { max-width: 220px; }

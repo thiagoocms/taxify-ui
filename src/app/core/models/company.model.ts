@@ -87,5 +87,7 @@ export interface CompanyCertificateDTO {
   validUntil?: string | null;
   expired: boolean;
   encryptionConfigured: boolean;
+  /** O plano de hoje tem "Importação de XML fiscal" + "Integração SEFAZ". */
+  sefazInPlan: boolean;
   sefaz?: SefazDistStatusDTO | null;
 }

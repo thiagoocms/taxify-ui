@@ -5,7 +5,8 @@ export type PlanServiceType =
   | 'INVOICE_AUDIT'
   | 'SIEG_INTEGRATION'
   | 'MULTI_USER_ACCESS'
-  | 'REPORTS';
+  | 'REPORTS'
+  | 'SEFAZ_INTEGRATION';
 
 export interface PlanDTO {
   id?: string;
@@ -24,10 +25,15 @@ export interface PlanFilterDTO {
   deleted?: boolean;
 }
 
+/**
+ * Importação de notas: "Importação de XML fiscal" coloca a empresa no agendador; a fonte vem das
+ * integrações do plano — SIEG, SEFAZ ou as duas.
+ */
 export const PLAN_SERVICE_LABELS: Record<PlanServiceType, string> = {
   FISCAL_XML_IMPORT: 'Importação de XML fiscal',
   INVOICE_AUDIT: 'Auditoria de notas fiscais',
   SIEG_INTEGRATION: 'Integração SIEG',
+  SEFAZ_INTEGRATION: 'Integração SEFAZ (certificado A1)',
   MULTI_USER_ACCESS: 'Acesso multiusuário',
   REPORTS: 'Relatórios',
 };
