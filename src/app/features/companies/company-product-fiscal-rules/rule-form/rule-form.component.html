@@ -17,6 +17,18 @@
     </div>
   </div>
 
+  <div class="row">
+    <div class="col-md-5 col-sm-12">
+      <app-input formControlName="documentoFornecedor" label="CNPJ/CPF do fornecedor (opcional)" mask="document"></app-input>
+    </div>
+    <div class="col-md-7 col-sm-12">
+      <p class="product-hint mt-2">
+        Nas compras, o código do produto é o do fornecedor. Informe o fornecedor quando outro usar o mesmo
+        código para outro produto; vazio, a regra vale para todos.
+      </p>
+    </div>
+  </div>
+
   @if (selectedProduct(); as product) {
     <p class="product-hint">
       Nas notas: NCM {{ product.ncm || '-' }} · CFOP {{ product.cfop || '-' }} · {{ product.ocorrencias }} item(ns)
@@ -28,7 +40,7 @@
       <app-input formControlName="ncmCorreto" label="NCM correto"></app-input>
     </div>
     <div class="col-md-6 col-sm-12">
-      <app-input formControlName="cfopCorreto" label="CFOP correto"></app-input>
+      <app-input formControlName="cfopCorreto" label="CFOP correto (1º dígito segue a operação)"></app-input>
     </div>
   </div>
 

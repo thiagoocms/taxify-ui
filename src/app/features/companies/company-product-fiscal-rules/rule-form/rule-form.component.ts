@@ -88,20 +88,15 @@ export class RuleFormComponent implements OnChanges {
   ];
 
   /**
-   * Busca os produtos nas notas da empresa. Os que já têm regra ficam de fora na criação
-   * (a regra é única por código); na edição o próprio código continua aparecendo.
+   * Busca os produtos nas notas da empresa. Um código que já tem regra continua aparecendo:
+   * a regra pode ser de um fornecedor e faltar a de outro (o backend recusa a duplicada).
    */
   readonly searchProducts = (term: string): Observable<CompanyProductDTO[]> =>
-    this.productFiscalRuleService
-      .produtos(this.companyId, term)
-      .pipe(
-        map((products) =>
-          products.filter((product) => !product.possuiRegra || product.codigo === this.rule?.codigoProduto),
-        ),
-      );
+    this.productFiscalRuleService.produtos(this.companyId, term);
 
   readonly form = this.fb.nonNullable.group({
     codigoProduto: ['', [Validators.required]],
+    documentoFornecedor: [''],
     descricaoProduto: [''],
     ncmCorreto: [''],
     cfopCorreto: ['', [Validators.required]],
@@ -132,6 +127,7 @@ export class RuleFormComponent implements OnChanges {
       }
       this.form.reset({
         codigoProduto: rule?.codigoProduto ?? '',
+        documentoFornecedor: rule?.documentoFornecedor ?? '',
         descricaoProduto: rule?.descricaoProduto ?? '',
         ncmCorreto: rule?.ncmCorreto ?? '',
         cfopCorreto: rule?.cfopCorreto ?? '',
@@ -160,7 +156,7 @@ export class RuleFormComponent implements OnChanges {
       return;
     }
     this.suggesting.set(true);
-    this.productFiscalRuleService.sugestoes(this.companyId, false, codigo).subscribe({
+    this.productFiscalRuleService.sugestoes(this.companyId, false, codigo, this.form.controls.documentoFornecedor.value).subscribe({
       next: (suggestions) => {
         this.suggesting.set(false);
         const suggestion = suggestions.find((s) => s.codigoProduto === codigo);
@@ -203,6 +199,7 @@ export class RuleFormComponent implements OnChanges {
     const value: ProductFiscalRuleDTO = {
       ...raw,
       codigoProduto: this.currentCode(),
+      documentoFornecedor: raw.documentoFornecedor || null,
       companyId: this.companyId,
       origemMercadoria: null,
       cstIcms: null,

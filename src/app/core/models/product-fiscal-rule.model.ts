@@ -2,8 +2,11 @@ export interface ProductFiscalRuleDTO {
   id?: string;
   companyId: string;
   codigoProduto: string;
+  /** CNPJ/CPF (dígitos) do fornecedor a que a regra se aplica; vazio = qualquer fornecedor. */
+  documentoFornecedor?: string | null;
   descricaoProduto?: string;
   ncmCorreto?: string;
+  /** O 1º dígito segue a operação de cada nota: 1102 vale como 2102 numa compra interestadual. */
   cfopCorreto: string;
   observacoes?: string;
   deleted?: boolean;
@@ -85,6 +88,9 @@ export interface ProductRuleSuggestionDTO {
   campos: Partial<Record<keyof ProductFiscalRuleDTO, SuggestedValue>>;
   /** CFOP de saída do fornecedor mais usado nas notas (o cfopCorreto é a entrada equivalente). */
   cfopFornecedor?: SuggestedValue | null;
+  /** Fornecedor dono do código (nas notas recebidas o código do produto é o do fornecedor). */
+  documentoFornecedor?: string | null;
+  nomeFornecedor?: string | null;
 }
 
 /** Produto da empresa: código distinto encontrado nos itens das notas importadas. */

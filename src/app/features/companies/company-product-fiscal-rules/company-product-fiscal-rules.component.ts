@@ -13,6 +13,7 @@ import { Table, TableColumn, TableConfig } from '../../../shared/components/tabl
 import { ProductFiscalRuleDTO, ProductRuleSuggestionDTO } from '../../../core/models/product-fiscal-rule.model';
 import { ProductFiscalRuleService } from '../../../core/services/product-fiscal-rule.service';
 import { RuleFormComponent } from './rule-form/rule-form.component';
+import { formatDocument } from '../../../shared/utils/document-mask';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 @Component({
@@ -31,10 +32,12 @@ export class CompanyProductFiscalRulesComponent implements OnChanges {
   @Input() companyId = '';
 
   readonly chevronIcon = faChevronDown;
+  protected readonly formatDocument = formatDocument;
   readonly open = signal(false);
 
   readonly columns: TableColumn[] = [
     { name: 'Código', property: 'codigoProduto' },
+    { name: 'Fornecedor', property: 'documentoFornecedor', format: (value: string | null) => (value ? formatDocument(value) : 'Todos') },
     { name: 'Descrição', property: 'descricaoProduto', cellTextLength: 40 },
     { name: 'NCM correto', property: 'ncmCorreto' },
     { name: 'CFOP correto', property: 'cfopCorreto' },
@@ -144,6 +147,7 @@ export class CompanyProductFiscalRulesComponent implements OnChanges {
     const rule: ProductFiscalRuleDTO = {
       companyId: this.companyId,
       codigoProduto: suggestion.codigoProduto,
+      documentoFornecedor: suggestion.documentoFornecedor ?? null,
       descricaoProduto: suggestion.descricaoProduto ?? '',
       cfopCorreto: '',
     };
