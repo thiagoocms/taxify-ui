@@ -1,10 +1,6 @@
 @use '../../../shared/styles/list-patterns' as *;
 @use '../../../shared/styles/page-patterns' as *;
 
-.company-field {
-  max-width: 520px;
-}
-
 .deadline-badge {
   display: inline-block;
   border-radius: 999px;

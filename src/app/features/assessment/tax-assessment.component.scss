@@ -8,11 +8,16 @@
   margin-bottom: 20px;
 }
 
+// Tops aligned and the month navigation as tall as the input box (49px of app-input's 70px).
 .filters-main {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
+
+  .month-nav {
+    height: 49px;
+  }
 }
 
 .search-field {

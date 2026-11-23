@@ -24,6 +24,7 @@ import { Page, PageButton } from '../../shared/components/page/page';
 import { Pagination } from '../../shared/components/pagination/pagination';
 import { Table, TableColumn, TableConfig } from '../../shared/components/table/table';
 import { formatDocument } from '../../shared/utils/document-mask';
+import { monthLabel, shiftMonth, toMonth } from '../assessment/assessment-format';
 
 type CloseAction = 'resolver' | 'desconsiderar';
 
@@ -90,6 +91,7 @@ export class PendenciesComponent implements OnInit {
   comment = '';
 
   protected readonly formatDocument = formatDocument;
+  protected readonly monthLabel = monthLabel;
   readonly tableConfig: TableConfig = { headerVisible: true, actions: [] };
 
   readonly columns = computed<TableColumn[]>(() => [
@@ -190,6 +192,11 @@ export class PendenciesComponent implements OnInit {
     this.type.set(this.type() === value ? '' : value);
     this.page.set(0);
     this.load();
+  }
+
+  /** From "all" the arrows start at the current month. */
+  shiftCompetence(delta: number): void {
+    this.setCompetence(this.competence() ? shiftMonth(this.competence(), delta) : toMonth(new Date()));
   }
 
   setCompetence(value: string): void {

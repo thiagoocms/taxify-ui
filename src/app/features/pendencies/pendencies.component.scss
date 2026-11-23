@@ -1,17 +1,6 @@
 @use '../../shared/styles/list-patterns' as *;
 @use '../../shared/styles/page-patterns' as *;
 
-.competence-field {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  color: #6c757d;
-
-  input {
-    width: 170px;
-  }
-}
-
 .chip-divider {
   width: 1px;
   align-self: stretch;

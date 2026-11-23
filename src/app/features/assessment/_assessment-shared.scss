@@ -11,7 +11,12 @@
   text-align: center;
   font-weight: 600;
   color: var(--text-title);
-  text-transform: capitalize;
+  display: inline-block;
+
+  // "Outubro de 2026": only the first letter (capitalize would give "Outubro De 2026").
+  &::first-letter {
+    text-transform: uppercase;
+  }
 }
 
 .icon-chip {

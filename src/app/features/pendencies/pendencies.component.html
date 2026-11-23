@@ -1,6 +1,18 @@
 <app-page pageTitle="Pendências" pageDescription="O que falta em cada empresa da carteira, por prioridade" [pageButtons]="pageButtons()">
   <div class="filters">
     <div class="filters-main">
+      <div class="month-nav" role="group" aria-label="Competência">
+        <button type="button" class="chip icon-chip" (click)="shiftCompetence(-1)" aria-label="Mês anterior">
+          <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
+        </button>
+        <span class="month-label">{{ competence() ? monthLabel(competence()) : 'Todas as competências' }}</span>
+        <button type="button" class="chip icon-chip" (click)="shiftCompetence(1)" aria-label="Próximo mês">
+          <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
+        </button>
+        @if (competence()) {
+          <button type="button" class="chip" (click)="setCompetence('')">Todas</button>
+        }
+      </div>
       <form class="company-field" [formGroup]="form">
         <app-input
           formControlName="company"
@@ -12,10 +24,6 @@
           displayFieldTooltip="documentNumber"
         ></app-input>
       </form>
-      <label class="small competence-field">
-        Competência
-        <input type="month" class="form-control form-control-sm" [ngModel]="competence()" (ngModelChange)="setCompetence($event)" />
-      </label>
     </div>
 
     <div class="period-chips" role="group" aria-label="Situação">
@@ -131,14 +139,14 @@
 <ng-template #actionsCell let-row="row">
   <div class="row-actions">
     @if (linkFor(row)) {
-      <app-button label="Abrir" variant="text" (click)="open(row)"></app-button>
+      <app-button label="Abrir" variant="text" (onClick)="open(row)"></app-button>
     }
     @if (canClose) {
       @if (row.status === 'ABERTA') {
-        <app-button label="Resolver" variant="text" (click)="askClose(row, 'resolver')"></app-button>
-        <app-button label="Desconsiderar" variant="text" (click)="askClose(row, 'desconsiderar')"></app-button>
+        <app-button label="Resolver" variant="text" (onClick)="askClose(row, 'resolver')"></app-button>
+        <app-button label="Desconsiderar" variant="text" (onClick)="askClose(row, 'desconsiderar')"></app-button>
       } @else {
-        <app-button label="Reabrir" variant="text" (click)="reopen(row)"></app-button>
+        <app-button label="Reabrir" variant="text" (onClick)="reopen(row)"></app-button>
       }
     }
   </div>
@@ -174,8 +182,8 @@
       [placeholder]="c.action === 'resolver' ? 'O que foi feito' : 'Por que não se aplica'"></textarea>
     <div class="small text-muted mt-1">Comentário obrigatório. Se a causa sumir e voltar depois, a pendência reabre.</div>
     <div class="d-flex justify-content-end gap-2 mt-3">
-      <app-button label="Cancelar" variant="text" (click)="closing.set(null)"></app-button>
-      <app-button label="Salvar" [disabled]="comment.trim().length < 3" (click)="confirmClose()"></app-button>
+      <app-button label="Cancelar" variant="text" (onClick)="closing.set(null)"></app-button>
+      <app-button label="Salvar" [disabled]="comment.trim().length < 3" (onClick)="confirmClose()"></app-button>
     </div>
   }
 </app-modal>

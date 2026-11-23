@@ -9,21 +9,25 @@
   margin-bottom: 20px;
 }
 
+// app-input reserves 70px (room for the error line) but its box is 49px: aligning the tops and
+// giving the month navigation the box's height keeps arrows, labels and fields on one line.
 .filters-main {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
 }
 
+$filter-control-height: 49px;
+
 .company-field {
   flex: 1 1 320px;
-  max-width: 480px;
+  max-width: 420px;
 }
 
 .search-field {
-  flex: 1 1 240px;
-  max-width: 340px;
+  flex: 1 1 280px;
+  max-width: 380px;
 }
 
 .period-chips {
@@ -36,6 +40,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  height: $filter-control-height;
 }
 
 .month-label {
@@ -43,7 +48,12 @@
   text-align: center;
   font-weight: 600;
   color: var(--text-title);
-  text-transform: capitalize;
+  display: inline-block;
+
+  // "Outubro de 2026": only the first letter (capitalize would give "Outubro De 2026").
+  &::first-letter {
+    text-transform: uppercase;
+  }
 }
 
 .icon-chip {
