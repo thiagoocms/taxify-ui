@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastrService } from 'ngx-toastr';
 import { map, Observable } from 'rxjs';
 import { CompanyDTO } from '../../core/models/company.model';
@@ -16,10 +17,12 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { CompanyService } from '../../core/services/company.service';
 import { PendencyService } from '../../core/services/pendency.service';
+import { Button } from '../../shared/components/button/button';
 import { InputComponent } from '../../shared/components/input/input';
 import { Modal } from '../../shared/components/modal/modal';
-import { Page } from '../../shared/components/page/page';
+import { Page, PageButton } from '../../shared/components/page/page';
 import { Pagination } from '../../shared/components/pagination/pagination';
+import { Table, TableColumn, TableConfig } from '../../shared/components/table/table';
 import { formatDocument } from '../../shared/utils/document-mask';
 
 type CloseAction = 'resolver' | 'desconsiderar';
@@ -27,183 +30,14 @@ type CloseAction = 'resolver' | 'desconsiderar';
 /**
  * Painel de pendências (roadmap M13): o que falta em cada empresa da carteira, por prioridade,
  * com link para resolver e fechamento sempre com comentário; embaixo, a saúde das integrações.
+ * Mesmo desenho da Apuração: filtros em chips, resumo, atalhos por tipo e tabela.
  */
 @Component({
   selector: 'app-pendencies',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, InputComponent, Modal, Page, Pagination],
-  template: `
-    <app-page pageTitle="Pendências" pageDescription="O que falta em cada empresa da carteira, por prioridade">
-      <form [formGroup]="form" class="filters">
-        <div class="company-field">
-          <app-input
-            formControlName="company"
-            label="Empresa (vazio = toda a carteira)"
-            type="autocomplete"
-            [searchFn]="searchCompanies"
-            [displayFn]="companyLabel"
-            displayField="name"
-            displayFieldTooltip="documentNumber"
-          ></app-input>
-        </div>
-        <select class="form-select form-select-sm" [ngModel]="status()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStatus($event)">
-          <option value="ABERTA">Abertas</option>
-          <option value="RESOLVIDA">Resolvidas</option>
-          <option value="DESCONSIDERADA">Desconsideradas</option>
-          <option value="TODAS">Todas</option>
-        </select>
-        <select class="form-select form-select-sm" [ngModel]="severity()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setSeverity($event)">
-          <option value="">Toda severidade</option>
-          <option value="ALTA">Alta</option>
-          <option value="MEDIA">Média</option>
-          <option value="BAIXA">Baixa</option>
-        </select>
-        <input type="month" class="form-control form-control-sm month" [ngModel]="competence()" [ngModelOptions]="{ standalone: true }"
-          (ngModelChange)="setCompetence($event)" title="Competência" />
-        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="refreshing()" (click)="refresh()">
-          {{ refreshing() ? 'Atualizando...' : 'Atualizar agora' }}
-        </button>
-      </form>
-
-      @if (summary(); as s) {
-        <div class="counters">
-          <button type="button" class="counter" [class.active]="!type()" (click)="setType('')">
-            <span class="counter-total">{{ s.totalOpen }}</span>
-            <span class="counter-label">Abertas</span>
-          </button>
-          @for (c of s.counters; track c.type) {
-            <button type="button" class="counter" [class.active]="type() === c.type" (click)="setType(c.type)">
-              <span class="counter-total">{{ c.total }}</span>
-              <span class="counter-label">{{ c.label }}</span>
-              <span class="counter-sev">
-                @if (c.alta) { <span class="badge text-bg-danger">{{ c.alta }} alta</span> }
-                @if (c.media) { <span class="badge text-bg-warning">{{ c.media }} média</span> }
-                @if (c.baixa) { <span class="badge text-bg-light border">{{ c.baixa }} baixa</span> }
-              </span>
-            </button>
-          }
-        </div>
-      }
-
-      @if (loading()) {
-        <p class="muted"><span class="spinner-border spinner-border-sm me-2"></span>Carregando...</p>
-      } @else if (!rows().length) {
-        <div class="empty">Nenhuma pendência {{ status() === 'ABERTA' ? 'aberta' : '' }} com esses filtros.</div>
-      } @else {
-        <div class="table-responsive">
-          <table class="table table-sm table-hover align-middle small">
-            <thead>
-              <tr>
-                <th>Severidade</th>
-                <th>Empresa</th>
-                <th>Pendência</th>
-                <th>Competência</th>
-                <th>Desde</th>
-                <th class="text-end">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (p of rows(); track p.id) {
-                <tr>
-                  <td><span class="badge" [ngClass]="severityClass(p.severity)">{{ severityLabel(p.severity) }}</span></td>
-                  <td>
-                    {{ p.companyName }}
-                    <div class="muted">{{ formatDocument(p.companyDocument) }}</div>
-                  </td>
-                  <td>
-                    <div class="muted">{{ typeLabel(p) }}</div>
-                    <strong>{{ p.title }}</strong>
-                    @if (p.detail) { <div>{{ p.detail }}</div> }
-                    @if (p.status !== 'ABERTA') {
-                      <div class="muted fst-italic">
-                        {{ p.status === 'RESOLVIDA' ? 'Resolvida' : 'Desconsiderada' }}
-                        {{ p.autoClosed ? 'automaticamente' : 'por ' + p.closedBy }} em {{ p.closedAt | date: 'dd/MM/yyyy HH:mm' }}
-                        @if (p.closeComment && !p.autoClosed) { — "{{ p.closeComment }}" }
-                      </div>
-                    }
-                  </td>
-                  <td>{{ p.competence ? (p.competence + '-01' | date: 'MM/yyyy') : '—' }}</td>
-                  <td>{{ p.firstSeenAt | date: 'dd/MM/yyyy' }}</td>
-                  <td class="text-end actions">
-                    @if (linkFor(p)) {
-                      <button type="button" class="btn btn-sm btn-link p-0" (click)="open(p)">Abrir</button>
-                    }
-                    @if (canClose) {
-                      @if (p.status === 'ABERTA') {
-                        <button type="button" class="btn btn-sm btn-link p-0 text-success" (click)="askClose(p, 'resolver')">Resolver</button>
-                        <button type="button" class="btn btn-sm btn-link p-0 text-secondary" (click)="askClose(p, 'desconsiderar')">Desconsiderar</button>
-                      } @else {
-                        <button type="button" class="btn btn-sm btn-link p-0" (click)="reopen(p)">Reabrir</button>
-                      }
-                    }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <app-pagination [pageIndex]="page()" [totalPages]="totalPages()" (pageIndexChange)="goTo($event)"></app-pagination>
-      }
-
-      @if (health().length) {
-        <h6 class="mt-4 section-title">Saúde das integrações — captura SEFAZ</h6>
-        <div class="table-responsive">
-          <table class="table table-sm small align-middle">
-            <thead>
-              <tr><th>Empresa</th><th>Última execução</th><th>Situação</th><th class="text-end">Execuções (7 dias)</th><th class="text-end">Com erro</th></tr>
-            </thead>
-            <tbody>
-              @for (h of health(); track h.companyId) {
-                <tr>
-                  <td>{{ h.companyName }}</td>
-                  <td>{{ h.lastRunAt ? (h.lastRunAt | date: 'dd/MM/yyyy HH:mm') : 'ainda não rodou' }}</td>
-                  <td>
-                    <span class="badge" [ngClass]="h.lastStatus === 'ERRO' ? 'text-bg-danger' : h.lastStatus === 'OK' ? 'text-bg-success' : 'text-bg-secondary'">
-                      {{ healthLabel(h) }}
-                    </span>
-                    @if (h.lastStatus === 'ERRO' && h.lastDetail) { <div class="muted">{{ h.lastDetail }}</div> }
-                  </td>
-                  <td class="text-end">{{ h.runsLast7Days }}</td>
-                  <td class="text-end" [class.text-danger]="h.errorsLast7Days > 0">{{ h.errorsLast7Days }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </app-page>
-
-    <app-modal [open]="!!closing()" [title]="closing()?.action === 'resolver' ? 'Resolver pendência' : 'Desconsiderar pendência'" (closed)="closing.set(null)">
-      @if (closing(); as c) {
-        <p class="small"><strong>{{ c.pendency.title }}</strong> — {{ c.pendency.companyName }}</p>
-        <textarea class="form-control" rows="3" maxlength="500" [(ngModel)]="comment"
-          [placeholder]="c.action === 'resolver' ? 'O que foi feito' : 'Por que não se aplica'"></textarea>
-        <div class="small muted mt-1">Comentário obrigatório. Se a causa sumir e voltar depois, a pendência reabre.</div>
-        <div class="d-flex justify-content-end gap-2 mt-3">
-          <button type="button" class="btn btn-sm btn-link" (click)="closing.set(null)">Cancelar</button>
-          <button type="button" class="btn btn-sm btn-primary" [disabled]="comment.trim().length < 3" (click)="confirmClose()">Salvar</button>
-        </div>
-      }
-    </app-modal>
-  `,
-  styles: `
-    .filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin-bottom: 1rem; }
-    .filters .company-field { flex: 1 1 320px; max-width: 480px; }
-    .filters select { width: auto; }
-    .filters .month { width: 160px; }
-    .counters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
-    .counter { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 150px; padding: 8px 12px;
-      border: 1px solid var(--bs-border-color, #dee2e6); border-radius: 8px; background: var(--bs-body-bg, #fff); text-align: left; }
-    .counter.active { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
-    .counter-total { font-size: 1.25rem; font-weight: 600; }
-    .counter-label { font-size: 0.8rem; opacity: 0.8; }
-    .counter-sev { display: flex; gap: 4px; flex-wrap: wrap; }
-    .muted { opacity: 0.7; }
-    .actions { white-space: nowrap; }
-    .actions .btn + .btn { margin-left: 10px; }
-    .empty { padding: 24px; text-align: center; opacity: 0.7; border: 1px dashed var(--bs-border-color, #dee2e6); border-radius: 6px; }
-    .section-title { font-weight: 600; }
-  `,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table],
+  templateUrl: './pendencies.component.html',
+  styleUrl: './pendencies.component.scss',
 })
 export class PendenciesComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -213,8 +47,33 @@ export class PendenciesComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
 
+  private readonly severityCell = viewChild.required<TemplateRef<unknown>>('severityCell');
+  private readonly companyCell = viewChild.required<TemplateRef<unknown>>('companyCell');
+  private readonly pendencyCell = viewChild.required<TemplateRef<unknown>>('pendencyCell');
+  private readonly competenceCell = viewChild.required<TemplateRef<unknown>>('competenceCell');
+  private readonly sinceCell = viewChild.required<TemplateRef<unknown>>('sinceCell');
+  private readonly actionsCell = viewChild.required<TemplateRef<unknown>>('actionsCell');
+  private readonly healthCompanyCell = viewChild.required<TemplateRef<unknown>>('healthCompanyCell');
+  private readonly healthRunCell = viewChild.required<TemplateRef<unknown>>('healthRunCell');
+  private readonly healthStatusCell = viewChild.required<TemplateRef<unknown>>('healthStatusCell');
+  private readonly healthRunsCell = viewChild.required<TemplateRef<unknown>>('healthRunsCell');
+
+  readonly statusChips = [
+    { key: 'ABERTA', label: 'Abertas' },
+    { key: 'RESOLVIDA', label: 'Resolvidas' },
+    { key: 'DESCONSIDERADA', label: 'Desconsideradas' },
+    { key: 'TODAS', label: 'Todas' },
+  ];
+  readonly severityChips = [
+    { key: '', label: 'Toda severidade' },
+    { key: 'ALTA', label: 'Alta' },
+    { key: 'MEDIA', label: 'Média' },
+    { key: 'BAIXA', label: 'Baixa' },
+  ];
+
   readonly canClose = this.auth.can('INVOICES_AUDIT');
   readonly form = this.fb.group({ company: this.fb.control<CompanyDTO | null>(null) });
+  readonly companyId = signal<string | undefined>(undefined);
   readonly status = signal('ABERTA');
   readonly severity = signal('');
   readonly type = signal('');
@@ -225,11 +84,40 @@ export class PendenciesComponent implements OnInit {
   readonly summary = signal<PendencySummaryDTO | null>(null);
   readonly health = signal<IntegrationHealthDTO[]>([]);
   readonly loading = signal(false);
+  readonly loaded = signal(false);
   readonly refreshing = signal(false);
   readonly closing = signal<{ pendency: PendencyDTO; action: CloseAction } | null>(null);
   comment = '';
 
   protected readonly formatDocument = formatDocument;
+  readonly tableConfig: TableConfig = { headerVisible: true, actions: [] };
+
+  readonly columns = computed<TableColumn[]>(() => [
+    { name: 'Severidade', cellTemplate: this.severityCell(), width: '110px' },
+    { name: 'Empresa', cellTemplate: this.companyCell(), width: '220px' },
+    { name: 'Pendência', cellTemplate: this.pendencyCell() },
+    { name: 'Competência', cellTemplate: this.competenceCell(), width: '110px' },
+    { name: 'Desde', cellTemplate: this.sinceCell(), width: '100px' },
+    { name: '', cellTemplate: this.actionsCell(), width: '220px' },
+  ]);
+
+  readonly healthColumns = computed<TableColumn[]>(() => [
+    { name: 'Empresa', cellTemplate: this.healthCompanyCell() },
+    { name: 'Última execução', cellTemplate: this.healthRunCell(), width: '170px' },
+    { name: 'Situação', cellTemplate: this.healthStatusCell() },
+    { name: 'Execuções (7 dias)', cellTemplate: this.healthRunsCell(), headerClass: 'justify-content-end', width: '160px' },
+  ]);
+
+  readonly pageButtons = computed<PageButton[]>(() => [
+    {
+      id: 'pendencies-refresh',
+      label: this.refreshing() ? 'Atualizando...' : 'Atualizar agora',
+      icon: 'cloud-arrow-down',
+      variant: 'outlined',
+      isDisabled: this.refreshing(),
+      handler: () => this.refresh(),
+    },
+  ]);
 
   readonly searchCompanies = (term: string): Observable<CompanyDTO[]> =>
     this.companyService.getAll({ page: 0, size: 10 }, { search: term }).pipe(map((page) => page.content));
@@ -237,14 +125,11 @@ export class PendenciesComponent implements OnInit {
   readonly companyLabel = (company: CompanyDTO): string =>
     company.documentNumber ? `${company.name} - ${formatDocument(company.documentNumber)}` : company.name;
 
-  private readonly companyId = computed(() => this.selectedCompany()?.id ?? undefined);
-  private readonly selectedCompany = signal<CompanyDTO | null>(null);
-
   ngOnInit(): void {
     this.form.controls.company.valueChanges.subscribe((company) => {
-      const picked = company && typeof company === 'object' && company.id ? company : null;
-      if (picked?.id !== this.selectedCompany()?.id && (picked || !company)) {
-        this.selectedCompany.set(picked);
+      const id = company && typeof company === 'object' && company.id ? company.id : undefined;
+      if (id !== this.companyId() && (id || !company)) {
+        this.companyId.set(id);
         this.reloadAll();
       }
     });
@@ -275,12 +160,18 @@ export class PendenciesComponent implements OnInit {
           this.rows.set(page.content);
           this.totalPages.set(page.totalPages);
           this.loading.set(false);
+          this.loaded.set(true);
         },
         error: () => {
           this.rows.set([]);
           this.loading.set(false);
+          this.loaded.set(true);
         },
       });
+  }
+
+  severityTotal(level: 'alta' | 'media' | 'baixa'): number {
+    return (this.summary()?.counters ?? []).reduce((sum, counter) => sum + counter[level], 0);
   }
 
   setStatus(value: string): void {
@@ -356,10 +247,13 @@ export class PendenciesComponent implements OnInit {
     });
   }
 
-  /** Para onde a pendência leva: a nota, a manifestação (resumo sem XML) ou o cadastro da empresa. */
+  /** Para onde a pendência leva: a nota, a nota de serviço, a manifestação (resumo sem XML) ou a empresa. */
   linkFor(p: PendencyDTO): { path: string[]; query?: Record<string, string> } | null {
     if (p.objectType === 'NOTE' && p.objectId) {
       return { path: ['/notas-fiscais', p.objectId] };
+    }
+    if (p.objectType === 'SERVICE_NOTE') {
+      return { path: ['/notas-servico'] };
     }
     if (p.objectType === 'NOTE_KEY') {
       return { path: ['/manifestacao'] };
@@ -386,7 +280,7 @@ export class PendenciesComponent implements OnInit {
   }
 
   severityClass(severity: PendencySeverity): string {
-    return severity === 'ALTA' ? 'text-bg-danger' : severity === 'MEDIA' ? 'text-bg-warning' : 'text-bg-light border';
+    return severity === 'ALTA' ? 'danger' : severity === 'MEDIA' ? 'warn' : '';
   }
 
   healthLabel(h: IntegrationHealthDTO): string {

@@ -1,0 +1,128 @@
+<app-page pageTitle="Retenções" pageDescription="O que cada cliente tem a recolher e a compensar na competência" [pageButtons]="pageButtons()">
+  <div class="filters">
+    <div class="filters-main">
+      <div class="month-nav" role="group" aria-label="Competência">
+        <button type="button" class="chip icon-chip" (click)="shift(-1)" aria-label="Mês anterior">
+          <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
+        </button>
+        <span class="month-label">{{ monthLabel(month()) }}</span>
+        <button type="button" class="chip icon-chip" (click)="shift(1)" aria-label="Próximo mês">
+          <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
+        </button>
+      </div>
+      <form class="company-field" [formGroup]="form">
+        <app-input formControlName="company" label="Empresa (vazio = toda a carteira)" type="autocomplete"
+          [searchFn]="searchCompanies" [displayFn]="companyLabel" displayField="name" displayFieldTooltip="documentNumber"></app-input>
+      </form>
+      <form class="search-field" [formGroup]="form">
+        <app-input formControlName="search" label="Empresa, contraparte, CNPJ ou nº"></app-input>
+      </form>
+    </div>
+  </div>
+
+  @if (loading() && !screen()) {
+    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Calculando as retenções...</p>
+  } @else if (screen()) {
+    @let s = screen()!;
+    <div class="results-summary">
+      @for (card of s.cards; track card.nature) {
+        <div class="summary-item">
+          <span class="summary-label">{{ natureLabel(card.nature) }} · {{ card.notes }} {{ card.notes === 1 ? 'nota' : 'notas' }}</span>
+          <span class="summary-value">{{ formatCurrency(card.total) }}</span>
+          <span class="summary-sub">{{ taxSummary(card.byTax) || hint(card.nature) }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="quick-filters" role="group" aria-label="Atalhos">
+      @for (card of s.cards; track card.nature) {
+        <button type="button" class="quick-card" [ngClass]="quickClass(card.nature)" [class.active]="nature() === card.nature"
+          (click)="toggleNature(card.nature)" [title]="hint(card.nature)">
+          <span class="quick-value">{{ countOf(card.nature) }}</span>
+          <span class="quick-label">{{ natureLabel(card.nature).toLowerCase() }}</span>
+        </button>
+      }
+      <button type="button" class="quick-card warn" [class.active]="quick() === 'UNDUE'" (click)="toggleQuick('UNDUE')">
+        <span class="quick-value">{{ undueCount() }}</span>
+        <span class="quick-label">prováveis indevidas</span>
+      </button>
+      <button type="button" class="quick-card" [class.active]="quick() === 'PENDING'" (click)="toggleQuick('PENDING')">
+        <span class="quick-value">{{ pendingCount() }}</span>
+        <span class="quick-label">a conferir</span>
+      </button>
+      @if (selected().length) {
+        <span class="quick-note">{{ selected().length }} {{ selected().length === 1 ? 'linha selecionada' : 'linhas selecionadas' }}</span>
+      }
+    </div>
+
+    @if (!rows().length) {
+      <div class="empty-hero">
+        <fa-icon [icon]="['fas', 'hand-holding-dollar']" class="empty-hero-icon"></fa-icon>
+        <h6>Nenhuma retenção</h6>
+        <p>As retenções vêm das NFS-e (Notas de serviço) e das NF-e com retenção (retTrib) ou ICMS-ST na competência.</p>
+      </div>
+    } @else {
+      <div class="table-wrapper" [class.is-loading]="loading()">
+        @for (key of [tableKey()]; track key) {
+          <app-table [columns]="columns()" [data]="rows()" [config]="tableConfig()" (selectionChange)="selected.set($event)"></app-table>
+        }
+        @if (loading()) {
+          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Atualizando...</div>
+        }
+      </div>
+    }
+
+    <p class="disclaimer">
+      Calculado das notas da competência (canceladas fora). Vencimento federal no dia 20 do mês seguinte, antecipado no fim de
+      semana (feriados não considerados); o ISS vence conforme o município. Confira antes de emitir as guias.
+    </p>
+  }
+</app-page>
+
+<ng-template #companyCell let-row="row">
+  <div>
+    <strong>{{ row.companyName }}</strong>
+    <div class="cell-sub">{{ formatDocument(row.companyDocument) }}</div>
+  </div>
+</ng-template>
+
+<ng-template #noteCell let-row="row">
+  <div>
+    <a href="" (click)="$event.preventDefault(); $event.stopPropagation(); openNote(row)">
+      {{ row.documentType === 'NFSE' ? 'NFS-e' : 'NF-e' }} {{ row.numero || '' }}
+    </a>
+    <div class="cell-sub">{{ row.issueDate | date: 'dd/MM/yyyy' }}</div>
+  </div>
+</ng-template>
+
+<ng-template #natureCell let-row="row">
+  <span [class]="'state-badge ' + natureBadge(row.nature)">{{ natureLabel(row.nature) }}</span>
+</ng-template>
+
+<ng-template #counterpartCell let-row="row">
+  <div>
+    <strong>{{ row.counterpartName || '—' }}</strong>
+    <div class="cell-sub">{{ formatDocument(row.counterpartDocument) }}</div>
+  </div>
+</ng-template>
+
+<ng-template #taxCell let-row="row">
+  <div class="value-cell">
+    <strong>{{ formatCurrency(row.amount) }}</strong>
+    <div class="cell-sub">{{ taxLabel(row.tax) }} · nota {{ formatCurrency(row.serviceValue) }}</div>
+  </div>
+</ng-template>
+
+<ng-template #dueCell let-row="row">
+  <span>{{ row.dueDate ? (row.dueDate | date: 'dd/MM/yyyy') : '—' }}</span>
+</ng-template>
+
+<ng-template #actionCell let-row="row">
+  <div class="action-text">
+    @if (row.undue) { <span class="state-badge warn">provável indevida</span> }
+    {{ row.action }}
+    @if (row.reviewed) {
+      <div class="cell-sub text-success">Conferida por {{ row.reviewedBy }} em {{ row.reviewedAt | date: 'dd/MM/yyyy' }}</div>
+    }
+  </div>
+</ng-template>

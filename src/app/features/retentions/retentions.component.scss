@@ -1,0 +1,7 @@
+@use '../../shared/styles/list-patterns' as *;
+@use '../../shared/styles/page-patterns' as *;
+
+.action-text {
+  font-size: 13px;
+  max-width: 340px;
+}

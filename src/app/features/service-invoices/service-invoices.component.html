@@ -1,0 +1,184 @@
+<app-page pageTitle="Notas de serviço" pageDescription="NFS-e prestadas e tomadas, com ISS e retenções" [pageButtons]="pageButtons()">
+  <div class="filters">
+    <div class="filters-main">
+      <div class="month-nav" role="group" aria-label="Mês de emissão">
+        <button type="button" class="chip icon-chip" (click)="shift(-1)" aria-label="Mês anterior">
+          <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
+        </button>
+        <span class="month-label">{{ monthLabel(month()) }}</span>
+        <button type="button" class="chip icon-chip" (click)="shift(1)" aria-label="Próximo mês">
+          <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
+        </button>
+      </div>
+      <form class="company-field" [formGroup]="form">
+        <app-input formControlName="company" label="Empresa (nome ou CNPJ)" type="autocomplete" [searchFn]="searchCompanies"
+          [displayFn]="companyLabel" displayField="name" displayFieldTooltip="documentNumber"></app-input>
+      </form>
+      <form class="search-field" [formGroup]="form">
+        <app-input formControlName="participant" label="Prestador / tomador (nome ou CNPJ)"></app-input>
+      </form>
+    </div>
+  </div>
+
+  @if (!companyId()) {
+    <div class="empty-hero">
+      <fa-icon [icon]="['fas', 'file-contract']" class="empty-hero-icon"></fa-icon>
+      <h6>Selecione uma empresa</h6>
+      <p>Escolha a empresa acima para ver as notas de serviço prestadas e tomadas no mês.</p>
+    </div>
+  } @else {
+    @if (totals(); as t) {
+      <div class="results-summary">
+        <div class="summary-item">
+          <span class="summary-label">Prestadas ({{ t.prestadas.count }})</span>
+          <span class="summary-value">{{ formatCurrency(t.prestadas.valorServico) }}</span>
+          <span class="summary-sub">ISS {{ formatCurrency(t.prestadas.valorIss) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Retido pelos tomadores</span>
+          <span class="summary-value">{{ formatCurrency(t.prestadas.totalRetido) }}</span>
+          <span class="summary-sub">a compensar</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Tomadas ({{ t.tomadas.count }})</span>
+          <span class="summary-value">{{ formatCurrency(t.tomadas.valorServico) }}</span>
+          <span class="summary-sub">ISS {{ formatCurrency(t.tomadas.valorIss) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Retido pela empresa</span>
+          <span class="summary-value">{{ formatCurrency(t.tomadas.totalRetido) }}</span>
+          <span class="summary-sub">a recolher</span>
+        </div>
+      </div>
+
+      <div class="quick-filters" role="group" aria-label="Atalhos">
+        <button type="button" class="quick-card" [class.active]="direction() === ''" (click)="setDirection('')">
+          <span class="quick-value">{{ t.prestadas.count + t.tomadas.count }}</span>
+          <span class="quick-label">todas</span>
+        </button>
+        <button type="button" class="quick-card" [class.active]="direction() === 'PRESTADA'" (click)="setDirection('PRESTADA')">
+          <span class="quick-value">{{ t.prestadas.count }}</span>
+          <span class="quick-label">prestadas</span>
+        </button>
+        <button type="button" class="quick-card" [class.active]="direction() === 'TOMADA'" (click)="setDirection('TOMADA')">
+          <span class="quick-value">{{ t.tomadas.count }}</span>
+          <span class="quick-label">tomadas</span>
+        </button>
+        <button type="button" class="quick-card warn" [class.active]="onlyRetained()" (click)="toggleRetained()">
+          <span class="quick-label">só com retenção</span>
+        </button>
+        <span class="quick-note">{{ totalElements() }} {{ totalElements() === 1 ? 'nota' : 'notas' }} na lista</span>
+      </div>
+    }
+
+    @if (loading() && !loaded()) {
+      <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando as notas...</p>
+    } @else if (loaded() && !rows().length) {
+      <div class="empty-hero">
+        <fa-icon [icon]="['fas', 'file-contract']" class="empty-hero-icon"></fa-icon>
+        <h6>Nenhuma NFS-e no mês</h6>
+        <p>Elas chegam do SIEG uma vez por dia (os últimos 35 dias). Para um mês anterior use "Buscar este mês no SIEG", ou
+          importe o XML pela tela de Notas fiscais.</p>
+      </div>
+    } @else if (loaded()) {
+      <div class="table-wrapper" [class.is-loading]="loading()">
+        <app-table [columns]="columns()" [data]="rows()" [config]="tableConfig" (rowClick)="openDetail($event)"></app-table>
+        @if (loading()) {
+          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Atualizando...</div>
+        }
+      </div>
+      @if (totalPages() > 1) {
+        <app-pagination [pageIndex]="page()" [totalPages]="totalPages()" (pageIndexChange)="goTo($event)"></app-pagination>
+      }
+    }
+
+    <p class="disclaimer">
+      NFS-e no layout nacional e ABRASF, do SIEG (uma vez por dia) e de upload. Canceladas ficam fora dos totais. "Prestada" e
+      "tomada" vêm do CNPJ da empresa na nota.
+    </p>
+  }
+</app-page>
+
+<ng-template #noteCell let-row="row">
+  <div>
+    <strong>Nº {{ row.numero || '—' }}</strong>
+    <div class="status-cell mt-1">
+      <span [class]="'state-badge ' + (row.direction === 'PRESTADA' ? 'info' : '')">
+        {{ row.direction === 'PRESTADA' ? 'Prestada' : row.direction === 'TOMADA' ? 'Tomada' : 'Terceiro' }}
+      </span>
+      @if (row.canceled) { <span class="state-badge danger">Cancelada</span> }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #dateCell let-row="row">
+  <div>
+    {{ row.issueDate | date: 'dd/MM/yyyy' }}
+    <div class="cell-sub">{{ row.layout === 'NACIONAL' ? 'Nacional' : 'ABRASF' }}</div>
+  </div>
+</ng-template>
+
+<ng-template #partyCell let-row="row">
+  <div>
+    @if (row.direction === 'PRESTADA') {
+      <strong>{{ row.tomadorNome || '—' }}</strong>
+      <div class="cell-sub">Tomador · {{ formatDocument(row.tomadorDocumento) }}</div>
+    } @else {
+      <strong>{{ row.prestadorNome || '—' }}</strong>
+      <div class="cell-sub">Prestador · {{ formatDocument(row.prestadorDocumento) }}</div>
+    }
+  </div>
+</ng-template>
+
+<ng-template #serviceCell let-row="row">
+  <span class="service-text">{{ row.descricaoServico || '—' }}</span>
+</ng-template>
+
+<ng-template #valueCell let-row="row">
+  <div class="value-cell"><strong>{{ formatCurrency(row.valorServico) }}</strong></div>
+</ng-template>
+
+<ng-template #issCell let-row="row">
+  <div class="value-cell">
+    {{ formatCurrency(row.valorIss) }}
+    @if (row.issRetido) { <div><span class="state-badge warn">retido</span></div> }
+  </div>
+</ng-template>
+
+<ng-template #retainedCell let-row="row">
+  <div class="value-cell">{{ row.totalRetido ? formatCurrency(row.totalRetido) : '—' }}</div>
+</ng-template>
+
+<app-modal [open]="!!detail()" [title]="'NFS-e nº ' + (detail()?.numero || '')" size="lg" (closed)="detail.set(null)">
+  @if (detail(); as d) {
+    <div class="detail-grid small">
+      <div><span class="cell-sub">Prestador</span><div>{{ d.prestadorNome }} · {{ formatDocument(d.prestadorDocumento) }}</div></div>
+      <div><span class="cell-sub">Tomador</span><div>{{ d.tomadorNome || '—' }} · {{ formatDocument(d.tomadorDocumento) }}</div></div>
+      <div><span class="cell-sub">Emissão / competência</span><div>{{ d.issueDate | date: 'dd/MM/yyyy HH:mm' }} · {{ d.competence | date: 'MM/yyyy' }}</div></div>
+      <div><span class="cell-sub">Layout / origem</span><div>{{ d.layout }} · {{ d.origem }}</div></div>
+      <div><span class="cell-sub">Serviço</span><div>{{ d.codigoServico || '—' }} {{ d.codigoTributacaoMunicipal ? '· ' + d.codigoTributacaoMunicipal : '' }}</div></div>
+      <div><span class="cell-sub">Município de incidência</span><div>{{ d.municipioIncidencia || '—' }}</div></div>
+      @if (d.codigoVerificacao) { <div><span class="cell-sub">Código de verificação</span><div>{{ d.codigoVerificacao }}</div></div> }
+      <div class="full"><span class="cell-sub">Chave</span><div class="mono">{{ d.accessKey }}</div></div>
+      <div class="full"><span class="cell-sub">Descrição</span><div>{{ d.descricaoServico || '—' }}</div></div>
+    </div>
+    <table class="table table-sm small mt-3">
+      <tbody>
+        <tr><td>Valor do serviço</td><td class="text-end">{{ formatCurrency(d.valorServico) }}</td></tr>
+        <tr><td>Deduções</td><td class="text-end">{{ formatCurrency(d.valorDeducoes) }}</td></tr>
+        <tr><td>Base de cálculo / alíquota ISS</td><td class="text-end">{{ formatCurrency(d.baseCalculo) }} · {{ d.aliquotaIss ?? '—' }}%</td></tr>
+        <tr><td>ISS {{ d.issRetido ? '(retido)' : '' }}</td><td class="text-end">{{ formatCurrency(d.valorIss) }}</td></tr>
+        <tr><td>IRRF retido</td><td class="text-end">{{ formatCurrency(d.valorIrrf) }}</td></tr>
+        <tr><td>PIS / COFINS {{ d.pisCofinsRetidos ? '(retidos)' : '(informados)' }}</td>
+          <td class="text-end">{{ formatCurrency(d.valorPis) }} / {{ formatCurrency(d.valorCofins) }}</td></tr>
+        <tr><td>CSLL retida</td><td class="text-end">{{ formatCurrency(d.valorCsll) }}</td></tr>
+        <tr><td>INSS retido</td><td class="text-end">{{ formatCurrency(d.valorInss) }}</td></tr>
+        <tr class="fw-semibold"><td>Total retido</td><td class="text-end">{{ formatCurrency(d.totalRetido) }}</td></tr>
+        <tr><td>Valor líquido</td><td class="text-end">{{ formatCurrency(d.valorLiquido) }}</td></tr>
+      </tbody>
+    </table>
+    <div class="d-flex justify-content-end">
+      <app-button label="Baixar XML" icon="download" variant="outlined" (click)="downloadXml(d)"></app-button>
+    </div>
+  }
+</app-modal>

@@ -4,6 +4,12 @@ import { ConfirmDialog } from './shared/components/confirm-dialog/confirm-dialog
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import {
   faArrowLeft,
+  faBan,
+  faCheck,
+  faFileSignature,
+  faFileContract,
+  faHandHoldingDollar,
+  faXmark,
   faArrowRight,
   faChevronDown,
   faChevronUp,
@@ -46,6 +52,7 @@ export class AppComponent {
   title = 'taxify-front';
 
   constructor(library: FaIconLibrary) {
+    library.addIcons(faBan, faCheck, faFileSignature, faXmark, faFileContract, faHandHoldingDollar);
     library.addIcons(faLock, faLockOpen, faChevronLeft, faChevronRight, faCalculator, faPlus, faPen, faTrash, faLink, faLinkSlash, faMagnifyingGlass, faUser, faRightFromBracket, faArrowLeft, faUpload, faFileZipper, faCloudArrowDown);
     library.addIcons(
       faArrowRight, faChevronDown, faChevronUp, faCircleCheck, faCopy, faDownload, faEye, faFileCode,

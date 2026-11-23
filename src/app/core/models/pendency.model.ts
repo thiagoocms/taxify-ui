@@ -82,4 +82,6 @@ export const PENDENCY_TYPE_LABELS: Record<string, string> = {
   SOURCE_ONLY_SEFAZ: 'Nota só na SEFAZ',
   NOTE_DIVERGENT: 'Nota conferida com divergência',
   REGIME_MISSING: 'Regime tributário não informado',
+  RETENTION_UNDUE: 'Provável retenção indevida',
+  ISS_RETAINED_WITHOUT_VALUE: 'ISS retido sem valor',
 };

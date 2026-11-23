@@ -1,0 +1,181 @@
+<app-page pageTitle="Pendências" pageDescription="O que falta em cada empresa da carteira, por prioridade" [pageButtons]="pageButtons()">
+  <div class="filters">
+    <div class="filters-main">
+      <form class="company-field" [formGroup]="form">
+        <app-input
+          formControlName="company"
+          label="Empresa (vazio = toda a carteira)"
+          type="autocomplete"
+          [searchFn]="searchCompanies"
+          [displayFn]="companyLabel"
+          displayField="name"
+          displayFieldTooltip="documentNumber"
+        ></app-input>
+      </form>
+      <label class="small competence-field">
+        Competência
+        <input type="month" class="form-control form-control-sm" [ngModel]="competence()" (ngModelChange)="setCompetence($event)" />
+      </label>
+    </div>
+
+    <div class="period-chips" role="group" aria-label="Situação">
+      @for (option of statusChips; track option.key) {
+        <button type="button" class="chip" [class.active]="status() === option.key" [attr.aria-pressed]="status() === option.key"
+          (click)="setStatus(option.key)">{{ option.label }}</button>
+      }
+      <span class="chip-divider"></span>
+      @for (option of severityChips; track option.key) {
+        <button type="button" class="chip" [class.active]="severity() === option.key" [attr.aria-pressed]="severity() === option.key"
+          (click)="setSeverity(option.key)">{{ option.label }}</button>
+      }
+    </div>
+  </div>
+
+  @if (summary(); as s) {
+    <div class="results-summary">
+      <div class="summary-item">
+        <span class="summary-label">Pendências abertas</span>
+        <span class="summary-value">{{ s.totalOpen }}</span>
+        <span class="summary-sub">{{ companyId() ? 'nesta empresa' : 'em toda a carteira' }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Severidade alta</span>
+        <span class="summary-value">{{ severityTotal('alta') }}</span>
+        <span class="summary-sub">tratar primeiro</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Média e baixa</span>
+        <span class="summary-value">{{ severityTotal('media') + severityTotal('baixa') }}</span>
+        <span class="summary-sub">{{ s.counters.length }} {{ s.counters.length === 1 ? 'tipo' : 'tipos' }} de pendência</span>
+      </div>
+    </div>
+
+    @if (s.counters.length) {
+      <div class="quick-filters" role="group" aria-label="Tipos">
+        @for (c of s.counters; track c.type) {
+          <button type="button" class="quick-card" [class.danger]="c.alta > 0" [class.warn]="!c.alta && c.media > 0"
+            [class.active]="type() === c.type" (click)="setType(c.type)">
+            <span class="quick-value">{{ c.total }}</span>
+            <span class="quick-label">{{ c.label }}</span>
+          </button>
+        }
+      </div>
+    }
+  }
+
+  @if (loading() && !loaded()) {
+    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando as pendências...</p>
+  } @else if (loaded() && !rows().length) {
+    <div class="empty-hero">
+      <fa-icon [icon]="['fas', 'circle-check']" class="empty-hero-icon"></fa-icon>
+      <h6>Nenhuma pendência {{ status() === 'ABERTA' ? 'aberta' : '' }}</h6>
+      <p>Com esses filtros não há nada a tratar. As pendências são recalculadas de hora em hora.</p>
+    </div>
+  } @else if (loaded()) {
+    <div class="table-wrapper" [class.is-loading]="loading()">
+      <app-table [columns]="columns()" [data]="rows()" [config]="tableConfig"></app-table>
+      @if (loading()) {
+        <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Atualizando...</div>
+      }
+    </div>
+    @if (totalPages() > 1) {
+      <app-pagination [pageIndex]="page()" [totalPages]="totalPages()" (pageIndexChange)="goTo($event)"></app-pagination>
+    }
+  }
+
+  @if (health().length) {
+    <h6 class="section-title">Saúde das integrações — captura SEFAZ</h6>
+    <app-table [columns]="healthColumns()" [data]="health()" [config]="tableConfig"></app-table>
+  }
+
+  <p class="disclaimer">
+    Recalculadas de hora em hora (ou em "Atualizar agora"). Uma pendência fecha sozinha quando a causa some e reabre se ela
+    voltar; resolver ou desconsiderar pede um comentário.
+  </p>
+</app-page>
+
+<ng-template #severityCell let-row="row">
+  <span [class]="'state-badge ' + severityClass(row.severity)">{{ severityLabel(row.severity) }}</span>
+</ng-template>
+
+<ng-template #companyCell let-row="row">
+  <div>
+    <strong>{{ row.companyName }}</strong>
+    <div class="cell-sub">{{ formatDocument(row.companyDocument) }}</div>
+  </div>
+</ng-template>
+
+<ng-template #pendencyCell let-row="row">
+  <div class="pendency-cell">
+    <div class="cell-sub">{{ typeLabel(row) }}</div>
+    <strong>{{ row.title }}</strong>
+    @if (row.detail) { <div class="detail">{{ row.detail }}</div> }
+    @if (row.status !== 'ABERTA') {
+      <div class="cell-sub fst-italic">
+        {{ row.status === 'RESOLVIDA' ? 'Resolvida' : 'Desconsiderada' }}
+        {{ row.autoClosed ? 'automaticamente' : 'por ' + row.closedBy }} em {{ row.closedAt | date: 'dd/MM/yyyy HH:mm' }}
+        @if (row.closeComment && !row.autoClosed) { — "{{ row.closeComment }}" }
+      </div>
+    }
+  </div>
+</ng-template>
+
+<ng-template #competenceCell let-row="row">
+  <span>{{ row.competence ? (row.competence + '-01' | date: 'MM/yyyy') : '—' }}</span>
+</ng-template>
+
+<ng-template #sinceCell let-row="row">
+  <span>{{ row.firstSeenAt | date: 'dd/MM/yyyy' }}</span>
+</ng-template>
+
+<ng-template #actionsCell let-row="row">
+  <div class="row-actions">
+    @if (linkFor(row)) {
+      <app-button label="Abrir" variant="text" (click)="open(row)"></app-button>
+    }
+    @if (canClose) {
+      @if (row.status === 'ABERTA') {
+        <app-button label="Resolver" variant="text" (click)="askClose(row, 'resolver')"></app-button>
+        <app-button label="Desconsiderar" variant="text" (click)="askClose(row, 'desconsiderar')"></app-button>
+      } @else {
+        <app-button label="Reabrir" variant="text" (click)="reopen(row)"></app-button>
+      }
+    }
+  </div>
+</ng-template>
+
+<ng-template #healthCompanyCell let-row="row">
+  <strong>{{ row.companyName }}</strong>
+</ng-template>
+
+<ng-template #healthRunCell let-row="row">
+  <span>{{ row.lastRunAt ? (row.lastRunAt | date: 'dd/MM/yyyy HH:mm') : 'ainda não rodou' }}</span>
+</ng-template>
+
+<ng-template #healthStatusCell let-row="row">
+  <div>
+    <span [class]="'state-badge ' + (row.lastStatus === 'ERRO' ? 'danger' : row.lastStatus === 'OK' ? 'ok' : '')">{{ healthLabel(row) }}</span>
+    @if (row.lastStatus === 'ERRO' && row.lastDetail) { <div class="cell-sub">{{ row.lastDetail }}</div> }
+  </div>
+</ng-template>
+
+<ng-template #healthRunsCell let-row="row">
+  <div class="value-cell">
+    {{ row.runsLast7Days }}
+    @if (row.errorsLast7Days) { <div class="cell-sub text-danger">{{ row.errorsLast7Days }} com erro</div> }
+  </div>
+</ng-template>
+
+<app-modal [open]="!!closing()" [title]="closing()?.action === 'resolver' ? 'Resolver pendência' : 'Desconsiderar pendência'"
+  (closed)="closing.set(null)">
+  @if (closing(); as c) {
+    <p class="small"><strong>{{ c.pendency.title }}</strong> — {{ c.pendency.companyName }}</p>
+    <textarea class="form-control" rows="3" maxlength="500" [(ngModel)]="comment"
+      [placeholder]="c.action === 'resolver' ? 'O que foi feito' : 'Por que não se aplica'"></textarea>
+    <div class="small text-muted mt-1">Comentário obrigatório. Se a causa sumir e voltar depois, a pendência reabre.</div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <app-button label="Cancelar" variant="text" (click)="closing.set(null)"></app-button>
+      <app-button label="Salvar" [disabled]="comment.trim().length < 3" (click)="confirmClose()"></app-button>
+    </div>
+  }
+</app-modal>

@@ -1,0 +1,185 @@
+<app-page
+  pageTitle="Manifestação do destinatário"
+  pageDescription="Notas de entrada que ainda precisam de Confirmação, Desconhecimento ou Operação não Realizada"
+  [pageButtons]="pageButtons()"
+>
+  <div class="filters">
+    <div class="filters-main">
+      <form class="company-field" [formGroup]="form">
+        <app-input
+          formControlName="company"
+          label="Empresa (nome ou CNPJ)"
+          type="autocomplete"
+          [searchFn]="searchCompanies"
+          [displayFn]="companyLabel"
+          displayField="name"
+          displayFieldTooltip="documentNumber"
+        ></app-input>
+      </form>
+    </div>
+  </div>
+
+  @if (!companyId() && !loading()) {
+    <div class="empty-hero">
+      <fa-icon [icon]="['fas', 'file-signature']" class="empty-hero-icon"></fa-icon>
+      <h6>Selecione uma empresa</h6>
+      <p>Escolha a empresa acima para ver as notas de entrada que ainda aguardam manifestação.</p>
+    </div>
+  } @else if (loading() && !data()) {
+    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando as notas...</p>
+  } @else if (data()) {
+    @let d = data()!;
+    @if (!d.habilitada) {
+      <div class="notice warn">
+        <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+        O plano desta empresa não inclui a "Manifestação do destinatário" (junto com "Importação de XML fiscal" e
+        "Integração SEFAZ"): dá para ver as notas pendentes, mas não enviar a manifestação pelo Taxify.
+      </div>
+    } @else if (!d.certificado) {
+      <div class="notice warn">
+        <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+        A empresa não tem certificado A1 válido — envie o certificado no cadastro da empresa para assinar a manifestação.
+      </div>
+    }
+
+    @if (!d.notas.length) {
+      <div class="empty-hero">
+        <fa-icon [icon]="['fas', 'circle-check']" class="empty-hero-icon"></fa-icon>
+        <h6>Nenhuma nota aguardando manifestação</h6>
+        <p>Todas as notas de entrada dos últimos 180 dias já têm uma manifestação conclusiva.</p>
+      </div>
+    } @else {
+      @let s = summary();
+      <div class="results-summary">
+        <div class="summary-item">
+          <span class="summary-label">Aguardando manifestação</span>
+          <span class="summary-value">{{ s.total }}</span>
+          <span class="summary-sub">notas de entrada dos últimos 180 dias</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Vencendo</span>
+          <span class="summary-value">{{ s.closeToDeadline }}</span>
+          <span class="summary-sub">em até 15 dias</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Valor das notas</span>
+          <span class="summary-value">{{ formatCurrency(s.value) }}</span>
+          <span class="summary-sub">{{ s.onlySummary }} só com o resumo da SEFAZ</span>
+        </div>
+      </div>
+
+      <div class="quick-filters" role="group" aria-label="Atalhos">
+        <button type="button" class="quick-card warn" [class.active]="quickFilter() === 'DEADLINE'" (click)="toggleQuick('DEADLINE')">
+          <span class="quick-value">{{ s.closeToDeadline }}</span>
+          <span class="quick-label">vencendo em 15 dias</span>
+        </button>
+        <button type="button" class="quick-card" [class.active]="quickFilter() === 'NO_CIENCIA'" (click)="toggleQuick('NO_CIENCIA')">
+          <span class="quick-value">{{ s.withoutCiencia }}</span>
+          <span class="quick-label">sem nenhuma manifestação</span>
+        </button>
+        <button type="button" class="quick-card ok" [class.active]="quickFilter() === 'CIENCIA'" (click)="toggleQuick('CIENCIA')">
+          <span class="quick-value">{{ s.total - s.withoutCiencia }}</span>
+          <span class="quick-label">só com ciência</span>
+        </button>
+        <button type="button" class="quick-card" [class.active]="quickFilter() === 'SUMMARY'" (click)="toggleQuick('SUMMARY')">
+          <span class="quick-value">{{ s.onlySummary }}</span>
+          <span class="quick-label">só resumo</span>
+        </button>
+        @if (selected().length) {
+          <span class="quick-note">{{ selected().length }} {{ selected().length === 1 ? 'nota selecionada' : 'notas selecionadas' }}</span>
+        }
+      </div>
+
+      <div class="table-wrapper" [class.is-loading]="loading() || sending()">
+        @for (key of [tableKey()]; track key) {
+          <app-table
+            [columns]="columns()"
+            [data]="filtered()"
+            [config]="tableConfig()"
+            (selectionChange)="selected.set($event)"
+          ></app-table>
+        }
+        @if (sending()) {
+          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Enviando à SEFAZ...</div>
+        } @else if (loading()) {
+          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Atualizando...</div>
+        }
+      </div>
+      @if (!filtered().length) {
+        <p class="text-muted small mt-2">Nenhuma nota com esse atalho.</p>
+      }
+    }
+
+    <p class="disclaimer">
+      Prazo de 180 dias a partir da autorização da nota. A Ciência da Operação libera o XML, mas não conclui a
+      manifestação. Notas canceladas e as já manifestadas ficam fora da lista. O evento fica registrado na SEFAZ e o
+      emitente vê.
+    </p>
+  }
+</app-page>
+
+<ng-template #deadlineCell let-row="row">
+  <div>
+    <span [class]="'deadline-badge ' + deadlineClass(row)">{{ deadlineLabel(row) }}</span>
+    <div class="cell-sub">{{ row.prazo | date: 'dd/MM/yyyy' }}</div>
+  </div>
+</ng-template>
+
+<ng-template #noteCell let-row="row">
+  <div class="note-cell">
+    @if (row.notaId) {
+      <a [routerLink]="['/notas-fiscais', row.notaId]" (click)="$event.stopPropagation()"><strong>Nº {{ row.numero }}</strong></a>
+    } @else {
+      <strong>Nº {{ row.numero }}</strong>
+    }
+    @if (row.serie) { <span class="text-muted"> · Série {{ row.serie }}</span> }
+    <div class="cell-sub mono">{{ row.chave }}</div>
+  </div>
+</ng-template>
+
+<ng-template #issuerCell let-row="row">
+  <div>
+    <strong>{{ row.emitenteNome || '—' }}</strong>
+    <div class="cell-sub">{{ formatDocument(row.emitenteDocumento) }}</div>
+  </div>
+</ng-template>
+
+<ng-template #dateCell let-row="row">
+  <span>{{ row.dataEmissao | date: 'dd/MM/yyyy' }}</span>
+</ng-template>
+
+<ng-template #valueCell let-row="row">
+  <div class="value-cell"><strong>{{ formatCurrency(row.valorTotal) }}</strong></div>
+</ng-template>
+
+<ng-template #statusCell let-row="row">
+  <div class="status-cell">
+    @if (!row.xmlCompleto) {
+      <span class="state-badge" title="A SEFAZ entregou só o resumo">Só resumo</span>
+    }
+    @if (row.ciencia) {
+      <span class="state-badge info">Com ciência</span>
+    } @else {
+      <span class="state-badge">Sem manifestação</span>
+    }
+    @if (failures()[row.chave]; as failure) {
+      <div class="cell-sub text-danger">{{ failure }}</div>
+    }
+  </div>
+</ng-template>
+
+<app-modal [open]="notPerformedOpen()" title="Operação não realizada" (closed)="notPerformedOpen.set(false)">
+  @if (notPerformedOpen()) {
+    <p class="small">
+      Para {{ selected().length }} nota(s). Use quando a operação foi acordada mas não aconteceu (devolução, recusa no
+      recebimento...). A SEFAZ exige a justificativa.
+    </p>
+    <textarea class="form-control" rows="3" maxlength="255" [(ngModel)]="justification"
+      placeholder="Justificativa (15 a 255 caracteres)"></textarea>
+    <div class="small text-muted mt-1">{{ justification.trim().length }}/255</div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <app-button label="Cancelar" variant="text" (click)="notPerformedOpen.set(false)"></app-button>
+      <app-button label="Enviar" [disabled]="justification.trim().length < 15" (click)="sendNotPerformed()"></app-button>
+    </div>
+  }
+</app-modal>

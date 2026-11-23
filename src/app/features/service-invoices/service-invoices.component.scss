@@ -1,0 +1,20 @@
+@use '../../shared/styles/list-patterns' as *;
+@use '../../shared/styles/page-patterns' as *;
+
+.service-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+
+  .full {
+    grid-column: 1 / -1;
+  }
+}

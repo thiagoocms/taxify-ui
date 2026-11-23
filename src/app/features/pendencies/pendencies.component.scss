@@ -1,0 +1,32 @@
+@use '../../shared/styles/list-patterns' as *;
+@use '../../shared/styles/page-patterns' as *;
+
+.competence-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #6c757d;
+
+  input {
+    width: 170px;
+  }
+}
+
+.chip-divider {
+  width: 1px;
+  align-self: stretch;
+  background: #dde1ea;
+  margin: 0 4px;
+}
+
+.pendency-cell .detail {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 2px;
+}

@@ -66,6 +66,11 @@
     <span>Manifestação</span>
   </a>
 
+  <a *ngIf="canInvoices" class="nav-link" routerLink="/retencoes" routerLinkActive="active" (click)="linkClicked.emit()">
+    <fa-icon [icon]="retentionIcon"></fa-icon>
+    <span>Retenções</span>
+  </a>
+
   <a *ngIf="canAssessment" class="nav-link" routerLink="/apuracao" routerLinkActive="active" (click)="linkClicked.emit()">
     <fa-icon [icon]="assessmentIcon"></fa-icon>
     <span>Apuração</span>
