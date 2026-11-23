@@ -44,6 +44,7 @@ import {
   tipoEmissaoLabel,
   tipoOperacaoLabel,
 } from '../invoice-format';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 type DetailTab = 'resumo' | 'produtos' | 'totais' | 'divergencias' | 'auditoria' | 'eventos' | 'xml' | 'pdf';
 
@@ -89,6 +90,7 @@ function prettyXml(xml: string): string {
   styleUrl: './invoice-detail.component.scss',
 })
 export class InvoiceDetailComponent implements OnInit, OnDestroy {
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
@@ -595,12 +597,12 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  retificar(): void {
+  async retificar(): Promise<void> {
     const documentId = this.documentId();
     if (!documentId) {
       return;
     }
-    if (!confirm('Gerar uma versão retificada desta nota aplicando as regras fiscais cadastradas (CFOP, NCM e códigos tributários)? Alíquotas e valores não são alterados. O XML original é preservado.')) {
+    if (!(await this.confirmDialog.ask('Gerar uma versão retificada desta nota aplicando as regras fiscais cadastradas (CFOP, NCM e códigos tributários)? Alíquotas e valores não são alterados. O XML original é preservado.', { title: 'Retificar nota', confirmLabel: 'Gerar versão retificada' }))) {
       return;
     }
 

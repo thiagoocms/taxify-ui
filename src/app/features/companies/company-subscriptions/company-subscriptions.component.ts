@@ -15,6 +15,7 @@ import { SubscriptionDTO } from '../../../core/models/subscription.model';
 import { PlanService } from '../../../core/services/plan.service';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { SubscriptionFormComponent } from './subscription-form/subscription-form.component';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 interface SubscriptionRow extends SubscriptionDTO {
   planName: string;
@@ -32,6 +33,7 @@ interface SubscriptionRow extends SubscriptionDTO {
   styleUrl: './company-subscriptions.component.scss',
 })
 export class CompanySubscriptionsComponent implements OnChanges {
+  private readonly confirmDialog = inject(ConfirmDialogService);
   protected readonly auth = inject(AuthService);
 
   private readonly subscriptionService = inject(SubscriptionService);
@@ -141,8 +143,8 @@ export class CompanySubscriptionsComponent implements OnChanges {
     this.loadSubscriptions();
   }
 
-  remove(subscription: SubscriptionRow): void {
-    if (!confirm(`Remover a assinatura do plano "${subscription.planName}"?`)) {
+  async remove(subscription: SubscriptionRow): Promise<void> {
+    if (!(await this.confirmDialog.ask(`Remover a assinatura do plano "${subscription.planName}"?`, { title: 'Remover assinatura', confirmLabel: 'Remover', danger: true }))) {
       return;
     }
 

@@ -19,6 +19,7 @@ import { CONTA_AZUL_CHANNEL, ContaAzulPopupMessage, openContaAzulPopup } from '.
 import { ContaAzulService } from '../../../core/services/conta-azul.service';
 import { IntegrationService } from '../../../core/services/integration.service';
 import { pollUntilDone } from '../../../core/services/sync-job-polling';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 /**
  * Integrações do escritório num só lugar: chaves da SIEG / Acessórias (nunca exibidas
@@ -33,6 +34,7 @@ import { pollUntilDone } from '../../../core/services/sync-job-polling';
   styleUrl: './firm-integrations.component.scss',
 })
 export class FirmIntegrationsComponent implements OnInit, OnDestroy {
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly integrationService = inject(IntegrationService);
   private readonly contaAzulService = inject(ContaAzulService);
   private readonly billingService = inject(BillingService);
@@ -94,8 +96,8 @@ export class FirmIntegrationsComponent implements OnInit, OnDestroy {
     this.editingKey.set(null);
   }
 
-  saveKey(type: IntegrationType, remove = false): void {
-    if (remove && !confirm(`Remover a chave da ${this.labels[type]}? A integração para de funcionar até informar outra.`)) {
+  async saveKey(type: IntegrationType, remove = false): Promise<void> {
+    if (remove && !(await this.confirmDialog.ask(`Remover a chave da ${this.labels[type]}? A integração para de funcionar até informar outra.`, { title: 'Remover chave', confirmLabel: 'Remover', danger: true }))) {
       return;
     }
     this.savingKey.set(true);
@@ -140,8 +142,8 @@ export class FirmIntegrationsComponent implements OnInit, OnDestroy {
     });
   }
 
-  disconnectContaAzul(): void {
-    if (!confirm('Desconectar a Conta Azul deste escritório? O Taxify deixa de acessar os dados até conectar de novo.')) {
+  async disconnectContaAzul(): Promise<void> {
+    if (!(await this.confirmDialog.ask('Desconectar a Conta Azul deste escritório? O Taxify deixa de acessar os dados até conectar de novo.', { title: 'Desconectar Conta Azul', confirmLabel: 'Desconectar', danger: true }))) {
       return;
     }
     this.contaAzulBusy.set(true);

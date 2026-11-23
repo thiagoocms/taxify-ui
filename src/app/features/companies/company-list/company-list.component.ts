@@ -18,6 +18,8 @@ import { AcessoriasService } from '../../../core/services/acessorias.service';
 import { CompanyService } from '../../../core/services/company.service';
 import { pollUntilDone } from '../../../core/services/sync-job-polling';
 import { CompanyFormComponent } from '../company-form/company-form.component';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { formatDocument } from '../../../shared/utils/document-mask';
 
 type ViewMode = 'list' | 'form';
 
@@ -29,12 +31,13 @@ type ViewMode = 'list' | 'form';
   styleUrl: './company-list.component.scss',
 })
 export class CompanyListComponent implements OnInit {
+  private readonly confirmDialog = inject(ConfirmDialogService);
   protected readonly auth = inject(AuthService);
 
   readonly columns: TableColumn[] = [
     { name: 'Nome', property: 'name' },
     { name: 'Tipo doc.', property: 'documentType' },
-    { name: 'Documento', property: 'documentNumber' },
+    { name: 'Documento', property: 'documentNumber', format: formatDocument },
     { name: 'UF', property: 'uf' },
     { name: 'Regime', property: 'taxRegime' },
     { name: 'Situação', property: 'situacao' },
@@ -198,8 +201,8 @@ export class CompanyListComponent implements OnInit {
     this.loadCompanies();
   }
 
-  remove(company: CompanyDTO): void {
-    if (!confirm(`Deseja realmente excluir a empresa "${company.name}"?`)) {
+  async remove(company: CompanyDTO): Promise<void> {
+    if (!(await this.confirmDialog.ask(`Deseja realmente excluir a empresa "${company.name}"?`, { title: 'Excluir empresa', confirmLabel: 'Excluir', danger: true }))) {
       return;
     }
 

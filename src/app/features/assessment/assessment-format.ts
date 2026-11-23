@@ -53,18 +53,7 @@ export function formatRate(rate?: number | null): string {
   return rate == null ? '—' : `${rate.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}%`;
 }
 
-export function formatDocument(value?: string | null): string {
-  if (!value) {
-    return '';
-  }
-  if (value.length === 14) {
-    return value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-  }
-  if (value.length === 11) {
-    return value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
-  return value;
-}
+export { formatDocument } from '../../shared/utils/document-mask';
 
 /** Alertas que pedem ação (RBT12 proporcional é só informativo). */
 export function actionableAlerts(row: TaxAssessmentDTO): AssessmentAlertDTO[] {

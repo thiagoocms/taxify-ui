@@ -70,7 +70,7 @@
                       @if (column.iconConfig?.cell && column.iconConfig?.cell?.position === 'start') {
                         <fa-icon [icon]="['fas', column.iconConfig?.cell?.name || '']"></fa-icon>
                       }
-                      {{ formatText(row[column.property || column.name], column.cellTextLength) }}
+                      {{ formatText(column.format ? column.format(row[column.property || column.name], row) : row[column.property || column.name], column.cellTextLength) }}
                       @if (column.iconConfig?.cell && column.iconConfig?.cell?.position === 'end') {
                         <fa-icon [icon]="['fas', column.iconConfig?.cell?.name  || '']"></fa-icon>
                       }

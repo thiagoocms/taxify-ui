@@ -6,6 +6,8 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { BILLING_PROVIDER_LABELS, BillingChargeDTO, CHARGE_STATUS_LABELS, CompanyBillingDTO } from '../../../core/models/billing.model';
 import { BillingService } from '../../../core/services/billing.service';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { maskDocument } from '../../../shared/utils/document-mask';
 
 /**
  * Honorários da empresa: situação (em aberto / atrasado), a qual cliente do sistema de
@@ -19,6 +21,8 @@ import { BillingService } from '../../../core/services/billing.service';
   styleUrl: './company-billing.component.scss',
 })
 export class CompanyBillingComponent implements OnChanges {
+  protected readonly maskDocument = maskDocument;
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly billingService = inject(BillingService);
 
   @Input() companyId = '';
@@ -89,8 +93,8 @@ export class CompanyBillingComponent implements OnChanges {
     );
   }
 
-  removeCharge(charge: BillingChargeDTO): void {
-    if (!confirm('Excluir esta cobrança manual?')) {
+  async removeCharge(charge: BillingChargeDTO): Promise<void> {
+    if (!(await this.confirmDialog.ask('Excluir esta cobrança manual?', { title: 'Excluir cobrança', confirmLabel: 'Excluir', danger: true }))) {
       return;
     }
     this.run(this.billingService.deleteCharge(charge.id));
@@ -119,8 +123,8 @@ export class CompanyBillingComponent implements OnChanges {
     this.run(this.billingService.lookupLink(this.companyId, this.linkForm.document), () => this.linkFormOpen.set(false));
   }
 
-  removeLink(): void {
-    if (!confirm('Desfazer o vínculo com o cliente do sistema de cobrança?')) {
+  async removeLink(): Promise<void> {
+    if (!(await this.confirmDialog.ask('Desfazer o vínculo com o cliente do sistema de cobrança?', { title: 'Desfazer vínculo', confirmLabel: 'Desfazer', danger: true }))) {
       return;
     }
     this.run(this.billingService.deleteLink(this.companyId), () => this.linkFormOpen.set(false));

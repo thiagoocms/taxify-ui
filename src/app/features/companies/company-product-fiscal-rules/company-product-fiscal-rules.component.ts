@@ -13,6 +13,7 @@ import { Table, TableColumn, TableConfig } from '../../../shared/components/tabl
 import { ProductFiscalRuleDTO, ProductRuleSuggestionDTO } from '../../../core/models/product-fiscal-rule.model';
 import { ProductFiscalRuleService } from '../../../core/services/product-fiscal-rule.service';
 import { RuleFormComponent } from './rule-form/rule-form.component';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-company-product-fiscal-rules',
@@ -22,6 +23,7 @@ import { RuleFormComponent } from './rule-form/rule-form.component';
   styleUrl: './company-product-fiscal-rules.component.scss',
 })
 export class CompanyProductFiscalRulesComponent implements OnChanges {
+  private readonly confirmDialog = inject(ConfirmDialogService);
   protected readonly auth = inject(AuthService);
 
   private readonly productFiscalRuleService = inject(ProductFiscalRuleService);
@@ -173,8 +175,8 @@ export class CompanyProductFiscalRulesComponent implements OnChanges {
     this.loadRules();
   }
 
-  remove(rule: ProductFiscalRuleDTO): void {
-    if (!confirm(`Deseja realmente excluir a regra do produto "${rule.codigoProduto}"?`)) {
+  async remove(rule: ProductFiscalRuleDTO): Promise<void> {
+    if (!(await this.confirmDialog.ask(`Deseja realmente excluir a regra do produto "${rule.codigoProduto}"?`, { title: 'Excluir regra', confirmLabel: 'Excluir', danger: true }))) {
       return;
     }
 

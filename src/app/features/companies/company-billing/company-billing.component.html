@@ -44,7 +44,8 @@
           <div class="inline-form">
             <h6>Vínculo com o cliente no {{ providerLabels[b.provider] }}</h6>
             <div class="row-fields">
-              <input type="text" class="form-control form-control-sm" placeholder="CNPJ/CPF do cliente lá" [(ngModel)]="linkForm.document" />
+              <input type="text" class="form-control form-control-sm" placeholder="CNPJ/CPF do cliente lá" inputmode="numeric" maxlength="18"
+                [ngModel]="linkForm.document" (ngModelChange)="linkForm.document = maskDocument($event)" />
               <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="saving()" (click)="lookupLink()">Procurar e vincular</button>
             </div>
             <p class="text-muted small mb-1">Ou informe o cliente direto:</p>

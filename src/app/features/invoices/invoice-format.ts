@@ -1,3 +1,4 @@
+import { formatDocument } from '../../shared/utils/document-mask';
 import { FiscalXmlEnderecoDTO, FiscalXmlItemDTO, FiscalXmlSummaryDTO } from '../../core/models/fiscal-xml.model';
 
 // Moeda tem um formatador único no app; reexportado aqui para quem já importava daqui.
@@ -62,16 +63,7 @@ export function documentTypeLabel(xml: FiscalXmlItemDTO | FiscalXmlSummaryDTO): 
   return DOCUMENT_TYPE[type] ?? (type && type !== 'UNKNOWN' ? type : 'Documento');
 }
 
-export function formatDocument(value?: string): string {
-  const digits = (value ?? '').replace(/\D/g, '');
-  if (digits.length === 14) {
-    return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-  }
-  if (digits.length === 11) {
-    return digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-  }
-  return value ?? '';
-}
+export { formatDocument } from '../../shared/utils/document-mask';
 
 /** Access key in blocks of 4 digits, as printed on the DANFE. */
 export function formatAccessKey(value?: string): string {

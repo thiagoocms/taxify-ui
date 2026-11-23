@@ -15,6 +15,7 @@ import { AccountingFirmService } from '../../../core/services/accounting-firm.se
 import { AcessoriasService } from '../../../core/services/acessorias.service';
 import { UserService } from '../../../core/services/user.service';
 import { UserFormComponent } from '../user-form/user-form.component';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 const PROFILE_LABELS: Record<string, string> = {
   ADMIN: 'Administrador',
@@ -59,6 +60,7 @@ export class UserListComponent implements OnInit {
     ],
   };
 
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly acessoriasService = inject(AcessoriasService);
   private readonly accountingFirmService = inject(AccountingFirmService);
 
@@ -213,8 +215,8 @@ export class UserListComponent implements OnInit {
     this.loadUsers();
   }
 
-  remove(user: UserDTO): void {
-    if (!confirm(`Deseja realmente excluir o usuário "${user.name}"?`)) {
+  async remove(user: UserDTO): Promise<void> {
+    if (!(await this.confirmDialog.ask(`Deseja realmente excluir o usuário "${user.name}"?`, { title: 'Excluir usuário', confirmLabel: 'Excluir', danger: true }))) {
       return;
     }
 

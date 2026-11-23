@@ -64,10 +64,11 @@ export class ProductFiscalRuleService {
   }
 
   /** Regras sugeridas a partir das notas (valor mais frequente de cada campo por produto). */
-  sugestoes(companyId: string, somenteSemRegra = true, direcao?: 'INBOUND' | 'OUTBOUND'): Observable<ProductRuleSuggestionDTO[]> {
+  /** Sugestões a partir das notas recebidas (empresa destinatária); codigoProduto = só esse produto. */
+  sugestoes(companyId: string, somenteSemRegra = true, codigoProduto?: string): Observable<ProductRuleSuggestionDTO[]> {
     let params = new HttpParams().set('companyId', companyId).set('somenteSemRegra', somenteSemRegra);
-    if (direcao) {
-      params = params.set('direcao', direcao);
+    if (codigoProduto) {
+      params = params.set('codigoProduto', codigoProduto);
     }
     return this.http.get<ProductRuleSuggestionDTO[]>(`${this.baseUrl}/sugestoes`, { params });
   }

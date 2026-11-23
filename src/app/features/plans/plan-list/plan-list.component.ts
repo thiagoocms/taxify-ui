@@ -12,6 +12,7 @@ import { PLAN_SERVICE_LABELS, PlanDTO } from '../../../core/models/plan.model';
 import { PlanService } from '../../../core/services/plan.service';
 import { BILLING_CYCLE_LABELS } from '../../../core/models/billing.model';
 import { PlanFormComponent } from '../plan-form/plan-form.component';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 interface PlanRow extends PlanDTO {
   servicesLabel: string;
@@ -29,6 +30,7 @@ type ViewMode = 'list' | 'form';
   styleUrl: './plan-list.component.scss',
 })
 export class PlanListComponent implements OnInit {
+  private readonly confirmDialog = inject(ConfirmDialogService);
   protected readonly auth = inject(AuthService);
 
   readonly columns: TableColumn[] = [
@@ -143,8 +145,8 @@ export class PlanListComponent implements OnInit {
     this.loadPlans();
   }
 
-  remove(plan: PlanDTO): void {
-    if (!confirm(`Deseja realmente excluir o plano "${plan.name}"?`)) {
+  async remove(plan: PlanDTO): Promise<void> {
+    if (!(await this.confirmDialog.ask(`Deseja realmente excluir o plano "${plan.name}"?`, { title: 'Excluir plano', confirmLabel: 'Excluir', danger: true }))) {
       return;
     }
 

@@ -160,7 +160,7 @@ export class RuleFormComponent implements OnChanges {
       return;
     }
     this.suggesting.set(true);
-    this.productFiscalRuleService.sugestoes(this.companyId, false).subscribe({
+    this.productFiscalRuleService.sugestoes(this.companyId, false, codigo).subscribe({
       next: (suggestions) => {
         this.suggesting.set(false);
         const suggestion = suggestions.find((s) => s.codigoProduto === codigo);
@@ -250,8 +250,11 @@ export class RuleFormComponent implements OnChanges {
   }
 
   private describe(suggestion: ProductRuleSuggestionDTO): { label: string; value: SuggestedValue }[] {
-    return Object.entries(suggestion.campos)
+    const fields = Object.entries(suggestion.campos)
       .filter((entry): entry is [string, SuggestedValue] => !!entry[1])
       .map(([field, value]) => ({ label: FIELD_LABELS[field] ?? field, value }));
+    return suggestion.cfopFornecedor
+      ? [{ label: 'CFOP do fornecedor', value: suggestion.cfopFornecedor }, ...fields]
+      : fields;
   }
 }

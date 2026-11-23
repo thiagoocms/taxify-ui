@@ -21,6 +21,8 @@ export interface TableColumn {
   headerClass?: string;
   cellTemplate?: TemplateRef<any>;
   cellTextLength?: number;
+  /** Texto exibido a partir do valor da célula (ex.: formatDocument para CPF/CNPJ). */
+  format?: (value: any, row: any) => string;
 
   iconConfig?: {
     cell?: IconConfig;

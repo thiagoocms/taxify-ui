@@ -73,13 +73,18 @@ export interface SuggestedValue {
   percentual: number;
 }
 
-/** Regra sugerida para um produto a partir das notas; campos com os nomes da ProductFiscalRuleDTO. */
+/**
+ * Regra sugerida para um produto a partir das notas em que a empresa é destinatária; campos com os
+ * nomes da ProductFiscalRuleDTO. O cfopCorreto é o CFOP de entrada equivalente ao do fornecedor.
+ */
 export interface ProductRuleSuggestionDTO {
   codigoProduto: string;
   descricaoProduto?: string | null;
   ocorrencias: number;
   possuiRegra: boolean;
   campos: Partial<Record<keyof ProductFiscalRuleDTO, SuggestedValue>>;
+  /** CFOP de saída do fornecedor mais usado nas notas (o cfopCorreto é a entrada equivalente). */
+  cfopFornecedor?: SuggestedValue | null;
 }
 
 /** Produto da empresa: código distinto encontrado nos itens das notas importadas. */

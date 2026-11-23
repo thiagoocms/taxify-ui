@@ -45,7 +45,7 @@
 
   @if (appliedSuggestion().length) {
     <div class="suggestion-box">
-      Nas notas deste produto:
+      Nas notas recebidas deste produto (CFOP de entrada equivalente ao do fornecedor):
       @for (item of appliedSuggestion(); track item.label; let last = $last) {
         <span [class.low]="item.value.percentual < 90">{{ item.label }} {{ item.value.valor }} ({{ item.value.percentual }}%)</span>{{ last ? '' : ' · ' }}
       }

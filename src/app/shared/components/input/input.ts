@@ -15,6 +15,7 @@ import {AbstractControl, ControlContainer, ControlValueAccessor, NG_VALUE_ACCESS
 import {FaIconComponent} from '@fortawesome/angular-fontawesome';
 import {IconDefinition} from '@fortawesome/free-solid-svg-icons';
 import {debounceTime, distinctUntilChanged, Observable, of, Subject, Subscriber, switchMap} from 'rxjs';
+import {formatDocument, maskDocument, onlyDigits} from '../../utils/document-mask';
 
 
 export type SelectOption = {
@@ -54,6 +55,8 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   /** Autocomplete: monta o texto de cada sugestão (e do item escolhido); sem ele, usa displayField. */
   @Input() displayFn?: (item: any) => string;
   @Input() minRequired: number = 2;
+  /** 'document': máscara de CPF/CNPJ na tela; o formulário recebe só os dígitos. */
+  @Input() mask: 'document' | '' = '';
 
   @Output() onClick: EventEmitter<any> = new EventEmitter();
   @Output() itemSelected = new EventEmitter<any>();
@@ -117,7 +120,7 @@ export class InputComponent implements ControlValueAccessor, OnInit {
       this.cdr.markForCheck();
       return;
     }
-    this.value = value ?? '';
+    this.value = this.mask === 'document' ? maskDocument(value) : (value ?? '');
     this.cdr.detectChanges();
   }
 
@@ -135,6 +138,15 @@ export class InputComponent implements ControlValueAccessor, OnInit {
 
   onInput(event: any) {
     let newVal = event?.target?.value || '';
+    if (this.mask === 'document') {
+      const masked = maskDocument(newVal);
+      if (event?.target) {
+        event.target.value = masked;
+      }
+      this.value = masked;
+      this.onChange(onlyDigits(masked));
+      return;
+    }
     if (this.pipe) {
       let formatted = newVal;
       formatted = this.pipe.transform(newVal);
@@ -145,6 +157,12 @@ export class InputComponent implements ControlValueAccessor, OnInit {
     if (this.type === 'autocomplete') {
       this.search$.next(newVal);
     }
+  }
+
+  /** Dica da sugestão do autocomplete; CPF/CNPJ aparece formatado. */
+  itemTooltip(item: any): string {
+    const tooltip = this.displayFieldTooltip ? item?.[this.displayFieldTooltip] : null;
+    return tooltip ? formatDocument(String(tooltip)) : this.itemLabel(item);
   }
 
   itemLabel(item: any): string {

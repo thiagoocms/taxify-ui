@@ -12,6 +12,8 @@ import { UserCompanyDTO } from '../../../core/models/user-company.model';
 import { CompanyService } from '../../../core/services/company.service';
 import { UserCompanyService } from '../../../core/services/user-company.service';
 import { UserLinkFormComponent } from './link-form/link-form.component';
+import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { formatDocument } from '../../../shared/utils/document-mask';
 
 interface LinkRow extends UserCompanyDTO {
   companyName: string;
@@ -26,6 +28,7 @@ interface LinkRow extends UserCompanyDTO {
   styleUrl: './user-links.component.scss',
 })
 export class UserLinksComponent implements OnChanges {
+  private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly companyService = inject(CompanyService);
   private readonly userCompanyService = inject(UserCompanyService);
 
@@ -36,7 +39,7 @@ export class UserLinksComponent implements OnChanges {
 
   readonly columns: TableColumn[] = [
     { name: 'Empresa', property: 'companyName' },
-    { name: 'Documento', property: 'companyDocument' },
+    { name: 'Documento', property: 'companyDocument', format: formatDocument },
     { name: 'Papel', property: 'role' },
   ];
 
@@ -113,8 +116,8 @@ export class UserLinksComponent implements OnChanges {
     this.loadLinks();
   }
 
-  remove(link: LinkRow): void {
-    if (!confirm(`Remover o vínculo com "${link.companyName}"?`)) {
+  async remove(link: LinkRow): Promise<void> {
+    if (!(await this.confirmDialog.ask(`Remover o vínculo com "${link.companyName}"?`, { title: 'Remover vínculo', confirmLabel: 'Remover', danger: true }))) {
       return;
     }
 

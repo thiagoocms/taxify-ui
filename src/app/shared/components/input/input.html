@@ -15,7 +15,7 @@
           <div class="dialog-container">
             <ul class="results">
               @for (item of suggestions; track $index) {
-                <li (click)="onSelect(item)" class="result-item" [title]="item[displayFieldTooltip] ?? itemLabel(item)">
+                <li (click)="onSelect(item)" class="result-item" [title]="itemTooltip(item)">
                   <div class="title">
                     {{ itemLabel(item) }}
                   </div>
@@ -60,8 +60,9 @@
         <input
           [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
           [type]="type"
+          [attr.inputmode]="mask === 'document' ? 'numeric' : null"
           [disabled]="disabled"
-          [maxLength]="maxLength"
+          [maxLength]="mask === 'document' ? 18 : maxLength"
           [value]="value"
           (input)="onInput($event)"
           (focus)="focused = true"

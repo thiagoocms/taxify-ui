@@ -54,18 +54,20 @@
 <app-modal [open]="suggestionsOpen()" title="Sugestões de regras" size="xl" (closed)="closeSuggestions()">
   @if (suggestionsOpen()) {
     <p class="suggestions-help">
-      Produtos ainda sem regra, com o que aparece com mais frequência nas notas de cada um.
+      Produtos ainda sem regra, a partir das notas em que a empresa é destinatária (as que a retificação ajusta),
+      com o que aparece com mais frequência em cada um. O CFOP sugerido é o de entrada equivalente ao do fornecedor
+      (5102 → 1102); se o produto for para uso e consumo (1556) ou imobilizado (1551), ajuste na regra.
       A concordância é o menor percentual entre os campos: abaixo de 90% as notas divergem e a sugestão merece conferência.
     </p>
     @if (suggestionsLoading()) {
       <p class="loading-text">Analisando as notas...</p>
     } @else if (!suggestions().length) {
-      <p class="loading-text">Nenhum produto sem regra nas notas importadas.</p>
+      <p class="loading-text">Nenhum produto sem regra nas notas recebidas pela empresa.</p>
     } @else {
       <div class="suggestions-list">
         <table class="table table-sm align-middle">
           <thead>
-            <tr><th>Produto</th><th>CFOP</th><th>NCM</th><th>CST/CSOSN</th><th>Itens</th><th>Concordância</th><th></th></tr>
+            <tr><th>Produto</th><th>CFOP de entrada</th><th>NCM</th><th>CST/CSOSN</th><th>Itens</th><th>Concordância</th><th></th></tr>
           </thead>
           <tbody>
             @for (s of suggestions(); track s.codigoProduto) {
@@ -74,7 +76,12 @@
                   <strong>{{ s.codigoProduto }}</strong>
                   <div class="cell-sub">{{ s.descricaoProduto }}</div>
                 </td>
-                <td class="mono">{{ s.campos.cfopCorreto?.valor || '—' }}</td>
+                <td class="mono">
+                  {{ s.campos.cfopCorreto?.valor || '—' }}
+                  @if (s.cfopFornecedor) {
+                    <div class="cell-sub">fornecedor {{ s.cfopFornecedor.valor }}</div>
+                  }
+                </td>
                 <td class="mono">{{ s.campos.ncmCorreto?.valor || '—' }}</td>
                 <td class="mono">{{ s.campos.cstIcms?.valor || s.campos.csosn?.valor || '—' }}</td>
                 <td>{{ s.ocorrencias }}</td>

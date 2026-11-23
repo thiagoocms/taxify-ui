@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { Button } from '../button/button';
+import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
 
 export interface PageButton {
   id?: string;
@@ -26,13 +27,17 @@ const CONFIRM_MESSAGES: Record<string, string> = {
   styleUrl: './page.scss',
 })
 export class Page {
+  private readonly confirmDialog = inject(ConfirmDialogService);
+
   @Input() pageTitle = '';
   @Input() pageDescription = '';
   @Input() pageButtons: PageButton[] = [];
 
-  action(pageButton: PageButton): void {
+  async action(pageButton: PageButton): Promise<void> {
     const confirmMessage = pageButton.id ? CONFIRM_MESSAGES[pageButton.id] : undefined;
-    if (confirmMessage && !confirm(confirmMessage)) {
+    if (confirmMessage && !(await this.confirmDialog.ask(confirmMessage, pageButton.id === 'delete'
+        ? { title: 'Excluir', confirmLabel: 'Excluir', danger: true }
+        : { title: 'Novo registro', confirmLabel: 'Limpar campos' }))) {
       return;
     }
 
