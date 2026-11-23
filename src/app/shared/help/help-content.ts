@@ -205,6 +205,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
           'Nota conferida com divergência (média) e regime tributário não informado (média).',
           'Provável retenção indevida (média) e ISS retido sem valor (baixa).',
           'Nota só no SIEG ou só na SEFAZ há mais de 48h (baixa).',
+          'Achados da Auditoria tipo malha (a severidade vem da regra).',
         ],
       },
       {
@@ -215,6 +216,44 @@ export const HELP_ARTICLES: HelpArticle[] = [
       },
     ],
     related: ['retencoes', 'manifestacao', 'empresas'],
+  },
+  {
+    id: 'auditoria',
+    title: 'Auditoria tipo malha',
+    group: 'Obrigações e controles',
+    route: '/auditoria',
+    summary: 'Os cruzamentos que a fiscalização costuma fazer, encontrados antes dela: um laudo por empresa e mês.',
+    sections: [
+      {
+        title: 'O que é verificado',
+        items: [
+          'Integridade das notas emitidas pela empresa: lacuna na numeração por série, o mesmo número com duas chaves, devolução sem a nota original e entradas que ficaram só com o resumo da SEFAZ.',
+          'Coerência dos itens das notas emitidas: CFOP × destino, alíquota interestadual (4% no importado), regime do emitente × CST/CSOSN, CFOP de ST × CST, CEST nos itens com ST e o grupo IBS/CBS das NF-e de 2026.',
+          'Anomalias: faturamento do mês acima de 3 vezes a média dos meses anteriores, cancelamento de NFC-e acima de 5% e receita perto do sublimite / limite do Simples Nacional ou do MEI.',
+        ],
+      },
+      {
+        title: 'Como funciona',
+        items: [
+          'Roda sozinha todo dia (05:30) para a competência anterior e a atual das empresas com "Auditoria de notas fiscais" no plano; "Rodar auditoria" roda na hora para qualquer mês.',
+          'Cada achado vira uma pendência (aparece também em Pendências): fecha sozinho quando o indício some; resolver ou desconsiderar pede comentário.',
+          '"Laudo PDF" e "Exportar CSV" geram o laudo do mês com os achados e os fundamentos.',
+        ],
+      },
+      {
+        title: 'Regras e conferência',
+        items: [
+          'A visão "Regras" mostra cada regra com o fundamento legal, o link oficial e a vigência.',
+          'Uma regra que o time fiscal ainda não conferiu gera achados "a conferir"; depois de "Marcar como conferida", os achados passam a ser indícios. Desativar uma regra tira os achados dela das próximas auditorias.',
+          'Os achados são indícios para conferência, nunca infração afirmada.',
+        ],
+      },
+      {
+        title: 'Ainda não cobre',
+        items: ['A malha do Simples (receita das notas × receita declarada no PGDAS-D) depende da importação do PGDAS, que ainda não existe.'],
+      },
+    ],
+    related: ['pendencias', 'notas-fiscais', 'apuracao'],
   },
   {
     id: 'apuracao',
@@ -312,7 +351,8 @@ export const HELP_ARTICLES: HelpArticle[] = [
           'Integração SEFAZ (certificado A1): captura das entradas direto na SEFAZ.',
           'Integração NFS-e Nacional: captura das NFS-e prestadas e tomadas direto no Ambiente Nacional, com o certificado A1.',
           'Manifestação do destinatário: Ciência automática na SEFAZ e a tela de Manifestação (precisa da Integração SEFAZ).',
-          'Auditoria de notas fiscais, Acesso multiusuário e Relatórios.',
+          'Auditoria de notas fiscais: a Auditoria tipo malha roda sozinha todo dia para a empresa.',
+          'Acesso multiusuário e Relatórios.',
         ],
       },
     ],

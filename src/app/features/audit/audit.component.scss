@@ -1,0 +1,15 @@
+@use '../../shared/styles/list-patterns' as *;
+@use '../../shared/styles/page-patterns' as *;
+
+.finding-cell .detail,
+.detail {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 2px;
+}

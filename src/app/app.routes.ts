@@ -67,6 +67,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/help/help-center.component').then((m) => m.HelpCenterComponent),
       },
       {
+        path: 'auditoria',
+        canActivate: [permissionGuard('INVOICES_VIEW')],
+        loadComponent: () => import('./features/audit/audit.component').then((m) => m.AuditComponent),
+      },
+      {
         path: 'retencoes',
         canActivate: [permissionGuard('INVOICES_VIEW')],
         loadComponent: () => import('./features/retentions/retentions.component').then((m) => m.RetentionsComponent),

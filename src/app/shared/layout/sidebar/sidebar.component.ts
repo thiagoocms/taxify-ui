@@ -10,6 +10,7 @@ import {
   faFileContract,
   faHandHoldingDollar,
   faCircleQuestion,
+  faClipboardCheck,
   faTriangleExclamation,
   faFileInvoice,
   faFolderOpen,
@@ -39,6 +40,7 @@ export class SidebarComponent {
   readonly serviceInvoiceIcon = faFileContract;
   readonly retentionIcon = faHandHoldingDollar;
   readonly helpIcon = faCircleQuestion;
+  readonly auditIcon = faClipboardCheck;
   readonly pendencyIcon = faTriangleExclamation;
   readonly folderIcon = faFolderOpen;
   readonly tagsIcon = faTags;

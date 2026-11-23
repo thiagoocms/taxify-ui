@@ -1,0 +1,197 @@
+<app-page
+  pageTitle="Auditoria tipo malha"
+  pageDescription="Os cruzamentos que a fiscalização costuma fazer, encontrados antes dela — por empresa e mês"
+  [pageButtons]="pageButtons()"
+  helpId="auditoria"
+>
+  <div class="filters">
+    <div class="filters-main">
+      <div class="month-nav" role="group" aria-label="Competência">
+        <button type="button" class="chip icon-chip" (click)="shift(-1)" aria-label="Mês anterior">
+          <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
+        </button>
+        <span class="month-label">{{ monthLabel(month()) }}</span>
+        <button type="button" class="chip icon-chip" (click)="shift(1)" aria-label="Próximo mês">
+          <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
+        </button>
+      </div>
+      <form class="company-field" [formGroup]="form">
+        <app-input formControlName="company" label="Empresa (nome ou CNPJ)" type="autocomplete" [searchFn]="searchCompanies"
+          [displayFn]="companyLabel" displayField="name" displayFieldTooltip="documentNumber"></app-input>
+      </form>
+    </div>
+    <div class="period-chips" role="group" aria-label="Visão">
+      <button type="button" class="chip" [class.active]="view() === 'findings'" (click)="view.set('findings')">Achados</button>
+      <button type="button" class="chip" [class.active]="view() === 'rules'" (click)="openRules()">Regras</button>
+    </div>
+  </div>
+
+  @if (view() === 'rules') {
+    <app-table [columns]="ruleColumns()" [data]="rules()" [config]="tableConfig"></app-table>
+    <p class="disclaimer">
+      Uma regra ainda não conferida pelo time fiscal gera achados "a conferir", nunca afirmativos. Desativar uma regra tira
+      os achados dela das próximas auditorias.
+    </p>
+  } @else if (!companyId()) {
+    <div class="empty-hero">
+      <fa-icon [icon]="['fas', 'clipboard-check']" class="empty-hero-icon"></fa-icon>
+      <h6>Selecione uma empresa</h6>
+      <p>Escolha a empresa acima para ver a auditoria do mês. Ela roda sozinha todo dia para os planos com "Auditoria de notas fiscais", ou em "Rodar auditoria".</p>
+    </div>
+  } @else if (loading() && !report()) {
+    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando a auditoria...</p>
+  } @else if (report()) {
+    @let r = report()!;
+    @if (!r.run) {
+      <div class="notice">
+        <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+        Esta competência ainda não foi auditada. Use "Rodar auditoria".
+      </div>
+    }
+    <div class="results-summary">
+      <div class="summary-item">
+        <span class="summary-label">Achados abertos</span>
+        <span class="summary-value">{{ openCount() }}</span>
+        <span class="summary-sub">{{ r.findings.length - openCount() }} resolvido(s) ou desconsiderado(s)</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Severidade alta</span>
+        <span class="summary-value">{{ severityCount('ALTA') }}</span>
+        <span class="summary-sub">{{ severityCount('MEDIA') }} média · {{ severityCount('BAIXA') }} baixa</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Última auditoria</span>
+        <span class="summary-value">{{ r.run ? (r.run.ranAt | date: 'dd/MM HH:mm') : '—' }}</span>
+        <span class="summary-sub">{{ r.run ? r.run.notesChecked + ' nota(s) do mês · por ' + r.run.ranBy : 'ainda não rodou' }}</span>
+      </div>
+    </div>
+
+    <div class="quick-filters" role="group" aria-label="Grupos">
+      @for (group of groups; track group) {
+        <button type="button" class="quick-card" [class.warn]="groupCount(group) > 0" [class.active]="groupFilter() === group"
+          (click)="toggleGroup(group)">
+          <span class="quick-value">{{ groupCount(group) }}</span>
+          <span class="quick-label">{{ groupLabel(group).toLowerCase() }}</span>
+        </button>
+      }
+      <button type="button" class="quick-card" [class.active]="showClosed()" (click)="showClosed.set(!showClosed())">
+        <span class="quick-label">mostrar fechados</span>
+      </button>
+    </div>
+
+    @if (!filtered().length) {
+      <div class="empty-hero">
+        <fa-icon [icon]="['fas', 'circle-check']" class="empty-hero-icon"></fa-icon>
+        <h6>Nenhum achado {{ showClosed() ? '' : 'aberto' }}</h6>
+        <p>{{ r.run ? 'A auditoria do mês não encontrou indícios com esses filtros.' : 'Rode a auditoria para ver os achados.' }}</p>
+      </div>
+    } @else {
+      <div class="table-wrapper" [class.is-loading]="loading()">
+        <app-table [columns]="columns()" [data]="filtered()" [config]="tableConfig"></app-table>
+        @if (loading()) {
+          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Auditando...</div>
+        }
+      </div>
+    }
+
+    <p class="disclaimer">
+      Os achados são indícios para conferência, não infrações. Cada um é uma pendência: fecha sozinho quando o indício some
+      e aparece também na tela de Pendências.
+    </p>
+  }
+</app-page>
+
+<ng-template #severityCell let-row="row">
+  <span [class]="'state-badge ' + severityClass(row.severity)">{{ severityLabel(row.severity) }}</span>
+</ng-template>
+
+<ng-template #findingCell let-row="row">
+  <div class="finding-cell">
+    <div class="cell-sub">
+      {{ row.ruleTitle }}
+      @if (!row.ruleReviewed) {
+        <span class="state-badge warn">a conferir</span>
+      }
+    </div>
+    <strong>{{ row.title }}</strong>
+    @if (row.detail) { <div class="detail">{{ row.detail }}</div> }
+    @if (row.status !== 'ABERTA') {
+      <div class="cell-sub fst-italic">
+        {{ row.status === 'RESOLVIDA' ? 'Resolvido' : 'Desconsiderado' }}
+        {{ row.autoClosed ? 'automaticamente' : 'por ' + row.closedBy }} em {{ row.closedAt | date: 'dd/MM/yyyy' }}
+        @if (row.closeComment && !row.autoClosed) { — "{{ row.closeComment }}" }
+      </div>
+    }
+  </div>
+</ng-template>
+
+<ng-template #actionsCell let-row="row">
+  <div class="row-actions">
+    @if (row.objectType === 'NOTE' && row.objectId) {
+      <app-button label="Abrir nota" variant="text" (onClick)="openNote(row)"></app-button>
+    }
+    @if (canClose) {
+      @if (row.status === 'ABERTA') {
+        <app-button label="Resolver" variant="text" (onClick)="askClose(row, 'resolver')"></app-button>
+        <app-button label="Desconsiderar" variant="text" (onClick)="askClose(row, 'desconsiderar')"></app-button>
+      } @else {
+        <app-button label="Reabrir" variant="text" (onClick)="reopen(row)"></app-button>
+      }
+    }
+  </div>
+</ng-template>
+
+<ng-template #ruleCell let-row="row">
+  <div>
+    <strong>{{ row.title }}</strong>
+    <div class="cell-sub">{{ groupLabel(row.group) }} · {{ severityLabel(row.severity) }}</div>
+  </div>
+</ng-template>
+
+<ng-template #basisCell let-row="row">
+  <div class="detail">
+    {{ row.legalBasis || '—' }}
+    @if (row.link) { <div><a [href]="row.link" target="_blank" rel="noopener">fonte oficial</a></div> }
+    @if (row.validFrom || row.validUntil) {
+      <div class="cell-sub">Vigência: {{ row.validFrom ? (row.validFrom | date: 'dd/MM/yyyy') : 'início' }} a
+        {{ row.validUntil ? (row.validUntil | date: 'dd/MM/yyyy') : 'hoje' }}</div>
+    }
+  </div>
+</ng-template>
+
+<ng-template #ruleStatusCell let-row="row">
+  <div class="status-cell">
+    @if (!row.enabled) {
+      <span class="state-badge">desativada</span>
+    } @else if (row.reviewed) {
+      <span class="state-badge ok">conferida</span>
+    } @else {
+      <span class="state-badge warn">a conferir</span>
+    }
+    @if (row.reviewed) { <div class="cell-sub">por {{ row.reviewedBy }} em {{ row.reviewedAt | date: 'dd/MM/yyyy' }}</div> }
+  </div>
+</ng-template>
+
+<ng-template #ruleActionsCell let-row="row">
+  <div class="row-actions">
+    @if (canManageRules) {
+      <app-button [label]="row.reviewed ? 'Desfazer conferência' : 'Marcar como conferida'" variant="text"
+        (onClick)="reviewRule(row)"></app-button>
+      <app-button [label]="row.enabled ? 'Desativar' : 'Ativar'" variant="text" (onClick)="enableRule(row)"></app-button>
+    }
+  </div>
+</ng-template>
+
+<app-modal [open]="!!closing()" [title]="closing()?.action === 'resolver' ? 'Resolver achado' : 'Desconsiderar achado'"
+  (closed)="closing.set(null)">
+  @if (closing(); as c) {
+    <p class="small"><strong>{{ c.finding.title }}</strong></p>
+    <textarea class="form-control" rows="3" maxlength="500" [(ngModel)]="comment"
+      [placeholder]="c.action === 'resolver' ? 'O que foi feito' : 'Por que não se aplica'"></textarea>
+    <div class="small text-muted mt-1">Comentário obrigatório.</div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <app-button label="Cancelar" variant="text" (onClick)="closing.set(null)"></app-button>
+      <app-button label="Salvar" [disabled]="comment.trim().length < 3" (onClick)="confirmClose()"></app-button>
+    </div>
+  }
+</app-modal>

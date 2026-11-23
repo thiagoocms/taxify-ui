@@ -101,7 +101,7 @@ export class PendenciesComponent implements OnInit {
     { name: 'Pendência', cellTemplate: this.pendencyCell() },
     { name: 'Competência', cellTemplate: this.competenceCell(), width: '110px' },
     { name: 'Desde', cellTemplate: this.sinceCell(), width: '100px' },
-    { name: '', cellTemplate: this.actionsCell(), width: '220px' },
+    { name: 'Ações', headerClass: 'justify-content-end', cellTemplate: this.actionsCell(), width: '220px' },
   ]);
 
   readonly healthColumns = computed<TableColumn[]>(() => [
@@ -266,6 +266,9 @@ export class PendenciesComponent implements OnInit {
     }
     if (p.objectType === 'NOTE_KEY') {
       return { path: ['/manifestacao'] };
+    }
+    if (p.type === 'AUDIT_FINDING') {
+      return { path: ['/auditoria'] };
     }
     if (p.objectType === 'COMPANY') {
       return { path: ['/cadastro/empresas'], query: { empresa: p.companyId } };

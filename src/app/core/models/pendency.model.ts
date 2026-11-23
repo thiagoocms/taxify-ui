@@ -85,4 +85,5 @@ export const PENDENCY_TYPE_LABELS: Record<string, string> = {
   REGIME_MISSING: 'Regime tributário não informado',
   RETENTION_UNDUE: 'Provável retenção indevida',
   ISS_RETAINED_WITHOUT_VALUE: 'ISS retido sem valor',
+  AUDIT_FINDING: 'Auditoria tipo malha',
 };

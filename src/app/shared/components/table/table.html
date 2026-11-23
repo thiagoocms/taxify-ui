@@ -18,14 +18,14 @@
                   @if (column.iconConfig?.header && column.iconConfig?.header?.position === 'start') {
                     <fa-icon [icon]="['fas', column.iconConfig?.header?.name || '']"></fa-icon>
                   }
-                  {{column.name || "teste"}}
+                  {{ column.name }}
                   @if (column.iconConfig?.header && column.iconConfig?.header?.position === 'end') {
                     <fa-icon [icon]="['fas', column.iconConfig?.header?.name || '']"></fa-icon>
                   }
                 </div>
               </th>
             }
-            @if (config.actions) {
+            @if (config.actions?.length) {
               <th class="text-center text-muted fw-semibold">Ações</th>
             }
           </tr>
@@ -79,7 +79,7 @@
                 </td>
               }
 
-              @if (config.actions) {
+              @if (config.actions?.length) {
                 <td class="actions-cell">
                   <div class="actions-group">
                   @for (action of config.actions; track action.name) {
