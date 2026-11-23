@@ -73,11 +73,11 @@ import { CompanyService } from '../../../core/services/company.service';
 
         @if (!readonly) {
           @if (!s.encryptionConfigured) {
-            <p class="text-danger small mt-2">
-              O servidor está sem a chave de criptografia (CERT_ENCRYPTION_KEY) — não é possível enviar certificados.
+            <p class="small muted mt-2 mb-1">
+              Sem chave de criptografia no servidor: o certificado é guardado só com a criptografia padrão do S3.
             </p>
-          } @else {
-            <div class="add-row mt-2">
+          }
+          <div class="add-row mt-2">
               <input type="file" class="form-control form-control-sm" accept=".pfx,.p12" (change)="pick($event)" />
               <input
                 type="password"
@@ -89,8 +89,7 @@ import { CompanyService } from '../../../core/services/company.service';
               <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="!file || !password || saving()" (click)="upload()">
                 {{ saving() ? 'Enviando...' : s.present && !s.inherited ? 'Trocar certificado' : 'Enviar certificado' }}
               </button>
-            </div>
-          }
+          </div>
           <div class="d-flex gap-2 mt-2">
             @if (s.present && s.sefazInPlan) {
               <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="capturing()" (click)="capture()">
