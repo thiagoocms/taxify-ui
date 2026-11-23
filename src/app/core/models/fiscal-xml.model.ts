@@ -211,6 +211,8 @@ export interface FiscalXmlSummaryDTO {
   ownIssue: boolean;
   status?: FiscalDocumentStatus;
   reviewStatus?: ReviewStatus;
+  /** CFOPs distintos dos itens: um só = a nota inteira usa ele; mais de um = segmentado. */
+  cfops?: string[];
 }
 
 /** Totais do período por direção (cards acima da lista). */

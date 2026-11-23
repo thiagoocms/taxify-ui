@@ -155,11 +155,13 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
   private readonly partyCell = viewChild.required<TemplateRef<unknown>>('partyCell');
   private readonly dateCell = viewChild.required<TemplateRef<unknown>>('dateCell');
   private readonly valueCell = viewChild.required<TemplateRef<unknown>>('valueCell');
+  private readonly cfopCell = viewChild.required<TemplateRef<unknown>>('cfopCell');
 
   readonly xmlColumns = computed<TableColumn[]>(() => [
     { name: 'Nota', cellTemplate: this.noteCell() },
     { name: 'Emissão', cellTemplate: this.dateCell(), width: '120px' },
     { name: 'Participante', cellTemplate: this.partyCell() },
+    { name: 'CFOP', cellTemplate: this.cfopCell(), width: '110px' },
     { name: 'Valor total', cellTemplate: this.valueCell(), headerClass: 'justify-content-end', width: '150px' },
   ]);
 
@@ -198,8 +200,13 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
   readonly counterpartDocument = counterpartDocument;
   readonly counterpartRole = counterpartRole;
 
+  /** Busca a empresa pelo nome ou pelo CNPJ (com ou sem pontuação) no mesmo campo. */
   readonly searchCompanies = (term: string): Observable<CompanyDTO[]> =>
-    this.companyService.getAll({ page: 0, size: 10 }, { name: term }).pipe(map((page) => page.content));
+    this.companyService.getAll({ page: 0, size: 10 }, { search: term }).pipe(map((page) => page.content));
+
+  /** "NOME - 11.473.118/0001-53" na lista do autocomplete e no campo depois de escolher. */
+  readonly companyLabel = (company: CompanyDTO): string =>
+    company.documentNumber ? `${company.name} - ${formatDocument(company.documentNumber)}` : company.name;
 
   ngOnInit(): void {
     const saved = this.state.search();

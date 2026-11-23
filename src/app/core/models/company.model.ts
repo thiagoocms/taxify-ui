@@ -50,6 +50,8 @@ export interface CompanyFilterDTO {
   documentType?: string;
   name?: string;
   deleted?: boolean;
+  /** Busca livre: parte do nome OU do CNPJ/CPF (com ou sem pontuação). */
+  search?: string;
 }
 
 /** Um período do histórico de regime; validFrom/validUntil em "AAAA-MM", null = sempre / atual. */

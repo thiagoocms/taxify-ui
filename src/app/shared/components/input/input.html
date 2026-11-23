@@ -14,10 +14,10 @@
         @if (showDropdown && suggestions.length > 0) {
           <div class="dialog-container">
             <ul class="results">
-              @for (item of suggestions; track item[displayField]) {
-                <li (click)="onSelect(item)" class="result-item" [title]="item[displayFieldTooltip] ?? item[displayField]">
+              @for (item of suggestions; track $index) {
+                <li (click)="onSelect(item)" class="result-item" [title]="item[displayFieldTooltip] ?? itemLabel(item)">
                   <div class="title">
-                    {{ item[displayField] }}
+                    {{ itemLabel(item) }}
                   </div>
                 </li>
               }

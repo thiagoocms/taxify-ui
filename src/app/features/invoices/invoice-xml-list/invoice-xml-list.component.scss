@@ -320,3 +320,18 @@
     color: #664d03;
   }
 }
+
+.cfop-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cfop-segmented {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+  background: #e2e8f5;
+  color: var(--color-primary-darker);
+  cursor: help;
+}

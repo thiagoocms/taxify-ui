@@ -51,6 +51,8 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() searchFn!: (term: string) => Observable<any[]>;
   @Input() displayField: string = '';
   @Input() displayFieldTooltip: string = '';
+  /** Autocomplete: monta o texto de cada sugestão (e do item escolhido); sem ele, usa displayField. */
+  @Input() displayFn?: (item: any) => string;
   @Input() minRequired: number = 2;
 
   @Output() onClick: EventEmitter<any> = new EventEmitter();
@@ -108,8 +110,8 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   };
 
   writeValue(value: any): void {
-    if (value && !(typeof value === 'string') && this.displayField) {
-      this.value = value[this.displayField];
+    if (value && !(typeof value === 'string') && (this.displayFn || this.displayField)) {
+      this.value = this.itemLabel(value);
       // A value set later (e.g. a company loaded from a ?empresa= link) must repaint too,
       // or the autocomplete stays empty under OnPush.
       this.cdr.markForCheck();
@@ -143,6 +145,10 @@ export class InputComponent implements ControlValueAccessor, OnInit {
     if (this.type === 'autocomplete') {
       this.search$.next(newVal);
     }
+  }
+
+  itemLabel(item: any): string {
+    return this.displayFn ? this.displayFn(item) : item?.[this.displayField];
   }
 
   onSelect(event: any) {
