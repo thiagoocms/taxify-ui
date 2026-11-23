@@ -7,6 +7,7 @@ import {
   faCalculator,
   faChevronDown,
   faFileSignature,
+  faTriangleExclamation,
   faFileInvoice,
   faFolderOpen,
   faHouse,
@@ -32,6 +33,7 @@ export class SidebarComponent {
   readonly invoiceIcon = faFileInvoice;
   readonly assessmentIcon = faCalculator;
   readonly manifestIcon = faFileSignature;
+  readonly pendencyIcon = faTriangleExclamation;
   readonly folderIcon = faFolderOpen;
   readonly tagsIcon = faTags;
   readonly usersIcon = faUsers;

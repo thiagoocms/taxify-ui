@@ -53,6 +53,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'pendencias',
+        canActivate: [permissionGuard('INVOICES_VIEW')],
+        loadComponent: () => import('./features/pendencies/pendencies.component').then((m) => m.PendenciesComponent),
+      },
+      {
         path: 'manifestacao',
         canActivate: [permissionGuard('INVOICES_VIEW')],
         loadComponent: () =>

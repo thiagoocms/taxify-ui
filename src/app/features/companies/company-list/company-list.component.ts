@@ -4,6 +4,7 @@ import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { ActivatedRoute } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { InputComponent } from '../../../shared/components/input/input';
 import { Modal } from '../../../shared/components/modal/modal';
@@ -60,6 +61,7 @@ export class CompanyListComponent implements OnInit {
 
   readonly companies = signal<(CompanyDTO & { situacao: string })[]>([]);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
   /** Importação em segundo plano: acompanhada até terminar; o resumo abre no fim. */
   readonly importJob = signal<SyncJobStatusDTO<AcessoriasImportResultDTO> | null>(null);
   readonly importing = computed(() => isRunning(this.importJob()));
@@ -113,6 +115,12 @@ export class CompanyListComponent implements OnInit {
   ngOnInit(): void {
     this.loadCompanies();
     this.accountingFirmService.loadCurrent();
+
+    // Opened from another screen (Pendências → "Abrir"): goes straight to that company.
+    const linkedCompanyId = this.route.snapshot.queryParamMap.get('empresa');
+    if (linkedCompanyId) {
+      this.companyService.getById(linkedCompanyId).subscribe((company) => this.openEditForm(company));
+    }
 
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())

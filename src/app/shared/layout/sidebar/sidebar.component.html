@@ -46,6 +46,11 @@
     </div>
   </ng-container>
 
+  <a *ngIf="canInvoices" class="nav-link" routerLink="/pendencias" routerLinkActive="active" (click)="linkClicked.emit()">
+    <fa-icon [icon]="pendencyIcon"></fa-icon>
+    <span>Pendências</span>
+  </a>
+
   <a *ngIf="canInvoices" class="nav-link" routerLink="/notas-fiscais" routerLinkActive="active" (click)="linkClicked.emit()">
     <fa-icon [icon]="invoiceIcon"></fa-icon>
     <span>Notas fiscais</span>
