@@ -69,6 +69,17 @@
         <button type="button" class="quick-card warn" [class.active]="onlyRetained()" (click)="toggleRetained()">
           <span class="quick-label">só com retenção</span>
         </button>
+        @if (t.soSieg || t.soAdn || source()) {
+          <button type="button" class="quick-card" [class.active]="source() === 'SO_SIEG'" (click)="toggleSource('SO_SIEG')">
+            <span class="quick-value">{{ t.soSieg }}</span>
+            <span class="quick-label">só no SIEG</span>
+          </button>
+          <button type="button" class="quick-card" [class.active]="source() === 'SO_ADN'" (click)="toggleSource('SO_ADN')">
+            <span class="quick-value">{{ t.soAdn }}</span>
+            <span class="quick-label">só no Ambiente Nacional</span>
+            <app-help-tip text="Confronto entre as duas fontes: a NFS-e está numa e não na outra há mais de 48h." align="left"></app-help-tip>
+          </button>
+        }
         <span class="quick-note">{{ totalElements() }} {{ totalElements() === 1 ? 'nota' : 'notas' }} na lista</span>
       </div>
     }
@@ -157,7 +168,7 @@
       <div><span class="cell-sub">Prestador</span><div>{{ d.prestadorNome }} · {{ formatDocument(d.prestadorDocumento) }}</div></div>
       <div><span class="cell-sub">Tomador</span><div>{{ d.tomadorNome || '—' }} · {{ formatDocument(d.tomadorDocumento) }}</div></div>
       <div><span class="cell-sub">Emissão / competência</span><div>{{ d.issueDate | date: 'dd/MM/yyyy HH:mm' }} · {{ d.competence | date: 'MM/yyyy' }}</div></div>
-      <div><span class="cell-sub">Layout / origem</span><div>{{ d.layout }} · {{ d.origem }}</div></div>
+      <div><span class="cell-sub">Layout / origem</span><div>{{ d.layout }} · {{ originLabel(d.origem) }}</div></div>
       <div><span class="cell-sub">Serviço</span><div>{{ d.codigoServico || '—' }} {{ d.codigoTributacaoMunicipal ? '· ' + d.codigoTributacaoMunicipal : '' }}</div></div>
       <div><span class="cell-sub">Município de incidência</span><div>{{ d.municipioIncidencia || '—' }}</div></div>
       @if (d.codigoVerificacao) { <div><span class="cell-sub">Código de verificação</span><div>{{ d.codigoVerificacao }}</div></div> }

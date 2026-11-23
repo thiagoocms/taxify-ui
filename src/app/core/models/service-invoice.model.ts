@@ -10,6 +10,8 @@ export interface ServiceInvoiceFilter {
   participant?: string;
   numero?: string;
   somenteComRetencao?: boolean;
+  /** SO_SIEG / SO_ADN: há mais de 48h numa fonte e não na outra. */
+  fonte?: 'SO_SIEG' | 'SO_ADN';
   page?: number;
   size?: number;
 }
@@ -69,4 +71,13 @@ export interface ServiceInvoiceDirectionTotalsDTO {
 export interface ServiceInvoiceTotalsDTO {
   prestadas: ServiceInvoiceDirectionTotalsDTO;
   tomadas: ServiceInvoiceDirectionTotalsDTO;
+  /** Confronto SIEG × Ambiente Nacional: notas numa fonte e não na outra há mais de 48h. */
+  soSieg: number;
+  soAdn: number;
 }
+
+export const SERVICE_INVOICE_ORIGINS: Record<string, string> = {
+  SIEG: 'SIEG',
+  ADN: 'Ambiente Nacional',
+  UPLOAD: 'Upload',
+};

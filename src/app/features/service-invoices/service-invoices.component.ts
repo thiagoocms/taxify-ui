@@ -11,6 +11,7 @@ import {
   ServiceInvoiceDetailDTO,
   ServiceInvoiceSummaryDTO,
   ServiceInvoiceTotalsDTO,
+  SERVICE_INVOICE_ORIGINS,
 } from '../../core/models/service-invoice.model';
 import { AuthService } from '../../core/services/auth.service';
 import { CompanyService } from '../../core/services/company.service';
@@ -62,6 +63,8 @@ export class ServiceInvoicesComponent implements OnInit {
   readonly companyId = signal<string | null>(null);
   readonly direction = signal('');
   readonly onlyRetained = signal(false);
+  /** Confronto SIEG × Ambiente Nacional ('' = desligado). */
+  readonly source = signal<'' | 'SO_SIEG' | 'SO_ADN'>('');
   readonly rows = signal<ServiceInvoiceSummaryDTO[]>([]);
   readonly totals = signal<ServiceInvoiceTotalsDTO | null>(null);
   readonly page = signal(0);
@@ -159,6 +162,7 @@ export class ServiceInvoicesComponent implements OnInit {
         direction: this.direction() || undefined,
         participant: this.form.controls.participant.value.trim() || undefined,
         somenteComRetencao: this.onlyRetained(),
+        fonte: this.source() || undefined,
         page: this.page(),
         size: 50,
       })
@@ -187,6 +191,16 @@ export class ServiceInvoicesComponent implements OnInit {
     this.onlyRetained.set(!this.onlyRetained());
     this.page.set(0);
     this.load();
+  }
+
+  toggleSource(source: 'SO_SIEG' | 'SO_ADN'): void {
+    this.source.set(this.source() === source ? '' : source);
+    this.page.set(0);
+    this.load();
+  }
+
+  originLabel(origin: string): string {
+    return SERVICE_INVOICE_ORIGINS[origin] ?? origin;
   }
 
   goTo(page: number): void {

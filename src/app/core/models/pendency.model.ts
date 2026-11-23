@@ -76,6 +76,7 @@ export const PENDENCY_TYPE_LABELS: Record<string, string> = {
   CERTIFICATE_EXPIRED: 'Certificado A1 vencido',
   CERTIFICATE_EXPIRING: 'Certificado A1 vencendo',
   SEFAZ_CAPTURE_ERROR: 'Captura SEFAZ com erro',
+  NFSE_CAPTURE_ERROR: 'Captura de NFS-e (Ambiente Nacional) com erro',
   CIENCIA_REFUSED: 'Ciência recusada pela SEFAZ',
   MANIFESTATION_DEADLINE: 'Prazo de manifestação perto do fim',
   SOURCE_ONLY_SIEG: 'Nota só no SIEG',

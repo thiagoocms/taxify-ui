@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnChanges, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { CompanyCertificateDTO, SefazNotesDTO, SefazNoteSummaryDTO } from '../../../core/models/company.model';
+import { CompanyCertificateDTO, NfseAdnStatusDTO, SefazNotesDTO, SefazNoteSummaryDTO } from '../../../core/models/company.model';
 import { CompanyService } from '../../../core/services/company.service';
 
 /**
@@ -67,6 +67,37 @@ import { CompanyService } from '../../../core/services/company.service';
             }
             @if (sefaz.nextQueryAt && isFuture(sefaz.nextQueryAt)) {
               <div class="muted">Próxima consulta liberada pela SEFAZ às {{ sefaz.nextQueryAt | date: 'HH:mm' }}.</div>
+            }
+          </div>
+        }
+
+        @if (adn(); as a) {
+          <div class="sefaz small mt-3">
+            <div class="fw-semibold">Captura de NFS-e pelo Ambiente Nacional</div>
+            @if (!a.inPlan) {
+              <div class="muted">O plano não inclui "Integração NFS-e Nacional" — as NFS-e vêm só pelo SIEG ou por upload.</div>
+            } @else {
+              Última captura:
+              @if (a.lastRunAt) {
+                {{ a.lastRunAt | date: 'dd/MM/yyyy HH:mm' }}
+                <span class="badge ms-1" [ngClass]="statusClass(a.lastStatus)">{{ statusLabel(a.lastStatus) }}</span>
+                @if (a.lastNewNotes) { · {{ a.lastNewNotes }} NFS-e nova(s) }
+              } @else {
+                ainda não rodou
+              }
+              @if (a.lastDetail) {
+                <div class="muted">{{ a.lastDetail }}</div>
+              }
+              @if (a.nextQueryAt && isFuture(a.nextQueryAt)) {
+                <div class="muted">Próxima consulta às {{ a.nextQueryAt | date: 'HH:mm' }}.</div>
+              }
+              @if (!readonly && s.present) {
+                <div class="mt-1">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="capturingAdn()" (click)="captureAdn()">
+                    {{ capturingAdn() ? 'Consultando o Ambiente Nacional...' : 'Capturar NFS-e agora' }}
+                  </button>
+                </div>
+              }
             }
           </div>
         }
@@ -205,6 +236,8 @@ export class CompanyCertificateComponent implements OnChanges {
   readonly capturing = signal(false);
   readonly confirmingDelete = signal(false);
   readonly notes = signal<SefazNotesDTO | null>(null);
+  readonly adn = signal<NfseAdnStatusDTO | null>(null);
+  readonly capturingAdn = signal(false);
   readonly retrying = signal<string | null>(null);
 
   file: File | null = null;
@@ -220,6 +253,21 @@ export class CompanyCertificateComponent implements OnChanges {
       error: () => this.loading.set(false),
     });
     this.loadNotes();
+    this.companyService.getNfseAdnStatus(this.companyId).subscribe({
+      next: (status) => this.adn.set(status),
+      error: () => this.adn.set(null),
+    });
+  }
+
+  captureAdn(): void {
+    this.capturingAdn.set(true);
+    this.companyService.captureNfseAdn(this.companyId).subscribe({
+      next: (status) => {
+        this.adn.set(status);
+        this.capturingAdn.set(false);
+      },
+      error: () => this.capturingAdn.set(false),
+    });
   }
 
   private loadNotes(): void {

@@ -95,6 +95,18 @@ export interface SefazNotesDTO {
   notas: SefazNoteSummaryDTO[];
 }
 
+/** Captura de NFS-e pelo Ambiente Nacional (Sistema Nacional NFS-e). */
+export interface NfseAdnStatusDTO {
+  /** O plano tem "Importação de XML fiscal" + "Integração NFS-e Nacional". */
+  inPlan: boolean;
+  lastRunAt?: string | null;
+  lastStatus?: 'OK' | 'SEM_MOVIMENTO' | 'ERRO' | null;
+  lastDetail?: string | null;
+  lastNewNotes?: number | null;
+  nextQueryAt?: string | null;
+  ultNsu?: number | null;
+}
+
 /** Situação da última captura de XML pela SEFAZ (NFeDistribuicaoDFe). */
 export interface SefazDistStatusDTO {
   lastRunAt?: string | null;

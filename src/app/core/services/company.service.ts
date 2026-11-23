@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CompanyCertificateDTO, CompanyDTO, CompanyFilterDTO, CompanyTaxRegimeDTO, SefazNotesDTO } from '../models/company.model';
+import { CompanyCertificateDTO, CompanyDTO, CompanyFilterDTO, CompanyTaxRegimeDTO, NfseAdnStatusDTO, SefazNotesDTO } from '../models/company.model';
 import { Page, Pageable } from '../models/page.model';
 import { buildParams } from './user.service';
 
@@ -62,6 +62,16 @@ export class CompanyService {
   /** Captura agora na SEFAZ (respeita a pausa de 1h que a SEFAZ exige). */
   captureFromSefaz(id: string): Observable<CompanyCertificateDTO> {
     return this.http.post<CompanyCertificateDTO>(`${this.baseUrl}/${id}/sefaz/capturar`, {});
+  }
+
+  /** Captura de NFS-e pelo Ambiente Nacional: última execução e se o plano inclui. */
+  getNfseAdnStatus(id: string): Observable<NfseAdnStatusDTO> {
+    return this.http.get<NfseAdnStatusDTO>(`${this.baseUrl}/${id}/nfse-nacional`);
+  }
+
+  /** Roda a captura de NFS-e agora (respeitando a espera entre consultas). */
+  captureNfseAdn(id: string): Observable<NfseAdnStatusDTO> {
+    return this.http.post<NfseAdnStatusDTO>(`${this.baseUrl}/${id}/nfse-nacional/capturar`, {});
   }
 
   /** Notas que a SEFAZ entregou só como resumo, a ciência delas e o confronto SIEG × SEFAZ. */

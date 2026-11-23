@@ -79,6 +79,8 @@ export const HELP_ARTICLES: HelpArticle[] = [
         title: 'De onde vêm',
         items: [
           'SIEG: uma vez por dia por empresa, os últimos 35 dias (na primeira vez, os últimos 3 meses).',
+          'Ambiente Nacional (Sistema Nacional NFS-e): de hora em hora, com o certificado A1 da empresa, quando o plano tem "Integração NFS-e Nacional". Traz as prestadas e as tomadas dos municípios no padrão nacional; cancelamentos marcam a nota como cancelada.',
+          'A mesma NFS-e vinda das duas fontes é guardada uma vez só; os atalhos "só no SIEG" / "só no Ambiente Nacional" mostram as que estão numa fonte e não na outra há mais de 48h.',
           '"Buscar este mês no SIEG" traz um mês anterior em segundo plano — o SIEG libera 2 consultas por minuto, então pode levar alguns minutos.',
           'Upload manual pela tela de Notas fiscais (o sistema reconhece a NFS-e e guarda aqui).',
           'Os dois layouts são lidos: o nacional (padrão do Ambiente Nacional) e o ABRASF, usado por muitos municípios.',
@@ -198,7 +200,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
         title: 'O que vira pendência',
         items: [
           'Certificado A1 vencido (alta) ou vencendo em 30 dias (média).',
-          'Captura pela SEFAZ falhando (alta).',
+          'Captura pela SEFAZ falhando (alta) e captura de NFS-e pelo Ambiente Nacional falhando (alta).',
           'Prazo de manifestação em até 15 dias (alta) e ciência recusada pela SEFAZ (média).',
           'Nota conferida com divergência (média) e regime tributário não informado (média).',
           'Provável retenção indevida (média) e ISS retido sem valor (baixa).',
@@ -208,7 +210,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       {
         title: 'Saúde das integrações',
         paragraphs: [
-          'Embaixo, a captura SEFAZ de cada empresa: a última execução, a situação e quantas execuções houve (e quantas falharam) nos últimos 7 dias.',
+          'Embaixo, as coletas de cada empresa (SEFAZ e NFS-e Nacional): a última execução, a situação e quantas execuções houve (e quantas falharam) nos últimos 7 dias.',
         ],
       },
     ],
@@ -264,6 +266,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
         items: [
           'Roda de hora em hora para as empresas com certificado e "Integração SEFAZ" no plano (por enquanto, de Pernambuco). "Capturar agora" roda na hora, respeitando a pausa de 1h que a SEFAZ exige.',
           'O painel "Entradas que a SEFAZ entregou só como resumo" mostra as notas ainda sem XML e a situação da Ciência de cada uma; "Reenviar ciência" recoloca na fila uma ciência recusada.',
+          'Captura de NFS-e pelo Ambiente Nacional: com "Integração NFS-e Nacional" no plano, roda de hora em hora com o mesmo certificado; o status e o botão "Capturar NFS-e agora" ficam na mesma seção.',
         ],
       },
     ],
@@ -307,6 +310,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
           'Importação de XML fiscal: coloca a empresa na importação automática. A fonte vem das integrações abaixo.',
           'Integração SIEG: NF-e (entradas e saídas) e NFS-e pelo SIEG.',
           'Integração SEFAZ (certificado A1): captura das entradas direto na SEFAZ.',
+          'Integração NFS-e Nacional: captura das NFS-e prestadas e tomadas direto no Ambiente Nacional, com o certificado A1.',
           'Manifestação do destinatário: Ciência automática na SEFAZ e a tela de Manifestação (precisa da Integração SEFAZ).',
           'Auditoria de notas fiscais, Acesso multiusuário e Relatórios.',
         ],

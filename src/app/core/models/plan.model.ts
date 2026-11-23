@@ -7,7 +7,8 @@ export type PlanServiceType =
   | 'MULTI_USER_ACCESS'
   | 'REPORTS'
   | 'SEFAZ_INTEGRATION'
-  | 'SEFAZ_MANIFESTATION';
+  | 'SEFAZ_MANIFESTATION'
+  | 'NFSE_NATIONAL_INTEGRATION';
 
 export interface PlanDTO {
   id?: string;
@@ -36,6 +37,7 @@ export const PLAN_SERVICE_LABELS: Record<PlanServiceType, string> = {
   SIEG_INTEGRATION: 'Integração SIEG',
   SEFAZ_INTEGRATION: 'Integração SEFAZ (certificado A1)',
   SEFAZ_MANIFESTATION: 'Manifestação do destinatário (Ciência automática na SEFAZ)',
+  NFSE_NATIONAL_INTEGRATION: 'Integração NFS-e Nacional (Ambiente Nacional, certificado A1)',
   MULTI_USER_ACCESS: 'Acesso multiusuário',
   REPORTS: 'Relatórios',
 };

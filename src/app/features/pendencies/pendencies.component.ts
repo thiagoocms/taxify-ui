@@ -106,6 +106,7 @@ export class PendenciesComponent implements OnInit {
 
   readonly healthColumns = computed<TableColumn[]>(() => [
     { name: 'Empresa', cellTemplate: this.healthCompanyCell() },
+    { name: 'Coleta', property: 'service', width: '150px' },
     { name: 'Última execução', cellTemplate: this.healthRunCell(), width: '170px' },
     { name: 'Situação', cellTemplate: this.healthStatusCell() },
     { name: 'Execuções (7 dias)', cellTemplate: this.healthRunsCell(), headerClass: 'justify-content-end', width: '160px' },
