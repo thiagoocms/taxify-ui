@@ -1,0 +1,59 @@
+@use '../../shared/styles/list-patterns' as *;
+@use '../../shared/styles/page-patterns' as *;
+
+.two-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.chip-divider {
+  width: 1px;
+  align-self: stretch;
+  background: #dde1ea;
+  margin: 0 4px;
+}
+
+.premises {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 8px;
+
+  .premise-field {
+    width: 220px;
+  }
+
+  app-button {
+    margin-top: 6px;
+  }
+}
+
+.summary-item.best,
+.regime-box.best {
+  box-shadow: 0 0 0 2px #2f7d4f inset;
+}
+
+.regimes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.regime-box {
+  border: 1px solid #dde1ea;
+  border-radius: var(--border-radius);
+  padding: 12px 14px;
+
+  h6 {
+    font-weight: 600;
+    color: var(--text-title);
+  }
+}
+
+.disclaimer ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}

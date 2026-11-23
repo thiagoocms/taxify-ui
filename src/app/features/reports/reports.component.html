@@ -1,0 +1,204 @@
+<app-page
+  pageTitle="Relatórios"
+  pageDescription="Relatório mensal para o cliente, curva ABC de compras e simulação de regimes"
+  [pageButtons]="pageButtons()"
+  helpId="relatorios"
+>
+  <div class="filters">
+    <div class="filters-main">
+      <div class="month-nav" role="group" aria-label="Competência">
+        <button type="button" class="chip icon-chip" (click)="shift(-1)" aria-label="Mês anterior">
+          <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
+        </button>
+        <span class="month-label">{{ monthLabel(month()) }}</span>
+        <button type="button" class="chip icon-chip" (click)="shift(1)" aria-label="Próximo mês">
+          <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
+        </button>
+      </div>
+      <form class="company-field" [formGroup]="form">
+        <app-input formControlName="company" label="Empresa (nome ou CNPJ)" type="autocomplete" [searchFn]="searchCompanies"
+          [displayFn]="companyLabel" displayField="name" displayFieldTooltip="documentNumber"></app-input>
+      </form>
+    </div>
+    <div class="period-chips" role="group" aria-label="Relatório">
+      <button type="button" class="chip" [class.active]="view() === 'monthly'" (click)="setView('monthly')">Relatório mensal</button>
+      <button type="button" class="chip" [class.active]="view() === 'abc'" (click)="setView('abc')">Curva ABC de compras</button>
+      <button type="button" class="chip" [class.active]="view() === 'simulation'" (click)="setView('simulation')">Simulação de regimes</button>
+    </div>
+  </div>
+
+  @if (!companyId()) {
+    <div class="empty-hero">
+      <fa-icon [icon]="['fas', 'chart-column']" class="empty-hero-icon"></fa-icon>
+      <h6>Selecione uma empresa</h6>
+      <p>Escolha a empresa acima para ver o relatório do mês, a curva ABC de compras ou simular os regimes tributários.</p>
+    </div>
+  } @else if (loading()) {
+    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Montando o relatório...</p>
+  } @else {
+    @switch (view()) {
+      @case ('monthly') {
+        @if (monthly(); as r) {
+          <div class="results-summary">
+            <div class="summary-item">
+              <span class="summary-label">Faturamento líquido</span>
+              <span class="summary-value">{{ formatCurrency(r.revenue?.net) }}</span>
+              <span class="summary-sub">{{ r.invoicesIssued }} nota(s) de saída</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Impostos estimados</span>
+              <span class="summary-value">{{ formatCurrency(r.totalTaxes) }}</span>
+              <span class="summary-sub">{{ r.regime || 'regime não informado' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Compras</span>
+              <span class="summary-value">{{ formatCurrency(r.entries.total) }}</span>
+              <span class="summary-sub">{{ r.entries.notes }} nota(s) de entrada</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Pendências e auditoria</span>
+              <span class="summary-value">{{ openPendencies() }}</span>
+              <span class="summary-sub">{{ r.auditFindings }} achado(s) da auditoria no mês</span>
+            </div>
+          </div>
+
+          @if (r.alerts.length) {
+            <div class="notice">
+              <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+              <div>@for (alert of r.alerts; track alert.code) { <div>{{ alert.message }}</div> }</div>
+            </div>
+          }
+
+          <h6 class="section-title">Impostos estimados</h6>
+          <app-table [columns]="taxColumns" [data]="r.taxes" [config]="tableConfig"></app-table>
+
+          <div class="two-columns">
+            <div>
+              <h6 class="section-title">Entradas e saídas por CFOP</h6>
+              <app-table [columns]="cfopColumns" [data]="r.cfops" [config]="tableConfig"></app-table>
+            </div>
+            <div>
+              <h6 class="section-title">Evolução do faturamento</h6>
+              <app-table [columns]="historyColumns" [data]="r.history" [config]="tableConfig"></app-table>
+            </div>
+          </div>
+
+          <h6 class="section-title">Retenções do mês</h6>
+          @if (r.retentions.length) {
+            <div class="quick-filters">
+              @for (retention of r.retentions; track retention.nature) {
+                <span class="quick-card" [ngClass]="retention.nature === 'A_RECOLHER' ? 'danger' : retention.nature === 'A_COMPENSAR' ? 'ok' : ''">
+                  <span class="quick-value">{{ formatCurrency(retention.total) }}</span>
+                  <span class="quick-label">{{ natureLabel(retention.nature) }}</span>
+                </span>
+              }
+            </div>
+          } @else {
+            <p class="text-muted small">Nenhuma retenção no mês.</p>
+          }
+          <p class="disclaimer">
+            Valores estimados pelas notas importadas; não consideram folha, receitas sem nota nem segregação de ST/monofásico.
+            "Relatório PDF" gera a versão para enviar ao cliente.
+          </p>
+        }
+      }
+
+      @case ('abc') {
+        <div class="period-chips mb-3" role="group" aria-label="Curva ABC">
+          <button type="button" class="chip" [class.active]="abcBy() === 'PRODUTO'" (click)="setAbcBy('PRODUTO')">Por produto</button>
+          <button type="button" class="chip" [class.active]="abcBy() === 'FORNECEDOR'" (click)="setAbcBy('FORNECEDOR')">Por fornecedor</button>
+          <span class="chip-divider"></span>
+          @for (months of [3, 6, 12]; track months) {
+            <button type="button" class="chip" [class.active]="abcMonths() === months" (click)="setAbcMonths(months)">{{ months }} meses</button>
+          }
+        </div>
+        @if (abc(); as a) {
+          <div class="results-summary">
+            <div class="summary-item">
+              <span class="summary-label">Compras no período</span>
+              <span class="summary-value">{{ formatCurrency(a.total) }}</span>
+              <span class="summary-sub">{{ monthLabel(a.from) }} a {{ monthLabel(a.to) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Curva A (até 80%)</span>
+              <span class="summary-value">{{ a.countA }}</span>
+              <span class="summary-sub">{{ a.by === 'PRODUTO' ? 'produtos' : 'fornecedores' }} que concentram as compras</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Curvas B e C</span>
+              <span class="summary-value">{{ a.countB }} / {{ a.countC }}</span>
+              <span class="summary-sub">até 95% e o restante</span>
+            </div>
+          </div>
+          @if (a.items.length) {
+            <app-table [columns]="abcColumns()" [data]="a.items" [config]="tableConfig"></app-table>
+          } @else {
+            <div class="empty-hero"><h6>Nenhuma compra no período</h6><p>A curva ABC usa as notas de entrada (canceladas fora).</p></div>
+          }
+        }
+      }
+
+      @case ('simulation') {
+        <form class="premises" [formGroup]="premises">
+          <div class="premise-field"><app-input formControlName="margem" label="Margem no Lucro Real (%)" type="number"></app-input></div>
+          <div class="premise-field"><app-input formControlName="iss" label="ISS (%)" type="number"></app-input></div>
+          <app-button label="Recalcular" icon="magnifying-glass" (onClick)="loadSimulation()"></app-button>
+        </form>
+        @if (simulation(); as s) {
+          <div class="results-summary">
+            <div class="summary-item">
+              <span class="summary-label">Receita dos 12 meses</span>
+              <span class="summary-value">{{ formatCurrency(s.revenue) }}</span>
+              <span class="summary-sub">{{ monthLabel(s.from) }} a {{ monthLabel(s.to) }} · regime atual: {{ s.currentRegime || '—' }}</span>
+            </div>
+            @for (regime of s.regimes; track regime.regime) {
+              <div class="summary-item" [class.best]="regime.cheapest">
+                <span class="summary-label">{{ regime.label }} @if (regime.cheapest) { <span class="state-badge ok">menor carga</span> }</span>
+                <span class="summary-value">{{ formatCurrency(regime.total) }}</span>
+                <span class="summary-sub">{{ formatPercent(regime.effectiveRate) }} da receita</span>
+              </div>
+            }
+          </div>
+          <div class="regimes">
+            @for (regime of s.regimes; track regime.regime) {
+              <div class="regime-box" [class.best]="regime.cheapest">
+                <h6>{{ regime.label }}</h6>
+                <table class="table table-sm small mb-1">
+                  <tbody>
+                    @for (tax of regime.taxes; track tax.code) {
+                      <tr><td>{{ tax.label }}</td><td class="text-end">{{ formatCurrency(tax.amount) }}</td></tr>
+                    }
+                    <tr class="fw-semibold"><td>Total</td><td class="text-end">{{ formatCurrency(regime.total) }}</td></tr>
+                  </tbody>
+                </table>
+                @for (note of regime.notes; track $index) { <div class="cell-sub">{{ note }}</div> }
+              </div>
+            }
+          </div>
+          <div class="disclaimer">
+            <strong>Premissas:</strong>
+            <ul>@for (premise of s.premises; track $index) { <li>{{ premise }}</li> }</ul>
+          </div>
+        }
+      }
+    }
+  }
+</app-page>
+
+<ng-template #curveCell let-row="row">
+  <span [class]="'state-badge ' + (row.curve === 'A' ? 'danger' : row.curve === 'B' ? 'warn' : '')">{{ row.curve }}</span>
+</ng-template>
+
+<ng-template #abcItemCell let-row="row">
+  <div>
+    <strong>{{ row.name || '—' }}</strong>
+    <div class="cell-sub">{{ abc()?.by === 'FORNECEDOR' ? formatDocument(row.key) : row.key }} {{ row.detail ? '· ' + row.detail : '' }}</div>
+  </div>
+</ng-template>
+
+<ng-template #abcValueCell let-row="row">
+  <div class="value-cell">
+    <strong>{{ formatCurrency(row.value) }}</strong>
+    <div class="cell-sub">{{ formatPercent(row.share) }} · acumulado {{ formatPercent(row.accumulated) }}</div>
+  </div>
+</ng-template>

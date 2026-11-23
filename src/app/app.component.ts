@@ -10,6 +10,7 @@ import {
   faFileContract,
   faCircleQuestion,
   faClipboardCheck,
+  faChartColumn,
   faHandHoldingDollar,
   faXmark,
   faArrowRight,
@@ -54,7 +55,7 @@ export class AppComponent {
   title = 'taxify-front';
 
   constructor(library: FaIconLibrary) {
-    library.addIcons(faBan, faCheck, faFileSignature, faXmark, faFileContract, faHandHoldingDollar, faCircleQuestion, faClipboardCheck);
+    library.addIcons(faBan, faCheck, faFileSignature, faXmark, faFileContract, faHandHoldingDollar, faCircleQuestion, faClipboardCheck, faChartColumn);
     library.addIcons(faLock, faLockOpen, faChevronLeft, faChevronRight, faCalculator, faPlus, faPen, faTrash, faLink, faLinkSlash, faMagnifyingGlass, faUser, faRightFromBracket, faArrowLeft, faUpload, faFileZipper, faCloudArrowDown);
     library.addIcons(
       faArrowRight, faChevronDown, faChevronUp, faCircleCheck, faCopy, faDownload, faEye, faFileCode,

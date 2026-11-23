@@ -81,6 +81,11 @@
     <span>Apuração</span>
   </a>
 
+  <a *ngIf="canAssessment" class="nav-link" routerLink="/relatorios" routerLinkActive="active" (click)="linkClicked.emit()">
+    <fa-icon [icon]="reportIcon"></fa-icon>
+    <span>Relatórios</span>
+  </a>
+
   <a class="nav-link" routerLink="/ajuda" routerLinkActive="active" (click)="linkClicked.emit()">
     <fa-icon [icon]="helpIcon"></fa-icon>
     <span>Ajuda</span>

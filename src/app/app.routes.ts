@@ -102,6 +102,11 @@ export const routes: Routes = [
           import('./features/assessment/tax-assessment.component').then((m) => m.TaxAssessmentComponent),
       },
       {
+        path: 'relatorios',
+        canActivate: [permissionGuard('TAX_ASSESSMENT_VIEW')],
+        loadComponent: () => import('./features/reports/reports.component').then((m) => m.ReportsComponent),
+      },
+      {
         path: 'apuracao/:companyId',
         canActivate: [permissionGuard('TAX_ASSESSMENT_VIEW')],
         loadComponent: () =>

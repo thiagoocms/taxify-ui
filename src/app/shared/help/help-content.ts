@@ -280,6 +280,38 @@ export const HELP_ARTICLES: HelpArticle[] = [
     related: ['empresas'],
   },
   {
+    id: 'relatorios',
+    title: 'Relatórios e simulação de regimes',
+    group: 'Obrigações e controles',
+    route: '/relatorios',
+    summary: 'Relatório mensal para o cliente, curva ABC de compras e simulação de Simples × Presumido × Real com os números das notas.',
+    sections: [
+      {
+        title: 'Relatório mensal',
+        items: [
+          'Faturamento, impostos estimados (os mesmos da Apuração), compras, entradas e saídas por CFOP, retenções, pendências abertas, achados da auditoria e a evolução de 13 meses.',
+          '"Relatório PDF" gera a versão para enviar ao cliente.',
+        ],
+      },
+      {
+        title: 'Curva ABC de compras',
+        items: [
+          'As compras (notas de entrada, canceladas fora) dos últimos 3, 6 ou 12 meses, por produto ou por fornecedor, do maior para o menor valor.',
+          'Curva A: o que soma até 80% do valor; B: até 95%; C: o restante.',
+        ],
+      },
+      {
+        title: 'Simulação de regimes',
+        items: [
+          'Roda as regras da Apuração nos 12 meses até a competência como se a empresa fosse do Simples Nacional, do Lucro Presumido e do Lucro Real, e destaca o de menor carga.',
+          'Fora do Simples entram o ISS (alíquota informada) sobre os serviços e o saldo de ICMS destacado nas notas (saídas menos entradas); no Lucro Real, IRPJ e CSLL sobre uma margem de lucro informada.',
+          'É uma estimativa: não considera folha (fator R), receitas sem nota, ST/monofásico nem benefícios fiscais. As premissas aparecem embaixo do resultado.',
+        ],
+      },
+    ],
+    related: ['apuracao', 'retencoes'],
+  },
+  {
     id: 'empresas',
     title: 'Empresas, certificado A1 e captura SEFAZ',
     group: 'Configuração',
