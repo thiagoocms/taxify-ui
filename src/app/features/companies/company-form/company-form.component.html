@@ -130,6 +130,7 @@
 
 @if (isEdit) {
   <app-company-tax-regimes [companyId]="company!.id!" [readonly]="readonly"></app-company-tax-regimes>
+  <app-company-certificate [companyId]="company!.id!" [readonly]="readonly"></app-company-certificate>
   @if (auth.can('SUBSCRIPTIONS_VIEW')) {
     <app-company-subscriptions [companyId]="company!.id!"></app-company-subscriptions>
   }

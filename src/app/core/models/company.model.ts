@@ -62,3 +62,30 @@ export interface CompanyTaxRegimeDTO {
   validUntil?: string | null;
   label?: string | null;
 }
+
+/** Situação da última captura de XML pela SEFAZ (NFeDistribuicaoDFe). */
+export interface SefazDistStatusDTO {
+  lastRunAt?: string | null;
+  lastStatus?: 'OK' | 'SEM_MOVIMENTO' | 'ERRO' | null;
+  lastDetail?: string | null;
+  lastNewNotes?: number | null;
+  lastSummaries?: number | null;
+  nextQueryAt?: string | null;
+  ultNsu?: string | null;
+  maxNsu?: string | null;
+}
+
+/** Certificado A1 usado na captura da SEFAZ: o da empresa ou, numa filial, o da mesma raiz de CNPJ. */
+export interface CompanyCertificateDTO {
+  present: boolean;
+  inherited: boolean;
+  ownerCompanyId?: string | null;
+  ownerCompanyName?: string | null;
+  subjectName?: string | null;
+  cnpj?: string | null;
+  validFrom?: string | null;
+  validUntil?: string | null;
+  expired: boolean;
+  encryptionConfigured: boolean;
+  sefaz?: SefazDistStatusDTO | null;
+}
