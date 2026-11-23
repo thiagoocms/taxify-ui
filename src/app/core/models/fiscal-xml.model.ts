@@ -141,6 +141,8 @@ export interface FiscalXmlProdutoDTO {
   descricao?: string;
   ncm?: string;
   cfop?: string;
+  /** CFOP as issued, only when the rectified version changed it (cfop then holds the rectified one). */
+  cfopEmitido?: string;
   unidadeComercial?: string;
   quantidadeComercial?: number;
   valorUnitarioComercial?: number;

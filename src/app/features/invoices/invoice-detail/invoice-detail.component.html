@@ -237,6 +237,9 @@
                         @if (divergence?.cfopCorreto && divergence?.cfopCorreto !== divergence?.cfopAtual) {
                           <div class="correct">→ {{ divergence?.cfopCorreto }}</div>
                         }
+                        @if (produto.cfopEmitido) {
+                          <div class="issued" title="CFOP da nota emitida; o exibido é o da versão retificada">emitido {{ produto.cfopEmitido }}</div>
+                        }
                       </td>
                       <td class="num">{{ formatNumber(produto.quantidadeComercial) }} <span class="unit">{{ produto.unidadeComercial }}</span></td>
                       <td class="num">{{ formatCurrency(produto.valorUnitarioComercial) }}</td>
