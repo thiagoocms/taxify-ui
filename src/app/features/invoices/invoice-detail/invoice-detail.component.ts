@@ -612,8 +612,10 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
         next: (result) => {
           this.rectifying.set(false);
           this.rectificationResult.set(result);
-          // The rectification is logged server-side: refresh the Auditoria tab and its count.
+          // The rectification is logged server-side: refresh the Auditoria tab and its count,
+          // and the divergences, which the rectified version no longer has.
           this.loadAuditLogs();
+          this.loadDivergences();
         },
         error: () => this.rectifying.set(false),
       });
