@@ -53,6 +53,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'manifestacao',
+        canActivate: [permissionGuard('INVOICES_VIEW')],
+        loadComponent: () =>
+          import('./features/invoices/manifestation/manifestation.component').then((m) => m.ManifestationComponent),
+      },
+      {
         path: 'notas-fiscais/:id',
         canActivate: [permissionGuard('INVOICES_VIEW')],
         loadComponent: () =>

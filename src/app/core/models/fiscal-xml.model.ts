@@ -297,3 +297,52 @@ export interface FiscalXmlRectificationResultDTO {
   rectifiedFilePath?: string;
   correcoesAplicadas?: string[];
 }
+
+/** Manifestação do destinatário: a ciência e as três conclusivas. */
+export type ManifestationType = 'CIENCIA' | 'CONFIRMACAO' | 'DESCONHECIMENTO' | 'NAO_REALIZADA';
+
+export const MANIFESTATION_LABELS: Record<ManifestationType, string> = {
+  CIENCIA: 'Ciência da Operação',
+  CONFIRMACAO: 'Confirmação da Operação',
+  DESCONHECIMENTO: 'Desconhecimento da Operação',
+  NAO_REALIZADA: 'Operação não Realizada',
+};
+
+/** Nota de entrada que ainda deve uma manifestação conclusiva. */
+export interface ManifestationNoteDTO {
+  chave: string;
+  /** Nota guardada; null = a SEFAZ só entregou o resumo. */
+  notaId?: string | null;
+  numero?: string | null;
+  serie?: string | null;
+  emitenteNome?: string | null;
+  emitenteDocumento?: string | null;
+  dataEmissao?: string | null;
+  valorTotal?: number | null;
+  xmlCompleto: boolean;
+  ciencia: boolean;
+  /** Último dia para manifestar (180 dias da autorização). */
+  prazo?: string | null;
+  diasRestantes: number;
+}
+
+export interface ManifestationPendingDTO {
+  /** O plano tem a Manifestação do destinatário. */
+  habilitada: boolean;
+  /** A empresa tem A1 válido para assinar. */
+  certificado: boolean;
+  notas: ManifestationNoteDTO[];
+}
+
+export interface ManifestationRequestDTO {
+  companyId: string;
+  tipo: ManifestationType;
+  justificativa?: string;
+  chaves: string[];
+}
+
+export interface ManifestationResultDTO {
+  registradas: number;
+  recusadas: number;
+  itens: { chave: string; ok: boolean; codigo?: string | null; mensagem?: string | null }[];
+}

@@ -51,6 +51,11 @@
     <span>Notas fiscais</span>
   </a>
 
+  <a *ngIf="canInvoices" class="nav-link" routerLink="/manifestacao" routerLinkActive="active" (click)="linkClicked.emit()">
+    <fa-icon [icon]="manifestIcon"></fa-icon>
+    <span>Manifestação</span>
+  </a>
+
   <a *ngIf="canAssessment" class="nav-link" routerLink="/apuracao" routerLinkActive="active" (click)="linkClicked.emit()">
     <fa-icon [icon]="assessmentIcon"></fa-icon>
     <span>Apuração</span>

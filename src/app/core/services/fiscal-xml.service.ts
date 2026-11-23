@@ -12,6 +12,9 @@ import {
   FiscalXmlSummaryDTO,
   FiscalXmlTotalsDTO,
   FiscalXmlEventDTO,
+  ManifestationPendingDTO,
+  ManifestationRequestDTO,
+  ManifestationResultDTO,
   ReviewStatus,
 } from '../models/fiscal-xml.model';
 import { Page } from '../models/page.model';
@@ -28,6 +31,16 @@ function toDownloadResultDTO(response: FiscalXmlDownloadResultResponse): FiscalX
 @Injectable({ providedIn: 'root' })
 export class FiscalXmlService {
   private readonly baseUrl = `${environment.apiUrl}/integrations/xmls`;
+
+  /** Entradas que ainda devem manifestação conclusiva, prazo mais próximo primeiro. */
+  manifestationPending(companyId: string): Observable<ManifestationPendingDTO> {
+    return this.http.get<ManifestationPendingDTO>(`${this.baseUrl}/manifestacao`, { params: { companyId } });
+  }
+
+  /** Envia a manifestação escolhida para as notas; volta o retorno da SEFAZ por nota. */
+  manifest(request: ManifestationRequestDTO): Observable<ManifestationResultDTO> {
+    return this.http.post<ManifestationResultDTO>(`${this.baseUrl}/manifestacao`, request);
+  }
 
   constructor(private readonly http: HttpClient) {}
 
