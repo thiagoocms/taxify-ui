@@ -161,29 +161,29 @@ $cycle: 2.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.32);
+  background: rgba(15, 23, 42, 0.38);
   animation: loader-appear 0.25s ease-out 0.15s both;
 
   &.leaving {
     animation: loader-leave 0.2s ease-in forwards;
   }
 
+  // Sem cartão: só a logo grande no meio do véu e a mensagem pequena embaixo.
   .loader {
     flex-direction: column;
-    gap: 12px;
-    min-width: 200px;
-    padding: 22px 28px;
-    border-radius: var(--border-radius);
-    background: #fff;
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+    gap: 14px;
   }
 
   .mark {
-    width: 40px;
-    height: 40px;
+    width: 72px;
+    height: 72px;
+    filter: drop-shadow(0 10px 24px rgba(15, 23, 42, 0.35));
   }
 
   .message {
-    color: var(--text-title);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 2px rgba(15, 23, 42, 0.4);
   }
 }
