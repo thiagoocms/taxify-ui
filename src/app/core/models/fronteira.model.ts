@@ -130,6 +130,7 @@ export const FORMULA_EXAMPLES: { label: string; formula: string }[] = [
   { label: 'Padrão do regime normal, como o e-Fisco', formula: 'partida * interna - credito' },
   { label: 'Mercadoria com agregação, como o e-Fisco', formula: 'partida * (1 + agregacao) * interna - credito' },
   { label: 'Diferencial de alíquotas simples', formula: 'partida * (interna - inter)' },
+  { label: 'Base dupla (arts. 333/336), mais alta que o e-Fisco', formula: '(partida - icms_origem) / (1 - interna) * interna - credito' },
   { label: 'Carga líquida fixa de 5,5%', formula: 'partida * 5,5%' },
   { label: 'Carga líquida da regra', formula: 'partida * percentual' },
   { label: 'ST com MVA ajustada', formula: 'partida * (1 + mva_ajustada) * interna - credito' },

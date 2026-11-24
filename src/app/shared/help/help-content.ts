@@ -240,6 +240,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
           'Sem encerramento (regime normal) e uso e consumo: como na memória de cálculo do e-Fisco — partida × interna − crédito (a interestadual sobre o produto, sem o frete; do fornecedor do Simples, o crédito outorgado).',
           'Mercadoria com agregação (regra por NCM, como o "Cálculo Mercadoria" do e-Fisco): partida × (1 + agregação) × interna − crédito. Vale no lugar da carga líquida do credenciamento para o que ela cobrir.',
           'Ativo e uso e consumo: pelo CFOP da regra fiscal do produto (1551, 1556...), só o diferencial — sem agregação nem carga líquida. É onde costuma aparecer "cobrou a mais".',
+          'Base dupla (arts. 333/336): no regime normal e no ativo/uso e consumo a memória mostra, só como informação, quanto seria pela base dupla — (partida − ICMS destacado) ÷ (1 − interna) × interna − crédito — e a exposição em relação ao e-Fisco. O resultado continua pelo cálculo do e-Fisco; para usar a base dupla, cadastre-a como fórmula própria.',
           'Devolução, remessa e outras saídas ficam sem antecipação; item com ST já retido pelo fornecedor também.',
           'A SEFAZ-PE arredonda de um jeito próprio: o Taxify calcula de 4 formas e a nota confere quando o valor cobrado cai na faixa (tolerância de R$ 0,03).',
           '"Ver cálculo" mostra a memória de cada item: as regras usadas, os valores e a fórmula.',
