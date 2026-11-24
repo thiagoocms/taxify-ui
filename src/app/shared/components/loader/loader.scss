@@ -162,6 +162,7 @@ $cycle: 2.2s;
   align-items: center;
   justify-content: center;
   background: rgba(15, 23, 42, 0.38);
+  backdrop-filter: blur(2px);
   animation: loader-appear 0.25s ease-out 0.15s both;
 
   &.leaving {
@@ -171,13 +172,22 @@ $cycle: 2.2s;
   // Sem cartão: só a logo grande no meio do véu e a mensagem pequena embaixo.
   .loader {
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
   }
 
   .mark {
-    width: 72px;
-    height: 72px;
-    filter: drop-shadow(0 10px 24px rgba(15, 23, 42, 0.35));
+    width: 104px;
+    height: 104px;
+    filter: drop-shadow(0 12px 28px rgba(15, 23, 42, 0.3));
+  }
+
+  // o azul da logo levemente translúcido sobre o véu
+  .tile {
+    fill-opacity: 0.78;
   }
 
   .message {
