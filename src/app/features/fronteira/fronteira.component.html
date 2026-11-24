@@ -357,121 +357,159 @@
   }
 </app-modal>
 
-<app-modal [open]="!!ruleForm()" [title]="ruleForm()?.id ? 'Editar regra' : 'Nova regra'" (closed)="ruleForm.set(null)">
+<app-modal [open]="!!ruleForm()" [title]="ruleForm()?.id ? 'Editar regra' : 'Nova regra'" size="xl" (closed)="ruleForm.set(null)">
   @if (ruleForm(); as f) {
     <div class="rule-form">
-      <label class="form-label">Tipo
-        <select class="form-select" [ngModel]="f.kind" (ngModelChange)="updateForm({ kind: $event })">
-          @for (kind of kinds; track kind) { <option [value]="kind">{{ kindLabels[kind] }}</option> }
-        </select>
-      </label>
+      <section class="rf-section">
+        <div class="rf-title"><span class="rf-step">1</span> Tipo de regra</div>
+        <div class="kind-cards" role="radiogroup" aria-label="Tipo de regra">
+          @for (kind of kinds; track kind) {
+            <button type="button" class="kind-card" role="radio" [attr.aria-checked]="f.kind === kind" [class.active]="f.kind === kind"
+              [disabled]="!!f.id && f.kind !== kind" (click)="updateForm({ kind })">
+              <strong>{{ kindLabels[kind] }}</strong>
+              <span>{{ kindHints[kind] }}</span>
+            </button>
+          }
+        </div>
+        <div class="rf-row">
+          <span class="rf-label">Vale para</span>
+          <div class="scope-chips" role="group" aria-label="Vale para">
+            <button type="button" class="chip" [class.active]="!f.global" [disabled]="!companyId() || !!f.id" (click)="setScope(false)">Só esta empresa</button>
+            <button type="button" class="chip" [class.active]="f.global" [disabled]="!canManageRules || !!f.id" (click)="setScope(true)">Todas as empresas</button>
+          </div>
+        </div>
+      </section>
 
-      <div class="scope-chips" role="group" aria-label="Vale para">
-        <button type="button" class="chip" [class.active]="!f.global" [disabled]="!companyId() || !!f.id" (click)="setScope(false)">Só esta empresa</button>
-        <button type="button" class="chip" [class.active]="f.global" [disabled]="!canManageRules || !!f.id" (click)="setScope(true)">Todas as empresas</button>
-      </div>
-
-      @switch (f.kind) {
-        @case ('ALIQUOTA_INTERNA') {
-          <label class="form-label">Alíquota interna (%)
-            <input type="number" step="0.01" class="form-control" [ngModel]="f.aliquota" (ngModelChange)="updateForm({ aliquota: $event })" />
-          </label>
+      <section class="rf-section">
+        <div class="rf-title"><span class="rf-step">2</span> {{ f.kind === 'FORMULA' ? 'Fórmula' : 'Valor' }}</div>
+        @switch (f.kind) {
+          @case ('ALIQUOTA_INTERNA') {
+            <div class="grid-3">
+              <label class="form-label">Alíquota interna (%)
+                <input type="number" step="0.01" class="form-control" [ngModel]="f.aliquota" (ngModelChange)="updateForm({ aliquota: $event })"
+                  placeholder="ex.: 20,5" />
+              </label>
+            </div>
+            <div class="cell-sub">Sem NCM, vale para todos os produtos (a modal). Com NCM, é a exceção daquele produto.</div>
+          }
+          @case ('AGREGACAO') {
+            <div class="grid-3">
+              <label class="form-label">Agregação (%)
+                <input type="number" step="0.01" class="form-control" [ngModel]="f.agregacao" (ngModelChange)="updateForm({ agregacao: $event })"
+                  placeholder="20 = coeficiente 1,20" />
+              </label>
+              <label class="form-label">Região de origem
+                <select class="form-select" [ngModel]="f.regiaoOrigem ?? ''" (ngModelChange)="updateForm({ regiaoOrigem: $event || null })">
+                  <option value="">Qualquer origem</option>
+                  <option value="SUL_SUDESTE">Sul / Sudeste</option>
+                  <option value="DEMAIS">Norte, Nordeste e Centro-Oeste</option>
+                </select>
+              </label>
+              <label class="form-label">Fornecedor
+                <select class="form-select" [ngModel]="f.fornecedorSimples == null ? '' : '' + f.fornecedorSimples"
+                  (ngModelChange)="setFornecedorSimples($event)">
+                  <option value="">Qualquer fornecedor</option>
+                  <option value="true">Só do Simples Nacional</option>
+                  <option value="false">Só fora do Simples</option>
+                </select>
+              </label>
+            </div>
+            <div class="cell-sub">Como o "Cálculo Mercadoria" do e-Fisco: partida × (1 + agregação) × interna − crédito. Informe o NCM em
+              "Onde vale" — ex.: eletroeletrônico (8504) de fornecedor do Simples do Sul/Sudeste, 20%.</div>
+          }
+          @case ('ST_MVA') {
+            <div class="grid-3">
+              <label class="form-label">MVA original (%)
+                <input type="number" step="0.01" class="form-control" [ngModel]="f.mva" (ngModelChange)="updateForm({ mva: $event })" />
+              </label>
+            </div>
+            <div class="cell-sub">A MVA ajustada sai sozinha: [(1 + MVA) × (1 − inter) ÷ (1 − interna)] − 1. Informe o NCM ou CEST em "Onde vale".</div>
+          }
+          @case ('SIMPLES_PERCENTUAL') {
+            <div class="grid-3">
+              <label class="form-label">Carga líquida (%)
+                <input type="number" step="0.01" class="form-control" [ngModel]="f.percentual" (ngModelChange)="updateForm({ percentual: $event })"
+                  placeholder="ex.: 5,5" />
+              </label>
+              <label class="form-label span-2">Credenciamento (como sai no extrato)
+                <input class="form-control" maxlength="255" [ngModel]="f.descricao" (ngModelChange)="updateForm({ descricao: $event })"
+                  placeholder="em branco = empresa do Simples (art. 363-A)" />
+              </label>
+            </div>
+            @if (report()?.extract?.credenciamentoInterno; as cred) {
+              <button type="button" class="fill-hint" (click)="fillFromExtract()">
+                Usar o do extrato: <strong>{{ cred }}</strong>
+                @if (report()?.summary?.taxaPredominante) { · {{ formatRate(report()?.summary?.taxaPredominante) }} }
+              </button>
+            }
+            <div class="cell-sub">O percentual sobre a base de partida, sem abater crédito — o "tipo de cálculo" do e-Fisco.</div>
+          }
+          @case ('FORMULA') {
+            <div class="grid-3">
+              <label class="form-label span-2">Substitui qual cálculo
+                <select class="form-select" [ngModel]="f.aplicaEm ?? ''" (ngModelChange)="updateForm({ aplicaEm: $event || null })">
+                  <option value="">Qualquer cálculo</option>
+                  @for (option of aplicaEmOptions; track option) { <option [value]="option">{{ aplicaEmLabels[option] }}</option> }
+                </select>
+              </label>
+            </div>
+            <div class="cell-sub">Devolução, remessa e ST já retido nunca são substituídos.</div>
+            <app-formula-editor [formula]="f.formula" (formulaChange)="onFormulaChange($event)" [variables]="variables()"
+              [values]="formulaContext()?.values ?? formulaCheck()?.valores" [result]="formulaMessage()"
+              [contextLabel]="formulaContext()?.label" (test)="testFormula()"></app-formula-editor>
+          }
         }
-        @case ('AGREGACAO') {
-          <label class="form-label">Agregação (%)
-            <input type="number" step="0.01" class="form-control" [ngModel]="f.agregacao" (ngModelChange)="updateForm({ agregacao: $event })"
-              placeholder="20 = coeficiente 1,20" />
+      </section>
+
+      <details class="rf-section rf-collapsible" [open]="hasFilters(f)">
+        <summary class="rf-title"><span class="rf-step">3</span> Onde vale <span class="rf-summary">{{ filterSummary(f) }}</span></summary>
+        <div class="grid-4">
+          <label class="form-label">NCM (ou começo)
+            <input class="form-control" [ngModel]="f.ncm" (ngModelChange)="updateForm({ ncm: $event })" placeholder="todos" />
           </label>
-          <div class="grid-2">
-            <label class="form-label">Região de origem
-              <select class="form-select" [ngModel]="f.regiaoOrigem ?? ''" (ngModelChange)="updateForm({ regiaoOrigem: $event || null })">
-                <option value="">Qualquer origem</option>
-                <option value="SUL_SUDESTE">Sul / Sudeste</option>
-                <option value="DEMAIS">Norte, Nordeste e Centro-Oeste</option>
-              </select>
+          <label class="form-label">CEST
+            <input class="form-control" [ngModel]="f.cest" (ngModelChange)="updateForm({ cest: $event })" placeholder="todos" />
+          </label>
+          <label class="form-label">Código do produto
+            <input class="form-control" [ngModel]="f.codigoProduto" (ngModelChange)="updateForm({ codigoProduto: $event })" placeholder="todos" />
+          </label>
+          <label class="form-label">CNPJ do fornecedor
+            <input class="form-control" [ngModel]="f.cnpjFornecedor" (ngModelChange)="updateForm({ cnpjFornecedor: $event })" placeholder="todos" />
+          </label>
+          <label class="form-label">Vigência de
+            <input type="date" class="form-control" [ngModel]="f.validFrom" (ngModelChange)="updateForm({ validFrom: $event || null })" />
+          </label>
+          <label class="form-label">até
+            <input type="date" class="form-control" [ngModel]="f.validUntil" (ngModelChange)="updateForm({ validUntil: $event || null })" />
+          </label>
+        </div>
+        <div class="cell-sub">A mais específica vence: produto, fornecedor, CEST e o NCM mais longo; a da empresa vence a geral.</div>
+      </details>
+
+      <details class="rf-section rf-collapsible" [open]="!!f.id">
+        <summary class="rf-title"><span class="rf-step">4</span> Identificação <span class="rf-summary">opcional</span></summary>
+        <div class="grid-3">
+          @if (f.kind !== 'SIMPLES_PERCENTUAL') {
+            <label class="form-label">Descrição
+              <input class="form-control" maxlength="255" [ngModel]="f.descricao" (ngModelChange)="updateForm({ descricao: $event })" />
             </label>
-            <label class="form-label">Fornecedor
-              <select class="form-select" [ngModel]="f.fornecedorSimples == null ? '' : '' + f.fornecedorSimples"
-                (ngModelChange)="setFornecedorSimples($event)">
-                <option value="">Qualquer fornecedor</option>
-                <option value="true">Só do Simples Nacional</option>
-                <option value="false">Só fora do Simples</option>
-              </select>
-            </label>
-          </div>
-          <div class="cell-sub">
-            Como o "Cálculo Mercadoria" do e-Fisco, escolhido pelo NCM: base = partida × (1 + agregação); ICMS = base × interna −
-            crédito (a interestadual sobre o produto). Vale no lugar da carga líquida do credenciamento — ex.: eletroeletrônico
-            (NCM 8504) de fornecedor do Simples do Sul/Sudeste, 20%.
-          </div>
-        }
-        @case ('ST_MVA') {
-          <label class="form-label">MVA original (%)
-            <input type="number" step="0.01" class="form-control" [ngModel]="f.mva" (ngModelChange)="updateForm({ mva: $event })" />
+          }
+          <label class="form-label">Fundamento legal
+            <input class="form-control" maxlength="500" [ngModel]="f.fundamento" (ngModelChange)="updateForm({ fundamento: $event })"
+              placeholder="ex.: Decreto 44.650/2017, art. 363-A" />
           </label>
-          <div class="cell-sub">A MVA ajustada sai da fórmula: [(1 + MVA) × (1 − inter) ÷ (1 − interna)] − 1.</div>
-        }
-        @case ('SIMPLES_PERCENTUAL') {
-          <label class="form-label">Carga líquida (%)
-            <input type="number" step="0.01" class="form-control" [ngModel]="f.percentual" (ngModelChange)="updateForm({ percentual: $event })" />
+          <label class="form-label">Link oficial
+            <input class="form-control" maxlength="500" [ngModel]="f.link" (ngModelChange)="updateForm({ link: $event })" />
           </label>
-          <div class="cell-sub">
-            O percentual sobre a base de partida, sem abater crédito — como o "tipo de cálculo" do e-Fisco. Na descrição, o
-            credenciamento como sai no extrato (ex.: TECIDOS E ARMARINHO (INDUSTRIA)): vale para a empresa com esse
-            credenciamento, de qualquer regime. Sem descrição, vale para empresa do Simples (art. 363-A).
-          </div>
-        }
-        @case ('FORMULA') {
-          <label class="form-label">Substitui qual cálculo
-            <select class="form-select" [ngModel]="f.aplicaEm ?? ''" (ngModelChange)="updateForm({ aplicaEm: $event || null })">
-              <option value="">Qualquer cálculo</option>
-              @for (option of aplicaEmOptions; track option) { <option [value]="option">{{ aplicaEmLabels[option] }}</option> }
-            </select>
-          </label>
-          <div class="cell-sub">Para virar padrão: todas as empresas, sem NCM, produto ou fornecedor. Devolução, remessa e ST
-            já retido nunca são substituídos.</div>
-          <div class="form-label">Fórmula</div>
-          <app-formula-editor [formula]="f.formula" (formulaChange)="onFormulaChange($event)" [variables]="variables()"
-            [values]="formulaContext()?.values ?? formulaCheck()?.valores" [result]="formulaMessage()"
-            [contextLabel]="formulaContext()?.label" (test)="testFormula()"></app-formula-editor>
-        }
-      }
+        </div>
+      </details>
 
-      <div class="grid-2">
-        <label class="form-label">NCM (ou começo do NCM)
-          <input class="form-control" [ngModel]="f.ncm" (ngModelChange)="updateForm({ ncm: $event })" placeholder="em branco = todos" />
-        </label>
-        <label class="form-label">CEST
-          <input class="form-control" [ngModel]="f.cest" (ngModelChange)="updateForm({ cest: $event })" placeholder="em branco = todos" />
-        </label>
-        <label class="form-label">Código do produto
-          <input class="form-control" [ngModel]="f.codigoProduto" (ngModelChange)="updateForm({ codigoProduto: $event })" placeholder="em branco = todos" />
-        </label>
-        <label class="form-label">CNPJ do fornecedor
-          <input class="form-control" [ngModel]="f.cnpjFornecedor" (ngModelChange)="updateForm({ cnpjFornecedor: $event })" placeholder="em branco = todos" />
-        </label>
-        <label class="form-label">Vigência de
-          <input type="date" class="form-control" [ngModel]="f.validFrom" (ngModelChange)="updateForm({ validFrom: $event || null })" />
-        </label>
-        <label class="form-label">até
-          <input type="date" class="form-control" [ngModel]="f.validUntil" (ngModelChange)="updateForm({ validUntil: $event || null })" />
-        </label>
-      </div>
-      <label class="form-label">Descrição
-        <input class="form-control" maxlength="255" [ngModel]="f.descricao" (ngModelChange)="updateForm({ descricao: $event })" />
-      </label>
-      <label class="form-label">Fundamento legal
-        <input class="form-control" maxlength="500" [ngModel]="f.fundamento" (ngModelChange)="updateForm({ fundamento: $event })"
-          placeholder="ex.: Decreto 44.650/2017, art. 363-A" />
-      </label>
-      <label class="form-label">Link oficial
-        <input class="form-control" maxlength="500" [ngModel]="f.link" (ngModelChange)="updateForm({ link: $event })" />
-      </label>
-      <div class="cell-sub">A regra mais específica vence: produto, depois fornecedor, CEST e o NCM mais longo; a da empresa vence a geral.</div>
-
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="ruleForm.set(null)"></app-button>
-        <app-button [label]="savingRule() ? 'Salvando...' : 'Salvar regra'" [disabled]="savingRule() || !formulaOk()" (onClick)="saveRule()"></app-button>
+      <div class="rf-footer">
+        <span class="cell-sub">Regra nova ou alterada fica "a conferir" até alguém do fiscal conferir.</span>
+        <div class="d-flex gap-2">
+          <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="ruleForm.set(null)"></app-button>
+          <app-button [label]="savingRule() ? 'Salvando...' : 'Salvar regra'" [disabled]="savingRule() || !formulaOk()" (onClick)="saveRule()"></app-button>
+        </div>
       </div>
     </div>
   }

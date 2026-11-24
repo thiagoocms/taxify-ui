@@ -16,7 +16,7 @@
   </div>
 
   <div class="box-wrap">
-    <textarea #box class="form-control box" [class.invalid]="issues().length && formula()" rows="2" maxlength="500"
+    <textarea #box class="form-control box" [class.invalid]="issues().length && formula()" rows="3" maxlength="500"
       spellcheck="false" autocomplete="off" [value]="formula() ?? ''" placeholder="Digite um campo — ex.: par… e escolha partida"
       (input)="onInput($any($event.target).value)" (keydown)="onKeydown($event)" (click)="refreshSuggestions()"
       (blur)="closeSuggestionsSoon()"></textarea>
@@ -68,6 +68,7 @@
   </div>
 
   <div class="fields">
+    <div class="g-head">Campos da nota <span>clique para inserir</span></div>
     <div class="group">
       <span class="g-title">Valores</span>
       @for (f of money(); track f.name) {
@@ -84,7 +85,6 @@
         </button>
       }
     </div>
-    <div class="cell-sub">Clique num campo para inserir, ou digite e escolha na lista. Percentual pode ser 5,5% ou 0,055; nas
-      funções, separe com ";".</div>
+    <div class="cell-sub">Ou digite na fórmula e escolha na lista. Percentual: 5,5% ou 0,055. Nas funções, separe com ";".</div>
   </div>
 </div>

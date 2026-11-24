@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -28,6 +28,7 @@ import {
 } from '../../core/models/fronteira.model';
 import { AuthService } from '../../core/services/auth.service';
 import { CompanyService } from '../../core/services/company.service';
+import { CurrentCompanyService } from '../../core/services/current-company.service';
 import { FronteiraService } from '../../core/services/fronteira.service';
 import { Button } from '../../shared/components/button/button';
 import { InputComponent } from '../../shared/components/input/input';
@@ -76,6 +77,8 @@ const STANDARD_FORMULAS: Record<string, string> = {
 export class FronteiraComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly companyService = inject(CompanyService);
+  private readonly currentCompany = inject(CurrentCompanyService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly fronteiraService = inject(FronteiraService);
   private readonly toastr = inject(ToastrService);
   private readonly router = inject(Router);
@@ -214,6 +217,8 @@ export class FronteiraComponent implements OnInit {
         }
       }
     });
+    // Só traz a empresa em uso se ela for de PE (ou sem UF no cadastro).
+    this.currentCompany.bind(this.form.controls.company, this.destroyRef, (company) => !company.uf || company.uf.toUpperCase() === "PE");
   }
 
   // ---------------------------------------------------------------- conferência
@@ -525,6 +530,39 @@ export class FronteiraComponent implements OnInit {
     return value ? APLICA_EM_LABELS[value as FronteiraAplicaEm] ?? value : 'qualquer cálculo';
   }
 
+
+  /** Uma linha do que cada tipo faz - nos cartões do modal. */
+  readonly kindHints: Record<FronteiraRuleKind, string> = {
+    ALIQUOTA_INTERNA: 'A alíquota de PE: a modal ou a de um NCM.',
+    AGREGACAO: 'Partida × (1 + agregação), por NCM e origem.',
+    ST_MVA: 'Produto com ST: a MVA original do NCM/CEST.',
+    SIMPLES_PERCENTUAL: '% fixo sobre a partida: credenciamento ou Simples.',
+    FORMULA: 'Sua própria conta, no lugar de um cálculo padrão.',
+  };
+
+  hasFilters(f: RuleForm): boolean {
+    return !!(f.ncm || f.cest || f.codigoProduto || f.cnpjFornecedor || f.validFrom || f.validUntil);
+  }
+
+  /** "NCM 8504 · fornecedor 11.111..." ou "todas as notas, sem vigência". */
+  filterSummary(f: RuleForm): string {
+    const parts: string[] = [];
+    if (f.ncm) parts.push(`NCM ${f.ncm}`);
+    if (f.cest) parts.push(`CEST ${f.cest}`);
+    if (f.codigoProduto) parts.push(`produto ${f.codigoProduto}`);
+    if (f.cnpjFornecedor) parts.push(`fornecedor ${f.cnpjFornecedor}`);
+    if (f.validFrom || f.validUntil) parts.push('com vigência');
+    return parts.length ? parts.join(' · ') : 'todas as notas, sem vigência';
+  }
+
+  /** Carga líquida: o credenciamento e a taxa que o extrato aberto aplica. */
+  fillFromExtract(): void {
+    const report = this.report();
+    this.updateForm({
+      descricao: report?.extract?.credenciamentoInterno ?? null,
+      percentual: report?.summary?.taxaPredominante ?? this.ruleForm()?.percentual ?? null,
+    });
+  }
 
   updateForm(patch: Partial<RuleForm>): void {
     const form = this.ruleForm();

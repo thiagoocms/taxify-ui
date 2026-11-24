@@ -56,7 +56,19 @@ function closest(word: string, names: string[]): string | null {
     return byLabel;
   }
   const ranked = names.map((name) => ({ name, d: distance(w, name) })).sort((a, b) => a.d - b.d)[0];
-  return ranked && ranked.d <= 3 ? ranked.name : null;
+  if (ranked && ranked.d <= 3) {
+    return ranked.name;
+  }
+  // "icmss" → icms_origem: the longest common start, from 3 letters on
+  const common = (name: string) => {
+    let i = 0;
+    while (i < w.length && i < name.length && w[i] === name[i]) {
+      i++;
+    }
+    return i;
+  };
+  const byPrefix = names.map((name) => ({ name, n: common(name) })).sort((a, b) => b.n - a.n)[0];
+  return byPrefix && byPrefix.n >= 3 ? byPrefix.name : null;
 }
 
 /** Os problemas que dá para ver sem o servidor: nome que não existe, função desconhecida, parênteses. */

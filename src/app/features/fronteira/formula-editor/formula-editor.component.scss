@@ -1,3 +1,5 @@
+@use '../../../shared/styles/page-patterns' as *;
+
 :host {
   display: block;
 }
@@ -5,9 +7,37 @@
 $mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
 .editor {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  grid-auto-rows: min-content;
+  column-gap: 18px;
+  row-gap: 8px;
+
+  > .bar,
+  > .box-wrap,
+  > .preview,
+  > .status {
+    grid-column: 1;
+  }
+
+  > .fields {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-self: start;
+    padding: 10px 12px;
+    border: 1px solid #e3e7ef;
+    border-radius: 8px;
+    background: #fafbfd;
+  }
+
+  @media (max-width: 992px) {
+    grid-template-columns: minmax(0, 1fr);
+
+    > .fields {
+      grid-column: 1;
+      grid-row: auto;
+    }
+  }
 }
 
 .bar {
@@ -65,6 +95,7 @@ $mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 .box {
   font-family: $mono;
   font-size: 14px;
+  min-height: 84px;
   resize: vertical;
 
   &.invalid {
@@ -171,6 +202,7 @@ $mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 .status {
+  font-size: 12px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -182,6 +214,10 @@ $mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   display: flex;
   align-items: center;
   gap: 6px;
+
+  .state-badge {
+    white-space: normal;
+  }
 }
 
 .link {
@@ -210,7 +246,8 @@ $mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-title);
-  width: 70px;
+  width: 100%;
+  margin-top: 2px;
 }
 
 .pill {
@@ -235,5 +272,18 @@ $mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   &:hover {
     filter: brightness(0.96);
+  }
+}
+
+.g-head {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-title);
+
+  span {
+    font-weight: 400;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-left: 4px;
   }
 }
