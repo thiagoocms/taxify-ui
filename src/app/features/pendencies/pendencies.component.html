@@ -3,7 +3,7 @@
     <div class="filters-main">
       <div class="competence-filter">
         <app-month-nav [month]="competence()" emptyLabel="Todas as competências" ariaLabel="Competência"
-          (stepped)="shiftCompetence($event)"></app-month-nav>
+          (monthChange)="setCompetence($event)"></app-month-nav>
         @if (competence()) {
           <button type="button" class="chip" (click)="setCompetence('')">Todas</button>
         }
