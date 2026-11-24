@@ -92,6 +92,20 @@ function prettyXml(xml: string): string {
     .join('\n');
 }
 
+/** Telas que abrem a nota, pelo começo da URL - o mais específico primeiro. */
+const BACK_TARGETS: [string, string][] = [
+  ['/notas-fiscais', 'Notas fiscais'],
+  ['/fronteira', 'Fronteira PE'],
+  ['/auditoria', 'Auditoria'],
+  ['/pendencias', 'Pendências'],
+  ['/retencoes', 'Retenções'],
+  ['/manifestacao', 'Manifestação'],
+  ['/apuracao', 'Apuração'],
+  ['/relatorios', 'Relatórios'],
+  ['/cadastro/empresas', 'a empresa'],
+  ['/home', 'o início'],
+];
+
 @Component({
   selector: 'app-invoice-detail',
   standalone: true,
@@ -103,6 +117,11 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  /**
+   * A tela de onde a nota foi aberta (Fronteira, Auditoria, Pendências...), para o "Voltar" levar de volta a ela.
+   * Lida na criação, enquanto a navegação até aqui ainda é a atual; null = abriu direto (link, F5).
+   */
+  private readonly cameFrom: string | null = this.sourceUrl();
   private readonly fb = inject(FormBuilder);
   private readonly toastr = inject(ToastrService);
   protected readonly authService = inject(AuthService);
@@ -202,7 +221,7 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   });
 
   readonly pageButtons = computed<PageButton[]>(() => [
-    { label: 'Voltar', icon: 'arrow-left', variant: 'text', severity: 'secondary', handler: () => this.back() },
+    { label: this.backLabel(), icon: 'arrow-left', variant: 'text', severity: 'secondary', handler: () => this.back() },
     {
       label: 'Copiar chave',
       icon: 'copy',
@@ -399,7 +418,29 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   }
 
   back(): void {
-    this.router.navigate(['/notas-fiscais']);
+    if (this.cameFrom) {
+      this.router.navigateByUrl(this.cameFrom);
+    } else {
+      this.router.navigate(['/notas-fiscais']);
+    }
+  }
+
+  /** "Voltar para Fronteira PE"; sem origem conhecida, para a lista de notas. */
+  backLabel(): string {
+    const path = (this.cameFrom ?? '/notas-fiscais').split(/[?#]/)[0];
+    const screen = BACK_TARGETS.find(([prefix]) => path === prefix || path.startsWith(prefix + '/'))?.[1];
+    return screen ? `Voltar para ${screen}` : 'Voltar';
+  }
+
+  private sourceUrl(): string | null {
+    const navigation = this.router.getCurrentNavigation() ?? this.router.lastSuccessfulNavigation;
+    const previous = navigation?.previousNavigation?.finalUrl;
+    if (!previous) {
+      return null;
+    }
+    const url = this.router.serializeUrl(previous);
+    // a própria nota (recarregou) ou o login não são "de onde veio"
+    return url.startsWith('/auth') || url === this.router.serializeUrl(navigation!.finalUrl ?? previous) ? null : url;
   }
 
   selectTab(tab: DetailTab): void {
