@@ -5,6 +5,20 @@
 >
   <form [formGroup]="form" (ngSubmit)="buscarXmls()" class="filters">
     <div class="filters-main">
+      <div class="period-chips" role="group" aria-label="Período de emissão">
+        @for (option of periodOptions; track option.key) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="period() === option.key"
+            [attr.aria-pressed]="period() === option.key"
+            (click)="selectPeriod(option.key)"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+
       <div class="company-field">
         <app-input
           formControlName="company"
@@ -27,20 +41,6 @@
 
       <div class="cfop-field">
         <app-input formControlName="cfop" label="CFOP"></app-input>
-      </div>
-
-      <div class="period-chips" role="group" aria-label="Período de emissão">
-        @for (option of periodOptions; track option.key) {
-          <button
-            type="button"
-            class="chip"
-            [class.active]="period() === option.key"
-            [attr.aria-pressed]="period() === option.key"
-            (click)="selectPeriod(option.key)"
-          >
-            {{ option.label }}
-          </button>
-        }
       </div>
     </div>
 
