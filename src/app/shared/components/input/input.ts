@@ -13,7 +13,7 @@ import {
 import {CommonModule} from '@angular/common';
 import {AbstractControl, ControlContainer, ControlValueAccessor, NG_VALUE_ACCESSOR} from '@angular/forms';
 import {FaIconComponent} from '@fortawesome/angular-fontawesome';
-import {IconDefinition} from '@fortawesome/free-solid-svg-icons';
+import {faXmark, IconDefinition} from '@fortawesome/free-solid-svg-icons';
 import {debounceTime, distinctUntilChanged, Observable, of, Subject, Subscriber, switchMap} from 'rxjs';
 import {formatDocument, maskDocument, onlyDigits} from '../../utils/document-mask';
 
@@ -70,6 +70,7 @@ export class InputComponent implements ControlValueAccessor, OnInit {
 
   value: string = '';
   focused = false;
+  readonly clearIcon = faXmark;
   showDropdown = false;
 
 
@@ -178,6 +179,17 @@ export class InputComponent implements ControlValueAccessor, OnInit {
       this.showDropdown = false;
       this.cdr.markForCheck();
     });
+  }
+
+  /** O ✕ do autocomplete: esvazia o campo e o valor do formulário (null), como apagar o texto à mão. */
+  clear(): void {
+    this.value = '';
+    this.suggestions = [];
+    this.showDropdown = false;
+    this.search$.next('');
+    this.onChange(null as any);
+    this.onTouched();
+    this.cdr.markForCheck();
   }
 
   onBlur() {

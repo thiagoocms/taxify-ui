@@ -5,11 +5,17 @@
     @switch (type) {
       @case ('autocomplete') {
         <input
-          [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
+          [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors, 'with-clear': !!value && !disabled }"
           [disabled]="disabled"
           [value]="value"
           (input)="onInput($event)"
         />
+        @if (value && !disabled) {
+          <button type="button" class="clear-button" aria-label="Limpar" title="Limpar" (mousedown)="$event.preventDefault()"
+            (click)="clear()">
+            <fa-icon [icon]="clearIcon"></fa-icon>
+          </button>
+        }
 
         @if (showDropdown && suggestions.length > 0) {
           <div class="dialog-container">

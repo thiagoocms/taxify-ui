@@ -111,6 +111,33 @@
 }
 
 
+input.with-clear {
+  padding-right: 2rem;
+}
+
+.clear-button {
+  position: absolute;
+  right: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+
+  &:hover {
+    background: #e9ecef;
+    color: var(--text-title);
+  }
+}
+
 .input-icon {
   position: absolute;
   right: 0.5rem;
