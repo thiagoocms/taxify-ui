@@ -72,6 +72,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/audit/audit.component').then((m) => m.AuditComponent),
       },
       {
+        path: 'fronteira',
+        canActivate: [permissionGuard('INVOICES_VIEW')],
+        loadComponent: () => import('./features/fronteira/fronteira.component').then((m) => m.FronteiraComponent),
+      },
+      {
         path: 'retencoes',
         canActivate: [permissionGuard('INVOICES_VIEW')],
         loadComponent: () => import('./features/retentions/retentions.component').then((m) => m.RetentionsComponent),

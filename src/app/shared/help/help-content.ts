@@ -218,6 +218,51 @@ export const HELP_ARTICLES: HelpArticle[] = [
     related: ['retencoes', 'manifestacao', 'empresas'],
   },
   {
+    id: 'fronteira',
+    title: 'Fronteira PE (e-Fisco)',
+    group: 'Obrigações e controles',
+    route: '/fronteira',
+    summary: 'O ICMS antecipado que o e-Fisco (SEFAZ-PE) cobra nas compras interestaduais, recalculado nota a nota pelo Taxify.',
+    sections: [
+      {
+        title: 'Como importar',
+        items: [
+          'No e-Fisco, emita o "Extrato de notas fiscais relativas a operações interestaduais sujeitas ao ICMS antecipado" do período e salve o PDF.',
+          'Na tela, escolha a empresa (de Pernambuco) e use "Importar extrato do e-Fisco". O período vem do próprio extrato; importar o mesmo período de novo substitui o anterior.',
+          'O extrato precisa ser da inscrição estadual da empresa (quando ela tem IE no cadastro).',
+          'Sem extrato, a tela mostra a prévia: o ICMS que o Taxify calcula para as entradas interestaduais do mês.',
+        ],
+      },
+      {
+        title: 'Como o Taxify calcula',
+        items: [
+          'Cada item da nota é calculado pela Tabela de ICMS: alíquota interestadual pela origem e pela UF (4%, 7% ou 12%), alíquota interna de PE (modal e exceções por NCM), ST com a MVA ajustada e, para empresa do Simples, o percentual do art. 363-A.',
+          'Devolução, remessa e outras saídas ficam sem antecipação; item com ST já retido pelo fornecedor também.',
+          'A SEFAZ-PE arredonda de um jeito próprio: o Taxify calcula de 4 formas e a nota confere quando o valor cobrado cai na faixa (tolerância de R$ 0,03).',
+          '"Ver cálculo" mostra a memória de cada item: as regras usadas, os valores e a fórmula.',
+        ],
+      },
+      {
+        title: 'Fórmula própria',
+        items: [
+          'Quando quiser calcular diferente, use "Usar fórmula própria" na memória do item (ou "Nova regra" na Tabela de ICMS e fórmulas).',
+          'A fórmula usa variáveis da nota, como partida, icms_origem, interna, inter, mva_ajustada e percentual, e aceita 5,5%, parênteses, min, max e arred.',
+          'Ela vale para o que você indicar (produto, fornecedor, NCM ou a empresa toda) e fica registrada para as próximas notas. A mais específica vence.',
+          'Regra nova ou alterada fica "a conferir" até o time fiscal conferir; o resultado que a usa mostra "a conferir".',
+        ],
+      },
+      {
+        title: 'Resultados',
+        items: [
+          'Confere, Cobrou a mais (candidata a pedido de revisão), Cobrou a menos e SEFAZ não calculou (risco, não economia).',
+          'Sem regra: algum item não tem alíquota ou regra na tabela — nunca vira "cobrou a mais". Pendente: sem o XML completo (ou só com o resumo da SEFAZ).',
+          'Documento de trabalho: não substitui o extrato nem o DAE oficiais. Pauta/PMPF, frete FOB (CT-e) e alíquotas especiais: conferir à parte.',
+        ],
+      },
+    ],
+    related: ['auditoria', 'notas-fiscais', 'retencoes'],
+  },
+  {
     id: 'auditoria',
     title: 'Auditoria tipo malha',
     group: 'Obrigações e controles',
@@ -335,7 +380,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       {
         title: 'Captura pela SEFAZ',
         items: [
-          'Roda de hora em hora para as empresas com certificado e "Integração SEFAZ" no plano (por enquanto, de Pernambuco). "Capturar agora" roda na hora, respeitando a pausa de 1h que a SEFAZ exige.',
+          'Roda de hora em hora para as empresas com certificado e "Integração SEFAZ" no plano, de qualquer estado. "Capturar agora" roda na hora, respeitando a pausa de 1h que a SEFAZ exige.',
           'O painel "Entradas que a SEFAZ entregou só como resumo" mostra as notas ainda sem XML e a situação da Ciência de cada uma; "Reenviar ciência" recoloca na fila uma ciência recusada.',
           'Captura de NFS-e pelo Ambiente Nacional: com "Integração NFS-e Nacional" no plano, roda de hora em hora com o mesmo certificado; o status e o botão "Capturar NFS-e agora" ficam na mesma seção.',
         ],

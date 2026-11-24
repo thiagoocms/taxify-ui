@@ -71,6 +71,11 @@
     <span>Retenções</span>
   </a>
 
+  <a *ngIf="canInvoices" class="nav-link" routerLink="/fronteira" routerLinkActive="active" (click)="linkClicked.emit()">
+    <fa-icon [icon]="fronteiraIcon"></fa-icon>
+    <span>Fronteira PE</span>
+  </a>
+
   <a *ngIf="canInvoices" class="nav-link" routerLink="/auditoria" routerLinkActive="active" (click)="linkClicked.emit()">
     <fa-icon [icon]="auditIcon"></fa-icon>
     <span>Auditoria</span>

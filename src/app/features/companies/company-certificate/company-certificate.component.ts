@@ -19,7 +19,7 @@ import { CompanyService } from '../../../core/services/company.service';
       <h6 class="section-title">Certificado A1 e captura pela SEFAZ</h6>
       <p class="section-hint">
         Com o certificado (e-CNPJ) da empresa e a "Integração SEFAZ" no plano, as notas são buscadas direto na SEFAZ
-        de hora em hora (por enquanto, empresas de Pernambuco) — junto com o SIEG se o plano tiver os dois.
+        de hora em hora — junto com o SIEG se o plano tiver os dois.
         Uma filial usa o certificado da matriz (mesma raiz de CNPJ).
       </p>
 

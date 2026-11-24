@@ -17,6 +17,7 @@ import {
   faFolderOpen,
   faHouse,
   faTags,
+  faTruck,
   faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../core/services/auth.service';
@@ -42,6 +43,7 @@ export class SidebarComponent {
   readonly retentionIcon = faHandHoldingDollar;
   readonly helpIcon = faCircleQuestion;
   readonly auditIcon = faClipboardCheck;
+  readonly fronteiraIcon = faTruck;
   readonly reportIcon = faChartColumn;
   readonly pendencyIcon = faTriangleExclamation;
   readonly folderIcon = faFolderOpen;
