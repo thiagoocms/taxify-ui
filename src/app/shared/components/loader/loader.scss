@@ -1,23 +1,24 @@
-// A logo se montando em loop de 1,8s: barra do T cresce da esquerda, a haste desce, a bolinha
+// A logo se montando em loop de 2,2s: barra do T cresce da esquerda, a haste desce, a bolinha
 // laranja aparece e quica; tudo some junto e recomeça. Sem animação para quem pediu menos movimento.
-$cycle: 1.8s;
+$cycle: 2.2s;
 
 :host {
   display: block;
+  // Só aparece se a espera passar de ~0,3s: carregamento rápido não pisca nada na tela.
+  animation: loader-appear 0.4s ease-out 0.3s both;
 }
 
 :host(.loader-block) .loader {
   flex-direction: column;
   justify-content: center;
-  gap: 14px;
-  min-height: 180px;
-  padding: 24px 0;
+  gap: 10px;
+  min-height: 140px;
+  padding: 16px 0;
+  opacity: 0.75;
 
   .mark {
-    width: 52px;
-    height: 52px;
-    filter: drop-shadow(0 6px 14px rgba(32, 80, 162, 0.25));
-    animation: float $cycle ease-in-out infinite;
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -26,6 +27,34 @@ $cycle: 1.8s;
 
   .loader {
     gap: 8px;
+    opacity: 0.8;
+  }
+
+  .mark {
+    width: 18px;
+    height: 18px;
+  }
+
+  .message {
+    font-size: 13px;
+  }
+}
+
+// Sobre a tabela: só um véu claro e a logo pequena no alto; os dados de antes continuam visíveis.
+:host(.loader-overlay) {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 56px;
+  background: rgba(255, 255, 255, 0.4);
+  transition: background-color 0.2s ease;
+
+  .loader {
+    gap: 8px;
+    opacity: 0.85;
   }
 
   .mark {
@@ -38,28 +67,9 @@ $cycle: 1.8s;
   }
 }
 
-:host(.loader-overlay) {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(1px);
-
-  .loader {
-    gap: 10px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    background: #fff;
-    box-shadow: var(--card-shadow);
-  }
-
-  .mark {
-    width: 28px;
-    height: 28px;
-  }
+@keyframes loader-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .loader {
@@ -68,9 +78,9 @@ $cycle: 1.8s;
 }
 
 .message {
-  color: #6b7280;
-  font-size: 14px;
-  font-weight: 500;
+  color: #8a93a3;
+  font-size: 13px;
+  font-weight: 400;
 }
 
 .tile {
@@ -122,16 +132,10 @@ $cycle: 1.8s;
   100% { transform: scale(1); opacity: 0; }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .bar,
   .stem,
-  .dot,
-  .mark {
+  .dot {
     animation: none !important;
   }
 
