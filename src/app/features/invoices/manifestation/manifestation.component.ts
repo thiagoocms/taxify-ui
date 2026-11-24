@@ -1,6 +1,6 @@
 import { HelpTipComponent } from '../../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -16,6 +16,7 @@ import {
 } from '../../../core/models/fiscal-xml.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { CompanyService } from '../../../core/services/company.service';
+import { CurrentCompanyService } from '../../../core/services/current-company.service';
 import { FiscalXmlService } from '../../../core/services/fiscal-xml.service';
 import { Button } from '../../../shared/components/button/button';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
@@ -46,6 +47,8 @@ const DEADLINE_WARNING_DAYS = 15;
 export class ManifestationComponent {
   private readonly fb = inject(FormBuilder);
   private readonly companyService = inject(CompanyService);
+  private readonly currentCompany = inject(CurrentCompanyService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly fiscalXmlService = inject(FiscalXmlService);
   private readonly toastr = inject(ToastrService);
   private readonly confirmDialog = inject(ConfirmDialogService);
@@ -148,6 +151,7 @@ export class ManifestationComponent {
         this.load();
       }
     });
+    this.currentCompany.bind(this.form.controls.company, this.destroyRef);
   }
 
   private load(): void {

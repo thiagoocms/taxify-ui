@@ -1,6 +1,6 @@
 import { HelpTipComponent } from '../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastrService } from 'ngx-toastr';
@@ -15,6 +15,7 @@ import {
 } from '../../core/models/service-invoice.model';
 import { AuthService } from '../../core/services/auth.service';
 import { CompanyService } from '../../core/services/company.service';
+import { CurrentCompanyService } from '../../core/services/current-company.service';
 import { ServiceInvoiceService } from '../../core/services/service-invoice.service';
 import { Button } from '../../shared/components/button/button';
 import { InputComponent } from '../../shared/components/input/input';
@@ -42,6 +43,8 @@ import { monthLabel, shiftMonth, toMonth } from '../assessment/assessment-format
 export class ServiceInvoicesComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly companyService = inject(CompanyService);
+  private readonly currentCompany = inject(CurrentCompanyService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly service = inject(ServiceInvoiceService);
   private readonly toastr = inject(ToastrService);
   private readonly auth = inject(AuthService);
@@ -117,6 +120,7 @@ export class ServiceInvoicesComponent implements OnInit {
         this.reload(true);
       }
     });
+    this.currentCompany.bind(this.form.controls.company, this.destroyRef);
     this.form.controls.participant.valueChanges.pipe(debounceTime(300)).subscribe(() => this.reload(false));
   }
 

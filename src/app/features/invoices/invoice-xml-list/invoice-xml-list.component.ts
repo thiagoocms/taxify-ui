@@ -1,7 +1,7 @@
 import { HelpTipComponent } from '../../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { Component, computed, inject, OnDestroy, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnDestroy, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -28,6 +28,7 @@ import {
 
 import { downloadBlob } from '../../../shared/utils/download-blob';
 import { CompanyService } from '../../../core/services/company.service';
+import { CurrentCompanyService } from '../../../core/services/current-company.service';
 import { FiscalXmlService } from '../../../core/services/fiscal-xml.service';
 import { InvoiceStateService } from '../invoice-state.service';
 import {
@@ -104,6 +105,8 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly toastr = inject(ToastrService);
   private readonly companyService = inject(CompanyService);
+  private readonly currentCompany = inject(CurrentCompanyService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly fiscalXmlService = inject(FiscalXmlService);
   private readonly state = inject(InvoiceStateService);
 
@@ -220,9 +223,11 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const saved = this.state.search();
     const linkedCompanyId = this.route.snapshot.queryParamMap.get('empresa');
+    const inUse = this.currentCompany.company();
     if (linkedCompanyId) {
       this.openLinkedCompany(linkedCompanyId, this.route.snapshot.queryParamMap.get('mes'));
-    } else if (saved) {
+    } else if (saved && (!inUse || saved.company?.id === inUse.id)) {
+      // A última busca, se for da última empresa escolhida (ou não houver uma).
       this.form.setValue({
         company: saved.company,
         dataEmissaoInicio: saved.dataEmissaoInicio,
@@ -265,6 +270,11 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
           }
         });
     }
+
+    // Vindo de outra tela com outra empresa escolhida: abre nela, no mês atual.
+    if (!linkedCompanyId) {
+      this.currentCompany.bind(this.form.controls.company, this.destroyRef);
+    }
   }
 
   /**
@@ -287,6 +297,8 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     }
     this.companyService.getById(companyId).subscribe((company) => {
       this.form.controls.company.setValue(company, { emitEvent: false });
+      this.currentCompany.remember(company);
+      this.currentCompany.bind(this.form.controls.company, this.destroyRef);
       this.pageIndex.set(0);
       this.loadXmls();
     });

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, DestroyRef, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { map, Observable } from 'rxjs';
@@ -7,6 +7,7 @@ import { CompanyDTO } from '../../core/models/company.model';
 import { AbcDTO, MonthlyReportDTO, SimulationDTO } from '../../core/models/report.model';
 import { NATURE_LABELS, RetentionNature } from '../../core/models/retention.model';
 import { CompanyService } from '../../core/services/company.service';
+import { CurrentCompanyService } from '../../core/services/current-company.service';
 import { ReportService } from '../../core/services/report.service';
 import { Button } from '../../shared/components/button/button';
 import { InputComponent } from '../../shared/components/input/input';
@@ -33,6 +34,8 @@ type View = 'monthly' | 'abc' | 'simulation';
 export class ReportsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly companyService = inject(CompanyService);
+  private readonly currentCompany = inject(CurrentCompanyService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly reportService = inject(ReportService);
 
   private readonly curveCell = viewChild.required<TemplateRef<unknown>>('curveCell');
@@ -100,6 +103,7 @@ export class ReportsComponent implements OnInit {
         this.reload();
       }
     });
+    this.currentCompany.bind(this.form.controls.company, this.destroyRef);
   }
 
   shift(delta: number): void {
