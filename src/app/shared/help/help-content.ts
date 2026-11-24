@@ -265,6 +265,14 @@ export const HELP_ARTICLES: HelpArticle[] = [
           'Documento de trabalho: não substitui o extrato nem o DAE oficiais. Pauta/PMPF, frete FOB (CT-e) e alíquotas especiais: conferir à parte.',
         ],
       },
+      {
+        title: 'Valor da guia e relatório',
+        items: [
+          '"Valor da guia ajustada" = o cobrado no extrato menos o que foi cobrado a mais (o que vai para pedido de revisão). As notas cobradas a menos, sem regra ou pendentes ficam pelo valor cobrado.',
+          '"Relatório PDF" gera o relatório do mês para guardar ou mandar ao cliente: o resumo com a guia ajustada, as notas para pedir revisão, todas as notas com o cálculo usado e as regras e fórmulas aplicadas, com o fundamento.',
+          '"Exportar CSV" traz as mesmas notas numa planilha (abre no Excel em português).',
+        ],
+      },
     ],
     related: ['auditoria', 'notas-fiscais', 'retencoes'],
   },
@@ -597,8 +605,12 @@ export const HELP_TUTORIALS: HelpTutorial[] = [
         text: 'O modal mostra o Taxify, o cobrado e a diferença. Em "Buscar cálculo do e-Fisco", o Taxify traz a memória do e-Fisco e compara etapa por etapa: base de partida, agregação, carga líquida ou alíquotas e o ICMS. O que difere fica destacado.',
       },
       {
-        title: 'Decida: adotar ou contestar',
-        text: 'Se o e-Fisco estiver certo, "Adotar o cálculo do e-Fisco" abre a regra já preenchida para as próximas notas — confira e salve. Se o Taxify estiver certo, use o PDF do extrato ("Ver PDF") e a memória para pedir a revisão.',
+        title: 'Decida: adotar, ajustar ou contestar',
+        text: 'Se o e-Fisco estiver certo, "Adotar o cálculo do e-Fisco" abre a regra já preenchida para as próximas notas — confira e salve. Se a empresa tem um cálculo próprio (ex.: diferencial de alíquota na industrialização em vez da carga líquida), use "Usar fórmula própria" — ela recalcula o mês e as próximas notas. Se o Taxify estiver certo, use o PDF do extrato ("Ver PDF") e a memória para pedir a revisão.',
+      },
+      {
+        title: 'Feche com a guia e o relatório',
+        text: 'O cartão "Valor da guia ajustada" mostra quanto pagar depois dos ajustes (o cobrado menos o que vai para revisão). "Relatório PDF" e "Exportar CSV" geram o relatório do mês, com as notas, o cálculo usado e as regras e fórmulas, para guardar e mandar ao cliente.',
       },
       {
         title: 'Confira as regras "a conferir"',

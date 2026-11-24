@@ -39,6 +39,7 @@ import { formatDocument } from '../../shared/utils/document-mask';
 import { formatCurrency } from '../../shared/utils/format';
 import { FormulaEditorComponent, formulaIssues } from './formula-editor/formula-editor.component';
 import { monthLabel } from '../assessment/assessment-format';
+import { downloadBlob } from '../../shared/utils/download-blob';
 
 type LineFilter = FronteiraResultado | FronteiraFlag | null;
 
@@ -210,6 +211,22 @@ export class FronteiraComponent implements OnInit {
       handler: () => this.newRule(),
     },
     {
+      id: 'fronteira-report-pdf',
+      label: 'Relatório PDF',
+      icon: 'file-pdf',
+      variant: 'outlined',
+      isShow: this.view() === 'conferencia' && !!this.report()?.extract,
+      handler: () => this.downloadReport('pdf'),
+    },
+    {
+      id: 'fronteira-report-csv',
+      label: 'Exportar CSV',
+      icon: 'download',
+      variant: 'outlined',
+      isShow: this.view() === 'conferencia' && !!this.report()?.extract,
+      handler: () => this.downloadReport('csv'),
+    },
+    {
       id: 'fronteira-efisco-sync',
       label: this.syncing() ? 'Buscando no e-Fisco...' : 'Sincronizar com e-Fisco',
       icon: 'cloud-arrow-down',
@@ -267,6 +284,17 @@ export class FronteiraComponent implements OnInit {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  /** "Relatório PDF" / "Exportar CSV": o relatório do mês para guardar e mandar ao cliente. */
+  downloadReport(kind: 'pdf' | 'csv'): void {
+    const companyId = this.companyId();
+    const periodo = this.report()?.periodo;
+    if (!companyId || !periodo) {
+      return;
+    }
+    this.fronteiraService.reportFile(companyId, periodo, kind)
+      .subscribe((blob) => downloadBlob(blob, `fronteira-${periodo}.${kind}`));
   }
 
   /** "Ver PDF": o extrato guardado, numa aba nova. */

@@ -252,6 +252,8 @@ export interface FronteiraSummaryDTO {
   semRegra: number;
   pendentes: number;
   aConferir: number;
+  /** A guia depois dos ajustes: o cobrado menos o que vai para revisão (o cobrado a menos fica como cobrado). */
+  valorGuia: number;
 }
 
 export interface FronteiraNoteRefDTO {

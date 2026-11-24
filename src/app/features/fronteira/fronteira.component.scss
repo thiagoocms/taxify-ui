@@ -80,6 +80,15 @@
   margin-bottom: 4px;
 }
 
+.summary-item.guide {
+  border-color: #bcd0f2;
+  background: #f3f7fe;
+}
+
+.summary-item.guide .summary-value {
+  color: var(--color-primary);
+}
+
 .summary-item.good .summary-value {
   color: #2f7d4f;
 }

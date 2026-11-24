@@ -30,6 +30,11 @@ export class FronteiraService {
     return this.http.post<EfiscoMemoryDTO>(`${this.baseUrl}/memoria/buscar`, null, { params: { companyId, registro } });
   }
 
+  /** O relatório do mês (PDF ou CSV): resumo com a guia ajustada, as notas para revisão e as regras usadas. */
+  reportFile(companyId: string, periodo: string, kind: 'pdf' | 'csv'): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/relatorio.${kind}`, { params: { companyId, periodo }, responseType: 'blob' });
+  }
+
   /** O PDF guardado do extrato do período. */
   extractPdf(companyId: string, periodo: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/extrato/pdf`, { params: { companyId, periodo }, responseType: 'blob' });

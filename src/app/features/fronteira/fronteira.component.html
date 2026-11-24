@@ -121,6 +121,11 @@
           <span class="summary-value">{{ formatCurrency(s.cobradoAMenos) }}</span>
           <span class="summary-sub">{{ s.aMenos + s.naoCalculou }} nota(s) · risco de cobrança posterior</span>
         </div>
+        <div class="summary-item guide" title="O cobrado no extrato menos o que foi cobrado a mais (a pedir revisão). As notas cobradas a menos, sem regra ou pendentes ficam pelo valor cobrado.">
+          <span class="summary-label">Valor da guia ajustada</span>
+          <span class="summary-value">{{ formatCurrency(s.valorGuia) }}</span>
+          <span class="summary-sub">{{ formatCurrency(s.icmsDevido) }} cobrado − {{ formatCurrency(s.cobradoAMais) }} para revisão</span>
+        </div>
       </div>
       @if (s.aConferir) {
         <div class="notice">
