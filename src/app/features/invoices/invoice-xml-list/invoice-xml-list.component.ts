@@ -118,7 +118,11 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     dataEmissaoFim: this.fb.nonNullable.control(''),
     numero: this.fb.nonNullable.control(''),
     participant: this.fb.nonNullable.control(''),
+    cfop: this.fb.nonNullable.control(''),
   });
+
+  /** Só as notas com divergência (checagens fiscais ou marcadas na conferência). */
+  readonly onlyDivergent = signal(false);
 
   /** Origem da nota ou confronto SIEG × SEFAZ ('' = tudo). */
   readonly sourceFilter = signal<string>('');
@@ -225,7 +229,9 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
         dataEmissaoFim: saved.dataEmissaoFim,
         numero: saved.numero,
         participant: saved.participant ?? '',
+        cfop: saved.cfop ?? '',
       });
+      this.onlyDivergent.set(saved.onlyDivergent ?? false);
       this.direction.set(saved.direction ?? null);
       this.totals.set(saved.totals ?? null);
       this.period.set(saved.period as PeriodKey);
@@ -250,7 +256,7 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     });
 
     // Typing a note number or a supplier/customer filters as you go, once a company is picked.
-    for (const control of [this.form.controls.numero, this.form.controls.participant]) {
+    for (const control of [this.form.controls.numero, this.form.controls.participant, this.form.controls.cfop]) {
       control.valueChanges
         .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroyed$))
         .subscribe(() => {
@@ -337,6 +343,34 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleOnlyDivergent(): void {
+    this.onlyDivergent.update((value) => !value);
+    if (this.queriedCompany()) {
+      this.pageIndex.set(0);
+      this.loadXmls(false);
+    }
+  }
+
+  divergenceCount(row: FiscalXmlSummaryDTO): number {
+    return (row.divergencias?.errors ?? 0) + (row.divergencias?.warnings ?? 0);
+  }
+
+  /** Tooltip do selo: quantos erros/alertas e as primeiras mensagens. */
+  divergenceTitle(row: FiscalXmlSummaryDTO): string {
+    const d = row.divergencias;
+    if (!d) {
+      return '';
+    }
+    const parts: string[] = [];
+    if (d.errors) {
+      parts.push(`${d.errors} ${d.errors === 1 ? 'erro' : 'erros'}`);
+    }
+    if (d.warnings) {
+      parts.push(`${d.warnings} ${d.warnings === 1 ? 'alerta' : 'alertas'}`);
+    }
+    return [`Checagens fiscais: ${parts.join(' e ')}`, ...d.messages.map((m) => `• ${m}`)].join('\n');
+  }
+
   /** Marca como conferidas as notas a conferir desta página. */
   reviewPage(): void {
     const ids = this.pendingOnPage().map((xml) => xml.id);
@@ -373,7 +407,7 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
 
   /** {@code withTotals}: the cards only change with company/period, not with tab, page or text filters. */
   private loadXmls(withTotals = true): void {
-    const { company, dataEmissaoInicio, dataEmissaoFim, numero, participant } = this.form.getRawValue();
+    const { company, dataEmissaoInicio, dataEmissaoFim, numero, participant, cfop } = this.form.getRawValue();
     const companyId = company!.id!;
     const period = {
       companyId,
@@ -395,6 +429,8 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
         ...period,
         numero: numero.trim() || undefined,
         participant: participant.trim() || undefined,
+        cfop: cfop.replace(/\D/g, '') || undefined,
+        divergencia: this.onlyDivergent() || undefined,
         direction: this.direction() ?? undefined,
         reviewStatus: this.reviewFilter() ?? undefined,
         origem: ['SIEG', 'SEFAZ_DIST', 'UPLOAD'].includes(this.sourceFilter())
@@ -419,13 +455,15 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
   }
 
   private saveState(): void {
-    const { company, dataEmissaoInicio, dataEmissaoFim, numero, participant } = this.form.getRawValue();
+    const { company, dataEmissaoInicio, dataEmissaoFim, numero, participant, cfop } = this.form.getRawValue();
     this.state.search.set({
       company,
       dataEmissaoInicio,
       dataEmissaoFim,
       numero,
       participant,
+      cfop,
+      onlyDivergent: this.onlyDivergent(),
       direction: this.direction(),
       totals: this.totals(),
       period: this.period(),

@@ -53,6 +53,10 @@ export interface FiscalXmlSearchFilterDTO {
   origem?: FiscalXmlOrigin;
   /** Confronto SIEG × SEFAZ: SO_SIEG / SO_SEFAZ = há mais de 48h numa fonte e não na outra. */
   fonte?: 'SO_SIEG' | 'SO_SEFAZ';
+  /** Notas com algum item nesse CFOP; vazio = qualquer. */
+  cfop?: string;
+  /** true = só as notas em que as checagens fiscais acharam algo, ou marcadas "com divergência". */
+  divergencia?: boolean;
   // Unlike the other list endpoints, this one nests the page/size under a
   // "pagination" object in the request body instead of taking them flat.
   pagination?: { page: number; size: number; sort?: string; direction?: 'ASC' | 'DESC' };
@@ -221,6 +225,15 @@ export interface FiscalXmlSummaryDTO {
   cfops?: string[];
   /** De onde a nota veio primeiro. */
   origem?: FiscalXmlOrigin | null;
+  /** O que as checagens fiscais acharam na nota; ausente = nada (ou cancelada). */
+  divergencias?: FiscalXmlDivergenceSummaryDTO | null;
+}
+
+export interface FiscalXmlDivergenceSummaryDTO {
+  errors: number;
+  warnings: number;
+  /** As primeiras mensagens, sem repetir - para o tooltip. */
+  messages: string[];
 }
 
 /** Totais do período por direção (cards acima da lista). */

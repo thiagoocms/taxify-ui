@@ -25,6 +25,10 @@
         <app-input formControlName="participant" label="Fornecedor / cliente (nome ou CNPJ)"></app-input>
       </div>
 
+      <div class="cfop-field">
+        <app-input formControlName="cfop" label="CFOP"></app-input>
+      </div>
+
       <div class="period-chips" role="group" aria-label="Período de emissão">
         @for (option of periodOptions; track option.key) {
           <button
@@ -134,6 +138,10 @@
         <option value="SO_SIEG">Só no SIEG (48h+)</option>
         <option value="SO_SEFAZ">Só na SEFAZ (48h+)</option>
       </select>
+      <button type="button" class="btn btn-sm divergence-chip" [class.btn-danger]="onlyDivergent()" [class.btn-outline-danger]="!onlyDivergent()" [attr.aria-pressed]="onlyDivergent()"
+        (click)="toggleOnlyDivergent()" title="Só as notas em que as checagens fiscais acharam algo, ou marcadas com divergência na conferência">
+        <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon> Só com divergência
+      </button>
       <app-help-tip text="Origem: de onde a nota veio primeiro. 'Só no SIEG' / 'Só na SEFAZ': está numa fonte e não na outra há mais de 48h (a SEFAZ não entrega as notas emitidas pela própria empresa)."></app-help-tip>
       @if (canReview && pendingOnPage().length) {
         <button type="button" class="btn btn-sm btn-outline-success" [disabled]="reviewing()" (click)="reviewPage()">
@@ -186,6 +194,12 @@
         <span class="review-badge reviewed" title="Conferida">Conferida</span>
       } @else if (row.reviewStatus === 'DIVERGENT') {
         <span class="review-badge divergent" title="Conferida com divergência">Divergência</span>
+      }
+      @if (row.divergencias) {
+        <span class="check-badge" [class.has-error]="row.divergencias.errors" [title]="divergenceTitle(row)">
+          <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+          {{ divergenceCount(row) }} {{ divergenceCount(row) === 1 ? 'divergência' : 'divergências' }}
+        </span>
       }
       @if (row.status === 'CANCELED') {
         <span class="canceled-badge" title="Cancelada na SEFAZ - fora dos totais">Cancelada</span>

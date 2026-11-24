@@ -24,6 +24,10 @@
   width: 160px;
 }
 
+.cfop-field {
+  width: 110px;
+}
+
 .filters-custom {
   display: flex;
   flex-wrap: wrap;
@@ -146,6 +150,7 @@
 @media (max-width: 575.98px) {
   .company-field,
   .numero-field,
+  .cfop-field,
   .date-field {
     flex-basis: 100%;
     max-width: none;
@@ -334,4 +339,30 @@
   background: #e2e8f5;
   color: var(--color-primary-darker);
   cursor: help;
+}
+
+.check-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+  background: #fff3cd;
+  color: #664d03;
+  cursor: help;
+  white-space: nowrap;
+
+  &.has-error {
+    background: #f8d7da;
+    color: #842029;
+  }
+}
+
+.divergence-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
 }

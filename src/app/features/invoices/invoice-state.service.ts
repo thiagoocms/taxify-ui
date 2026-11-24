@@ -8,6 +8,8 @@ export interface InvoiceSearchState {
   dataEmissaoFim: string;
   numero: string;
   participant: string;
+  cfop?: string;
+  onlyDivergent?: boolean;
   direction: FiscalDirection | null;
   totals: FiscalXmlTotalsDTO | null;
   period: string;
