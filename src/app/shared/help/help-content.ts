@@ -237,7 +237,9 @@ export const HELP_ARTICLES: HelpArticle[] = [
         title: 'Como o Taxify calcula',
         items: [
           'Cada item da nota é calculado pela Tabela de ICMS: alíquota interestadual pela origem e pela UF (4%, 7% ou 12%), alíquota interna de PE (modal e exceções por NCM), ST com a MVA ajustada e a carga líquida do credenciamento (o "tipo de cálculo" do e-Fisco, que vale para a empresa credenciada de qualquer regime) ou do Simples (art. 363-A).',
-          'Sem encerramento (regime normal) e uso e consumo: o diferencial de alíquotas, como na memória de cálculo do e-Fisco — partida × (interna − interestadual).',
+          'Sem encerramento (regime normal) e uso e consumo: como na memória de cálculo do e-Fisco — partida × interna − crédito (a interestadual sobre o produto, sem o frete; do fornecedor do Simples, o crédito outorgado).',
+          'Mercadoria com agregação (regra por NCM, como o "Cálculo Mercadoria" do e-Fisco): partida × (1 + agregação) × interna − crédito. Vale no lugar da carga líquida do credenciamento para o que ela cobrir.',
+          'Ativo e uso e consumo: pelo CFOP da regra fiscal do produto (1551, 1556...), só o diferencial — sem agregação nem carga líquida. É onde costuma aparecer "cobrou a mais".',
           'Devolução, remessa e outras saídas ficam sem antecipação; item com ST já retido pelo fornecedor também.',
           'A SEFAZ-PE arredonda de um jeito próprio: o Taxify calcula de 4 formas e a nota confere quando o valor cobrado cai na faixa (tolerância de R$ 0,03).',
           '"Ver cálculo" mostra a memória de cada item: as regras usadas, os valores e a fórmula.',

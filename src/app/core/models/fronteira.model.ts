@@ -42,20 +42,22 @@ export const RESULTADO_HINTS: Record<FronteiraResultado, string> = {
   PENDENTE: 'Sem o XML completo não há o que calcular ainda',
 };
 
-export type FronteiraRuleKind = 'ALIQUOTA_INTERNA' | 'ST_MVA' | 'SIMPLES_PERCENTUAL' | 'FORMULA';
+export type FronteiraRuleKind = 'ALIQUOTA_INTERNA' | 'AGREGACAO' | 'ST_MVA' | 'SIMPLES_PERCENTUAL' | 'FORMULA';
 
 export const RULE_KIND_LABELS: Record<FronteiraRuleKind, string> = {
   ALIQUOTA_INTERNA: 'Alíquota interna de PE',
+  AGREGACAO: 'Mercadoria com agregação (sem carga líquida)',
   ST_MVA: 'ST com encerramento (MVA)',
   SIMPLES_PERCENTUAL: 'Carga líquida (credenciamento / Simples)',
   FORMULA: 'Fórmula própria',
 };
 
 /** O cálculo padrão que uma fórmula própria substitui; vazio = qualquer um. */
-export type FronteiraAplicaEm = 'SEM_ENCERRAMENTO' | 'ST' | 'CARGA_LIQUIDA' | 'USO_CONSUMO';
+export type FronteiraAplicaEm = 'SEM_ENCERRAMENTO' | 'MERCADORIA' | 'ST' | 'CARGA_LIQUIDA' | 'USO_CONSUMO';
 
 export const APLICA_EM_LABELS: Record<FronteiraAplicaEm, string> = {
   SEM_ENCERRAMENTO: 'Sem encerramento (regime normal)',
+  MERCADORIA: 'Mercadoria com agregação',
   ST: 'Com encerramento (ST)',
   CARGA_LIQUIDA: 'Carga líquida (credenciamento / Simples)',
   USO_CONSUMO: 'Uso e consumo / ativo',
@@ -73,6 +75,12 @@ export interface FronteiraRuleDTO {
   aliquota?: number | null;
   mva?: number | null;
   percentual?: number | null;
+  /** Mercadoria com agregação: % sobre a base (20 = coeficiente 1,20). */
+  agregacao?: number | null;
+  /** SUL_SUDESTE, DEMAIS ou vazio (qualquer origem). */
+  regiaoOrigem?: string | null;
+  /** true = só fornecedor do Simples; false = só quem não é; vazio = qualquer. */
+  fornecedorSimples?: boolean | null;
   formula?: string | null;
   /** Fórmula: o cálculo padrão que ela substitui (vazio = todos; devolução, remessa e ST retido nunca). */
   aplicaEm?: FronteiraAplicaEm | null;
@@ -119,7 +127,9 @@ export const FORMULA_FUNCTIONS: { token: string; insert: string; label: string }
 ];
 
 export const FORMULA_EXAMPLES: { label: string; formula: string }[] = [
-  { label: 'Diferencial de alíquotas (padrão do regime normal)', formula: 'partida * (interna - inter)' },
+  { label: 'Padrão do regime normal, como o e-Fisco', formula: 'partida * interna - credito' },
+  { label: 'Mercadoria com agregação, como o e-Fisco', formula: 'partida * (1 + agregacao) * interna - credito' },
+  { label: 'Diferencial de alíquotas simples', formula: 'partida * (interna - inter)' },
   { label: 'Carga líquida fixa de 5,5%', formula: 'partida * 5,5%' },
   { label: 'Carga líquida da regra', formula: 'partida * percentual' },
   { label: 'ST com MVA ajustada', formula: 'partida * (1 + mva_ajustada) * interna - credito' },

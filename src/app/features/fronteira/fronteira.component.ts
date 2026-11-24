@@ -58,8 +58,9 @@ interface CalcView {
 const STANDARD_FORMULAS: Record<string, string> = {
   ST: 'partida * (1 + mva_ajustada) * interna - credito',
   CARGA_LIQUIDA: 'partida * percentual',
-  SEM_ENCERRAMENTO: 'partida * (interna - inter)',
-  USO_CONSUMO: 'partida * (interna - inter)',
+  SEM_ENCERRAMENTO: 'partida * interna - credito',
+  USO_CONSUMO: 'partida * interna - credito',
+  MERCADORIA: 'partida * (1 + agregacao) * interna - credito',
 };
 
 /**
@@ -129,8 +130,8 @@ export class FronteiraComponent implements OnInit {
   readonly resultLabels = RESULTADO_LABELS;
   readonly resultHints = RESULTADO_HINTS;
   readonly kindLabels = RULE_KIND_LABELS;
-  readonly kinds: FronteiraRuleKind[] = ['ALIQUOTA_INTERNA', 'ST_MVA', 'SIMPLES_PERCENTUAL', 'FORMULA'];
-  readonly aplicaEmOptions: FronteiraAplicaEm[] = ['SEM_ENCERRAMENTO', 'ST', 'CARGA_LIQUIDA', 'USO_CONSUMO'];
+  readonly kinds: FronteiraRuleKind[] = ['ALIQUOTA_INTERNA', 'AGREGACAO', 'ST_MVA', 'SIMPLES_PERCENTUAL', 'FORMULA'];
+  readonly aplicaEmOptions: FronteiraAplicaEm[] = ['SEM_ENCERRAMENTO', 'MERCADORIA', 'ST', 'CARGA_LIQUIDA', 'USO_CONSUMO'];
   readonly aplicaEmLabels = APLICA_EM_LABELS;
   readonly quickResults: FronteiraResultado[] = ['COBROU_A_MAIS', 'COBROU_A_MENOS', 'NAO_CALCULOU', 'SEM_REGRA', 'PENDENTE', 'CONFERE'];
   readonly quickFlags: FronteiraFlag[] = ['SEM_XML', 'SO_RESUMO', 'NOTA_CANCELADA', 'VALOR_DIFERENTE', 'DIVERGENCIA_FISCAL', 'FORA_DA_TAXA'];
@@ -405,6 +406,9 @@ export class FronteiraComponent implements OnInit {
       aliquota: form.aliquota ?? null,
       mva: form.mva ?? null,
       percentual: form.percentual ?? null,
+      agregacao: form.agregacao ?? null,
+      regiaoOrigem: form.regiaoOrigem ?? null,
+      fornecedorSimples: form.fornecedorSimples ?? null,
       formula: form.formula ?? null,
       aplicaEm: form.aplicaEm ?? null,
       fundamento: form.fundamento ?? null,
@@ -537,6 +541,18 @@ export class FronteiraComponent implements OnInit {
     if (rule.ncm) parts.push(`NCM ${rule.ncm}`);
     if (!parts.length) parts.push(rule.kind === 'ALIQUOTA_INTERNA' ? 'todos os NCM (modal)' : 'todos os itens');
     return parts.join(' · ');
+  }
+
+  /** "20% · Sul/Sudeste · fornecedor do Simples" */
+  agregacaoScope(rule: FronteiraRuleDTO): string {
+    const parts = [rule.regiaoOrigem === 'SUL_SUDESTE' ? 'origem Sul/Sudeste' : rule.regiaoOrigem === 'DEMAIS' ? 'origem N/NE/CO' : 'qualquer origem'];
+    parts.push(rule.fornecedorSimples === true ? 'fornecedor do Simples' : rule.fornecedorSimples === false ? 'fornecedor fora do Simples' : 'qualquer fornecedor');
+    return parts.join(' · ');
+  }
+
+  /** O select manda texto: '' = qualquer, 'true' / 'false'. */
+  setFornecedorSimples(value: string): void {
+    this.updateForm({ fornecedorSimples: value === '' ? null : value === 'true' });
   }
 
   aplicaEmLabel(value?: string | null): string {

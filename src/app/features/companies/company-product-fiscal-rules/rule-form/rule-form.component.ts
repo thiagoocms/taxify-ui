@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from '../../../../shared/components/button/button';
 import { InputComponent, SelectOption } from '../../../../shared/components/input/input';
 import { Observable } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 import { map } from 'rxjs/operators';
 import {
   CompanyProductDTO,
@@ -56,6 +57,7 @@ const FIELD_LABELS: Record<string, string> = {
 })
 export class RuleFormComponent implements OnChanges {
   private readonly fb = inject(FormBuilder);
+  private readonly toastr = inject(ToastrService);
   private readonly productFiscalRuleService = inject(ProductFiscalRuleService);
 
   @Input() companyId = '';
@@ -228,6 +230,7 @@ export class RuleFormComponent implements OnChanges {
     request$.subscribe({
       next: (rule) => {
         this.loading.set(false);
+        this.toastr.success('Regra salva. As notas com esse produto estão sendo retificadas agora - atualize a lista em instantes.');
         this.saved.emit(rule);
       },
       error: () => {
