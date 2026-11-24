@@ -82,14 +82,14 @@ export class AuditComponent implements OnInit {
   readonly columns = computed<TableColumn[]>(() => [
     { name: 'Severidade', cellTemplate: this.severityCell(), width: '110px' },
     { name: 'Achado', cellTemplate: this.findingCell() },
-    { name: 'Ações', headerClass: 'justify-content-end', cellTemplate: this.actionsCell(), width: '240px' },
+    { name: 'Ações', headerClass: 'justify-content-end', cellTemplate: this.actionsCell(), width: '130px' },
   ]);
 
   readonly ruleColumns = computed<TableColumn[]>(() => [
     { name: 'Regra', cellTemplate: this.ruleCell(), width: '300px' },
     { name: 'Fundamento', cellTemplate: this.basisCell() },
     { name: 'Situação', cellTemplate: this.ruleStatusCell(), width: '170px' },
-    { name: 'Ações', headerClass: 'justify-content-end', cellTemplate: this.ruleActionsCell(), width: '230px' },
+    { name: 'Ações', headerClass: 'justify-content-end', cellTemplate: this.ruleActionsCell(), width: '96px' },
   ]);
 
   readonly pageButtons = computed<PageButton[]>(() => {

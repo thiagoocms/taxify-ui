@@ -19,6 +19,8 @@ export class Button {
   @Input() disabled: boolean = false;
   @Input() styleClass: string = '';
   @Input() rounded: boolean = false;
+  /** Texto do botão só com ícone: vira o tooltip (title) e o aria-label. */
+  @Input() tooltip: string = '';
 
   @Output() onClick = new EventEmitter<Event>();
 

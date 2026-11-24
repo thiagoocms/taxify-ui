@@ -13,10 +13,11 @@ import { maskDocument } from '../../../shared/utils/document-mask';
  * Honorários da empresa: situação (em aberto / atrasado), a qual cliente do sistema de
  * cobrança ela está vinculada e as cobranças (mais recentes primeiro). Carrega ao abrir.
  */
+import { Button } from '../../../shared/components/button/button';
 @Component({
   selector: 'app-company-billing',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, FaIconComponent, FormsModule],
+  imports: [Button, CurrencyPipe, DatePipe, FaIconComponent, FormsModule],
   templateUrl: './company-billing.component.html',
   styleUrl: './company-billing.component.scss',
 })

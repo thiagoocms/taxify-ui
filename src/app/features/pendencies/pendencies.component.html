@@ -140,14 +140,14 @@
 <ng-template #actionsCell let-row="row">
   <div class="row-actions">
     @if (linkFor(row)) {
-      <app-button label="Abrir" variant="text" (onClick)="open(row)"></app-button>
+      <app-button icon="up-right-from-square" tooltip="Abrir" variant="text" (onClick)="open(row)"></app-button>
     }
     @if (canClose) {
       @if (row.status === 'ABERTA') {
-        <app-button label="Resolver" variant="text" (onClick)="askClose(row, 'resolver')"></app-button>
-        <app-button label="Desconsiderar" variant="text" (onClick)="askClose(row, 'desconsiderar')"></app-button>
+        <app-button icon="check" tooltip="Resolver" variant="text" severity="success" (onClick)="askClose(row, 'resolver')"></app-button>
+        <app-button icon="ban" tooltip="Desconsiderar" variant="text" severity="secondary" (onClick)="askClose(row, 'desconsiderar')"></app-button>
       } @else {
-        <app-button label="Reabrir" variant="text" (onClick)="reopen(row)"></app-button>
+        <app-button icon="rotate-left" tooltip="Reabrir" variant="text" (onClick)="reopen(row)"></app-button>
       }
     }
   </div>

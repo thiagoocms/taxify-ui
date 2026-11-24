@@ -115,10 +115,10 @@
                     <td class="text-end actions">
                       @if (canManage && charge.source === 'MANUAL') {
                         @if (charge.status !== 'PAID' && charge.status !== 'CANCELED') {
-                          <button type="button" class="btn btn-link btn-sm p-0" [disabled]="saving()" (click)="markPaid(charge)">Pago</button>
+                          <app-button icon="hand-holding-dollar" tooltip="Marcar como pago" variant="text" severity="success" [disabled]="saving()" (onClick)="markPaid(charge)"></app-button>
                         }
-                        <button type="button" class="btn btn-link btn-sm p-0" (click)="editCharge(charge)">Editar</button>
-                        <button type="button" class="btn btn-link btn-sm p-0 text-danger" (click)="removeCharge(charge)">Excluir</button>
+                        <app-button icon="pen" tooltip="Editar" variant="text" (onClick)="editCharge(charge)"></app-button>
+                        <app-button icon="trash" tooltip="Excluir" variant="text" severity="danger" (onClick)="removeCharge(charge)"></app-button>
                       } @else if (charge.source !== 'MANUAL') {
                         <small class="text-muted" title="Altere no sistema de cobrança">{{ providerLabels[charge.source] }}</small>
                       }

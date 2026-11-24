@@ -128,14 +128,14 @@
 <ng-template #actionsCell let-row="row">
   <div class="row-actions">
     @if (row.objectType === 'NOTE' && row.objectId) {
-      <app-button label="Abrir nota" variant="text" (onClick)="openNote(row)"></app-button>
+      <app-button icon="file-invoice" tooltip="Abrir nota" variant="text" (onClick)="openNote(row)"></app-button>
     }
     @if (canClose) {
       @if (row.status === 'ABERTA') {
-        <app-button label="Resolver" variant="text" (onClick)="askClose(row, 'resolver')"></app-button>
-        <app-button label="Desconsiderar" variant="text" (onClick)="askClose(row, 'desconsiderar')"></app-button>
+        <app-button icon="check" tooltip="Resolver" variant="text" severity="success" (onClick)="askClose(row, 'resolver')"></app-button>
+        <app-button icon="ban" tooltip="Desconsiderar" variant="text" severity="secondary" (onClick)="askClose(row, 'desconsiderar')"></app-button>
       } @else {
-        <app-button label="Reabrir" variant="text" (onClick)="reopen(row)"></app-button>
+        <app-button icon="rotate-left" tooltip="Reabrir" variant="text" (onClick)="reopen(row)"></app-button>
       }
     }
   </div>
@@ -175,9 +175,10 @@
 <ng-template #ruleActionsCell let-row="row">
   <div class="row-actions">
     @if (canManageRules) {
-      <app-button [label]="row.reviewed ? 'Desfazer conferência' : 'Marcar como conferida'" variant="text"
-        (onClick)="reviewRule(row)"></app-button>
-      <app-button [label]="row.enabled ? 'Desativar' : 'Ativar'" variant="text" (onClick)="enableRule(row)"></app-button>
+      <app-button icon="circle-check" [tooltip]="row.reviewed ? 'Desfazer conferência' : 'Marcar como conferida'" variant="text"
+        [severity]="row.reviewed ? 'success' : 'secondary'" (onClick)="reviewRule(row)"></app-button>
+      <app-button [icon]="row.enabled ? 'toggle-on' : 'toggle-off'" [tooltip]="row.enabled ? 'Desativar' : 'Ativar'" variant="text"
+        [severity]="row.enabled ? 'success' : 'secondary'" (onClick)="enableRule(row)"></app-button>
     }
   </div>
 </ng-template>

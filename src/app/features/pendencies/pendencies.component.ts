@@ -101,7 +101,7 @@ export class PendenciesComponent implements OnInit {
     { name: 'Pendência', cellTemplate: this.pendencyCell() },
     { name: 'Competência', cellTemplate: this.competenceCell(), width: '110px' },
     { name: 'Desde', cellTemplate: this.sinceCell(), width: '100px' },
-    { name: 'Ações', headerClass: 'justify-content-end', cellTemplate: this.actionsCell(), width: '220px' },
+    { name: 'Ações', headerClass: 'justify-content-end', cellTemplate: this.actionsCell(), width: '130px' },
   ]);
 
   readonly healthColumns = computed<TableColumn[]>(() => [

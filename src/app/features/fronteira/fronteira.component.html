@@ -215,8 +215,8 @@
 
 <ng-template #actionsCell let-row="row">
   <div class="row-actions">
-    @if (row.calculo) { <app-button label="Ver cálculo" variant="text" (onClick)="showCalc(row)"></app-button> }
-    @if (row.nota) { <app-button label="Abrir nota" variant="text" (onClick)="openNote(row.nota.documentId)"></app-button> }
+    @if (row.calculo) { <app-button icon="calculator" tooltip="Ver cálculo" variant="text" (onClick)="showCalc(row)"></app-button> }
+    @if (row.nota) { <app-button icon="file-invoice" tooltip="Abrir nota" variant="text" (onClick)="openNote(row.nota.documentId)"></app-button> }
   </div>
 </ng-template>
 
@@ -253,8 +253,8 @@
 
 <ng-template #unchargedActionsCell let-row="row">
   <div class="row-actions">
-    @if (row.calculo) { <app-button label="Ver cálculo" variant="text" (onClick)="showUnchargedCalc(row)"></app-button> }
-    <app-button label="Abrir nota" variant="text" (onClick)="openNote(row.documentId)"></app-button>
+    @if (row.calculo) { <app-button icon="calculator" tooltip="Ver cálculo" variant="text" (onClick)="showUnchargedCalc(row)"></app-button> }
+    <app-button icon="file-invoice" tooltip="Abrir nota" variant="text" (onClick)="openNote(row.documentId)"></app-button>
   </div>
 </ng-template>
 
@@ -312,12 +312,14 @@
 <ng-template #ruleActionsCell let-row="row">
   <div class="row-actions">
     @if (canEdit(row)) {
-      <app-button label="Editar" variant="text" (onClick)="editRule(row)"></app-button>
-      <app-button label="Excluir" variant="text" (onClick)="deleteRule(row)"></app-button>
+      <app-button icon="pen" tooltip="Editar" variant="text" (onClick)="editRule(row)"></app-button>
+      <app-button icon="trash" tooltip="Excluir" variant="text" severity="danger" (onClick)="deleteRule(row)"></app-button>
     }
     @if (canManageRules) {
-      <app-button [label]="row.reviewed ? 'Desfazer conferência' : 'Conferir'" variant="text" (onClick)="reviewRule(row)"></app-button>
-      <app-button [label]="row.enabled ? 'Desativar' : 'Ativar'" variant="text" (onClick)="enableRule(row)"></app-button>
+      <app-button icon="circle-check" [tooltip]="row.reviewed ? 'Desfazer conferência' : 'Conferir'" variant="text"
+        [severity]="row.reviewed ? 'success' : 'secondary'" (onClick)="reviewRule(row)"></app-button>
+      <app-button [icon]="row.enabled ? 'toggle-on' : 'toggle-off'" [tooltip]="row.enabled ? 'Desativar' : 'Ativar'" variant="text"
+        [severity]="row.enabled ? 'success' : 'secondary'" (onClick)="enableRule(row)"></app-button>
     }
   </div>
 </ng-template>

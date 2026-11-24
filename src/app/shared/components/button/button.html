@@ -8,6 +8,8 @@
     styleClass
   ]"
   [disabled]="disabled"
+  [attr.title]="tooltip || null"
+  [attr.aria-label]="tooltip || label || null"
   (click)="onButtonClick($event)"
 >
   @if(icon){

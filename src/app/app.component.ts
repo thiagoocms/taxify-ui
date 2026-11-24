@@ -43,6 +43,9 @@ import {
   faChevronRight,
   faCalculator,
   faCloudArrowDown,
+  faRotateLeft,
+  faToggleOff,
+  faToggleOn,
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -60,6 +63,7 @@ export class AppComponent {
     library.addIcons(
       faArrowRight, faChevronDown, faChevronUp, faCircleCheck, faCopy, faDownload, faEye, faFileCode,
       faFileInvoice, faFilePdf, faUpRightFromSquare, faLocationDot, faTriangleExclamation, faWandMagicSparkles,
+      faRotateLeft, faToggleOff, faToggleOn,
     );
   }
 }

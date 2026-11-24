@@ -92,7 +92,7 @@
                 <td>{{ s.ocorrencias }}</td>
                 <td [class.low-agreement]="agreement(s) < 90">{{ agreement(s) }}%</td>
                 <td class="text-end">
-                  <app-button label="Criar regra" variant="text" (onClick)="createFromSuggestion(s)"></app-button>
+                  <app-button icon="plus" tooltip="Criar regra" variant="text" (onClick)="createFromSuggestion(s)"></app-button>
                 </td>
               </tr>
             }

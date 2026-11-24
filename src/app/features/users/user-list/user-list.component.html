@@ -58,7 +58,7 @@
               @if (user.taxifyUserId) {
                 <span class="acessorias-badge">Já no Taxify</span>
               } @else if (user.email) {
-                <app-button label="Cadastrar" icon="plus" variant="text" (onClick)="registerFromAcessorias(user)"></app-button>
+                <app-button icon="plus" tooltip="Cadastrar no Taxify" variant="text" (onClick)="registerFromAcessorias(user)"></app-button>
               } @else {
                 <span class="acessorias-muted">Sem e-mail</span>
               }
