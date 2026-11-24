@@ -93,8 +93,39 @@ export type FronteiraRuleInput = Omit<FronteiraRuleDTO, 'id' | 'enabled' | 'revi
 export interface FormulaCheckDTO {
   ok: boolean;
   message?: string | null;
+  /** Campo → o que ele é. */
   variables: Record<string, string>;
+  /** O valor da fórmula com {@link valores}. */
+  resultado?: number | null;
+  valores: Record<string, number>;
+  /** true = valores de exemplo; false = os do item da nota. */
+  exemplo: boolean;
 }
+
+/** Operadores e funções aceitos na fórmula — para o painel de ajuda. */
+export const FORMULA_OPERATORS: { token: string; insert: string; label: string }[] = [
+  { token: '+', insert: ' + ', label: 'soma' },
+  { token: '−', insert: ' - ', label: 'subtrai (ou -)' },
+  { token: '×', insert: ' * ', label: 'multiplica (ou *)' },
+  { token: '÷', insert: ' / ', label: 'divide (ou /)' },
+  { token: '( )', insert: '()', label: 'agrupa — resolve primeiro o que está dentro' },
+  { token: '%', insert: '%', label: 'percentual: 5,5% = 0,055' },
+];
+
+export const FORMULA_FUNCTIONS: { token: string; insert: string; label: string }[] = [
+  { token: 'min(a; b)', insert: 'min(; )', label: 'o menor dos valores' },
+  { token: 'max(a; b)', insert: 'max(; )', label: 'o maior dos valores — ex.: max(conta; 0) nunca fica negativo' },
+  { token: 'arred(x)', insert: 'arred()', label: 'arredonda a 2 casas' },
+];
+
+export const FORMULA_EXAMPLES: { label: string; formula: string }[] = [
+  { label: 'Diferencial de alíquotas (padrão do regime normal)', formula: 'partida * (interna - inter)' },
+  { label: 'Carga líquida fixa de 5,5%', formula: 'partida * 5,5%' },
+  { label: 'Carga líquida da regra', formula: 'partida * percentual' },
+  { label: 'ST com MVA ajustada', formula: 'partida * (1 + mva_ajustada) * interna - credito' },
+  { label: 'Base dupla (por dentro)', formula: '(partida - icms_origem) / (1 - interna) * interna - credito' },
+  { label: 'Diferencial menos o crédito do Simples, nunca negativo', formula: 'max(partida * (interna - inter) - credito_sn; 0)' },
+];
 
 export interface FronteiraItemCalcDTO {
   numeroItem: number;
@@ -112,6 +143,8 @@ export interface FronteiraItemCalcDTO {
   regras: string[];
   memoria: string[];
   semRegraMotivo?: string | null;
+  /** Os valores do item que uma fórmula pode usar (para testar a fórmula nele). */
+  variaveis: Record<string, number>;
 }
 
 export interface FronteiraNoteCalcDTO {

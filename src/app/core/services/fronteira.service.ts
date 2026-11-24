@@ -32,8 +32,9 @@ export class FronteiraService {
     return this.http.get<FronteiraRuleDTO[]>(`${this.baseUrl}/regras`, { params });
   }
 
-  checkFormula(formula: string): Observable<FormulaCheckDTO> {
-    return this.http.post<FormulaCheckDTO>(`${this.baseUrl}/regras/testar`, { formula });
+  /** Valida e calcula a fórmula: com os valores do item ({@code variaveis}) ou com valores de exemplo. */
+  checkFormula(formula: string, variaveis?: Record<string, number> | null): Observable<FormulaCheckDTO> {
+    return this.http.post<FormulaCheckDTO>(`${this.baseUrl}/regras/testar`, { formula, variaveis: variaveis ?? null });
   }
 
   /** Regra geral (todas as empresas) usa outro endereço e outra permissão. */

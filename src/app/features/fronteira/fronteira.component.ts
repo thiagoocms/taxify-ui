@@ -8,6 +8,10 @@ import { map, Observable } from 'rxjs';
 import { CompanyDTO } from '../../core/models/company.model';
 import {
   APLICA_EM_LABELS,
+  FORMULA_EXAMPLES,
+  FORMULA_FUNCTIONS,
+  FORMULA_OPERATORS,
+  FormulaCheckDTO,
   FronteiraAplicaEm,
   FRONTEIRA_FLAG_HINTS,
   FRONTEIRA_FLAG_LABELS,
@@ -52,10 +56,10 @@ interface CalcView {
 }
 
 const STANDARD_FORMULAS: Record<string, string> = {
-  ST: 'partida * (1 + mva_ajustada) * interna - icms_origem',
+  ST: 'partida * (1 + mva_ajustada) * interna - credito',
   CARGA_LIQUIDA: 'partida * percentual',
-  SEM_ENCERRAMENTO: '(partida - icms_origem) / (1 - interna) * interna - icms_origem',
-  USO_CONSUMO: '(partida - icms_origem) / (1 - interna) * interna - icms_origem',
+  SEM_ENCERRAMENTO: 'partida * (interna - inter)',
+  USO_CONSUMO: 'partida * (interna - inter)',
 };
 
 /**
@@ -112,6 +116,13 @@ export class FronteiraComponent implements OnInit {
   readonly savingRule = signal(false);
   readonly formulaMessage = signal<{ ok: boolean; text: string } | null>(null);
   readonly variables = signal<Record<string, string>>({});
+  /** O último "Testar fórmula": resultado e os valores usados. */
+  readonly formulaCheck = signal<FormulaCheckDTO | null>(null);
+  /** Quando a regra vem de um item ("Usar fórmula própria"): os valores dele, para testar a fórmula na nota de verdade. */
+  readonly formulaContext = signal<{ label: string; values: Record<string, number> } | null>(null);
+  readonly formulaOperators = FORMULA_OPERATORS;
+  readonly formulaFunctions = FORMULA_FUNCTIONS;
+  readonly formulaExamples = FORMULA_EXAMPLES;
   readonly calcView = signal<CalcView | null>(null);
 
   readonly flagLabels = FRONTEIRA_FLAG_LABELS;
@@ -348,17 +359,20 @@ export class FronteiraComponent implements OnInit {
   }
 
   newRule(kind: FronteiraRuleKind = 'ALIQUOTA_INTERNA'): void {
-    this.openRuleForm({ kind, companyId: this.companyId(), global: !this.companyId() });
+    this.openRuleForm({ kind, companyId: this.companyId(), global: !this.companyId() }, false);
   }
 
   editRule(rule: FronteiraRuleDTO): void {
-    this.openRuleForm({ ...rule, global: !rule.companyId });
+    this.openRuleForm({ ...rule, global: !rule.companyId }, false);
   }
 
   /** "Usar fórmula própria" no item: a regra já vem com o produto, o fornecedor e a fórmula do cálculo padrão. */
   formulaFromItem(item: FronteiraItemCalcDTO): void {
     const view = this.calcView();
     this.calcView.set(null);
+    this.formulaContext.set(item.variaveis && Object.keys(item.variaveis).length
+      ? { label: `${view?.title ?? 'nota'} · item ${item.numeroItem}`, values: item.variaveis }
+      : null);
     this.openRuleForm({
       kind: 'FORMULA',
       companyId: this.companyId(),
@@ -372,8 +386,12 @@ export class FronteiraComponent implements OnInit {
     });
   }
 
-  private openRuleForm(form: Partial<RuleForm> & { kind: FronteiraRuleKind; global: boolean }): void {
+  private openRuleForm(form: Partial<RuleForm> & { kind: FronteiraRuleKind; global: boolean }, keepContext = true): void {
     this.formulaMessage.set(null);
+    this.formulaCheck.set(null);
+    if (!keepContext) {
+      this.formulaContext.set(null);
+    }
     this.ruleForm.set({
       id: form.id ?? null,
       companyId: form.global ? null : form.companyId ?? this.companyId(),
@@ -408,17 +426,57 @@ export class FronteiraComponent implements OnInit {
 
   testFormula(): void {
     const formula = this.ruleForm()?.formula ?? '';
-    this.fronteiraService.checkFormula(formula).subscribe((check) => {
+    this.fronteiraService.checkFormula(formula, this.formulaContext()?.values).subscribe((check) => {
       this.variables.set(check.variables);
-      this.formulaMessage.set(check.ok ? { ok: true, text: 'Fórmula válida.' } : { ok: false, text: check.message ?? 'Fórmula inválida.' });
+      this.formulaCheck.set(check);
+      this.formulaMessage.set(check.ok
+        ? { ok: true, text: `Fórmula válida · resultado ${formatCurrency(check.resultado ?? 0)}` }
+        : { ok: false, text: check.message ?? 'Fórmula inválida.' });
     });
   }
 
-  insertVariable(name: string): void {
+  /** Insere no lugar do cursor (ou no fim); "()" e funções deixam o cursor dentro dos parênteses. */
+  insertInFormula(textarea: HTMLTextAreaElement, text: string): void {
     const form = this.ruleForm();
-    if (form) {
-      this.ruleForm.set({ ...form, formula: `${form.formula ?? ''}${form.formula ? ' ' : ''}${name}` });
+    if (!form) {
+      return;
     }
+    const current = form.formula ?? '';
+    const start = textarea.selectionStart ?? current.length;
+    const end = textarea.selectionEnd ?? current.length;
+    const before = current.slice(0, start);
+    const needsSpace = /^[a-z_]/i.test(text) && before.length > 0 && /[\w)%]$/.test(before);
+    const piece = (needsSpace ? ' ' : '') + text;
+    const formula = before + piece + current.slice(end);
+    this.ruleForm.set({ ...form, formula });
+    const open = piece.indexOf('(');
+    const caret = before.length + (open >= 0 && piece.endsWith(')') ? open + 1 : piece.length);
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(caret, caret);
+    });
+  }
+
+  useExample(formula: string): void {
+    this.updateForm({ formula });
+    this.formulaCheck.set(null);
+    this.formulaMessage.set(null);
+  }
+
+  /** O valor do campo para mostrar no painel: o do item (se a regra veio de uma nota) ou o do último teste. */
+  variableValue(name: string): number | null {
+    const values = this.formulaContext()?.values ?? this.formulaCheck()?.valores;
+    const value = values?.[name];
+    return value == null ? null : value;
+  }
+
+  /** Taxas (frações) como %, valores em R$. */
+  formatVariable(name: string, value: number | null): string {
+    if (value == null) {
+      return '—';
+    }
+    const rate = ['aliquota_origem', 'inter', 'interna', 'mva', 'mva_ajustada', 'percentual'].includes(name);
+    return rate ? this.formatRate(value * 100) : formatCurrency(value);
   }
 
   saveRule(): void {
@@ -432,6 +490,7 @@ export class FronteiraComponent implements OnInit {
       next: () => {
         this.savingRule.set(false);
         this.ruleForm.set(null);
+        this.formulaContext.set(null);
         this.toastr.success(id ? 'Regra alterada — volta a ficar "a conferir".' : 'Regra salva — vale para as próximas notas.');
         this.loadRules();
         this.load(this.report()?.periodo ?? null);
