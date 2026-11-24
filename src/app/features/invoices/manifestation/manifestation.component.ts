@@ -26,6 +26,7 @@ import { Page, PageButton } from '../../../shared/components/page/page';
 import { Table, TableColumn, TableConfig } from '../../../shared/components/table/table';
 import { formatDocument } from '../../../shared/utils/document-mask';
 import { formatCurrency } from '../../../shared/utils/format';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 /** Atalhos que filtram a lista. */
 type QuickFilter = 'DEADLINE' | 'NO_CIENCIA' | 'CIENCIA' | 'SUMMARY';
@@ -40,7 +41,7 @@ const DEADLINE_WARNING_DAYS = 15;
 @Component({
   selector: 'app-manifestation',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, FaIconComponent, Button, InputComponent, Modal, Page, Table, HelpTipComponent],
+  imports: [LoaderComponent, CommonModule, FormsModule, ReactiveFormsModule, RouterLink, FaIconComponent, Button, InputComponent, Modal, Page, Table, HelpTipComponent],
   templateUrl: './manifestation.component.html',
   styleUrl: './manifestation.component.scss',
 })

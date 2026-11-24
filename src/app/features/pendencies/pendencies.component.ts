@@ -35,10 +35,11 @@ type CloseAction = 'resolver' | 'desconsiderar';
  * Mesmo desenho da Apuração: filtros em chips, resumo, atalhos por tipo e tabela.
  */
 import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
+import { LoaderComponent } from '../../shared/components/loader/loader';
 @Component({
   selector: 'app-pendencies',
   standalone: true,
-  imports: [MonthNavComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
+  imports: [LoaderComponent, MonthNavComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
   templateUrl: './pendencies.component.html',
   styleUrl: './pendencies.component.scss',
 })

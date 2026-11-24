@@ -6,6 +6,7 @@ import { CompanyCertificateDTO, NfseAdnStatusDTO, SefazNotesDTO, SefazNoteSummar
 import { CompanyService } from '../../../core/services/company.service';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent } from '../../../shared/components/input/input';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 /**
  * Certificado A1 da empresa e captura de XML direto da SEFAZ (NFeDistribuicaoDFe). O .pfx
@@ -15,7 +16,7 @@ import { InputComponent } from '../../../shared/components/input/input';
 @Component({
   selector: 'app-company-certificate',
   standalone: true,
-  imports: [CommonModule, FormsModule, Button, InputComponent],
+  imports: [LoaderComponent, CommonModule, FormsModule, Button, InputComponent],
   template: `
     <section class="mt-4">
       <h6 class="section-title">Certificado A1 e captura pela SEFAZ</h6>
@@ -26,7 +27,7 @@ import { InputComponent } from '../../../shared/components/input/input';
       </p>
 
       @if (loading()) {
-        <p class="muted">Carregando...</p>
+        <app-loader variant="inline"></app-loader>
       }
       @if (!loading() && status(); as s) {
         @if (!s.sefazInPlan) {

@@ -30,10 +30,11 @@ import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/
  * honorários (Manual ou um sistema integrado), com a sincronização manual.
  */
 import { EfiscoCertificateCardComponent } from './efisco-certificate-card.component';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 @Component({
   selector: 'app-firm-integrations',
   standalone: true,
-  imports: [DatePipe, FormsModule, Button, InputComponent, FaIconComponent, EfiscoCertificateCardComponent],
+  imports: [LoaderComponent, DatePipe, FormsModule, Button, InputComponent, FaIconComponent, EfiscoCertificateCardComponent],
   templateUrl: './firm-integrations.component.html',
   styleUrl: './firm-integrations.component.scss',
 })

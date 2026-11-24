@@ -14,6 +14,7 @@ import { UserCompanyService } from '../../../core/services/user-company.service'
 import { UserLinkFormComponent } from './link-form/link-form.component';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { formatDocument } from '../../../shared/utils/document-mask';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 interface LinkRow extends UserCompanyDTO {
   companyName: string;
@@ -23,7 +24,7 @@ interface LinkRow extends UserCompanyDTO {
 @Component({
   selector: 'app-user-links',
   standalone: true,
-  imports: [CommonModule, FaIconComponent, Button, Modal, Table, UserLinkFormComponent],
+  imports: [LoaderComponent, CommonModule, FaIconComponent, Button, Modal, Table, UserLinkFormComponent],
   templateUrl: './user-links.component.html',
   styleUrl: './user-links.component.scss',
 })

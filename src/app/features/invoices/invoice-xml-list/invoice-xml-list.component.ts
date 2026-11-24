@@ -43,6 +43,7 @@ import {
   counterpartName,
   counterpartRole,
 } from '../invoice-format';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 type PeriodKey = 'current-month' | 'last-month' | 'last-90' | 'all' | 'custom';
 
@@ -93,7 +94,7 @@ function periodRange(key: PeriodKey): { inicio: string; fim: string } | null {
 @Component({
   selector: 'app-invoice-xml-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
+  imports: [LoaderComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
   templateUrl: './invoice-xml-list.component.html',
   styleUrl: './invoice-xml-list.component.scss',
 })

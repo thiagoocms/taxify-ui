@@ -26,7 +26,7 @@
       <p>Escolha a empresa acima para ver o relatório do mês, a curva ABC de compras ou simular os regimes tributários.</p>
     </div>
   } @else if (loading()) {
-    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Montando o relatório...</p>
+    <app-loader message="Montando o relatório..."></app-loader>
   } @else {
     @switch (view()) {
       @case ('monthly') {

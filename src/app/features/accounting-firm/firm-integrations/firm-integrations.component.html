@@ -113,7 +113,7 @@
             <div class="small fw-semibold">Categorias que contam como honorário</div>
             <small class="text-muted d-block mb-1">Nenhuma marcada = todas as contas a receber do cliente.</small>
             @if (categoriesLoading()) {
-              <small class="text-muted">Carregando categorias...</small>
+              <app-loader variant="inline" message="Carregando categorias..."></app-loader>
             } @else if (categories()) {
               @let list = categories()!;
               <div class="category-list">

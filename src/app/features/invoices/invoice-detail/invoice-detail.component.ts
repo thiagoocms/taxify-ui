@@ -55,6 +55,7 @@ import {
   tipoOperacaoLabel,
 } from '../invoice-format';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 type DetailTab = 'resumo' | 'produtos' | 'totais' | 'divergencias' | 'auditoria' | 'eventos' | 'xml' | 'pdf';
 
@@ -109,7 +110,7 @@ const BACK_TARGETS: [string, string][] = [
 @Component({
   selector: 'app-invoice-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table],
+  imports: [LoaderComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table],
   templateUrl: './invoice-detail.component.html',
   styleUrl: './invoice-detail.component.scss',
 })

@@ -80,6 +80,7 @@ body { margin: 0; font-family: 'Poppins', 'Helvetica Neue', sans-serif; }
   margin-bottom: 16px;
 }
 
+/* Prefira o <app-loader>; esta classe fica para textos de espera sem animação. */
 .loading-text {
   text-align: center;
   color: #868e96;

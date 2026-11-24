@@ -1,0 +1,141 @@
+// A logo se montando em loop de 1,8s: barra do T cresce da esquerda, a haste desce, a bolinha
+// laranja aparece e quica; tudo some junto e recomeça. Sem animação para quem pediu menos movimento.
+$cycle: 1.8s;
+
+:host {
+  display: block;
+}
+
+:host(.loader-block) .loader {
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  min-height: 180px;
+  padding: 24px 0;
+
+  .mark {
+    width: 52px;
+    height: 52px;
+    filter: drop-shadow(0 6px 14px rgba(32, 80, 162, 0.25));
+    animation: float $cycle ease-in-out infinite;
+  }
+}
+
+:host(.loader-inline) {
+  display: inline-block;
+
+  .loader {
+    gap: 8px;
+  }
+
+  .mark {
+    width: 20px;
+    height: 20px;
+  }
+
+  .message {
+    font-size: 13px;
+  }
+}
+
+:host(.loader-overlay) {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(1px);
+
+  .loader {
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: var(--card-shadow);
+  }
+
+  .mark {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.loader {
+  display: flex;
+  align-items: center;
+}
+
+.message {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.tile {
+  fill: var(--color-primary);
+}
+
+.bar,
+.stem,
+.dot {
+  transform-box: fill-box;
+}
+
+.bar {
+  fill: #fff;
+  transform-origin: left center;
+  animation: bar $cycle cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.stem {
+  fill: #fff;
+  transform-origin: center top;
+  animation: stem $cycle cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.dot {
+  fill: var(--color-secondary);
+  transform-origin: center;
+  animation: dot $cycle ease-out infinite;
+}
+
+@keyframes bar {
+  0% { transform: scaleX(0); opacity: 1; }
+  25%, 82% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+@keyframes stem {
+  0%, 18% { transform: scaleY(0); opacity: 1; }
+  42%, 82% { transform: scaleY(1); opacity: 1; }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+
+@keyframes dot {
+  0%, 42% { transform: scale(0); opacity: 1; }
+  52% { transform: scale(1.3); }
+  58% { transform: scale(1) translateY(0); }
+  66% { transform: scale(1) translateY(-5px); }
+  74%, 82% { transform: scale(1) translateY(0); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .stem,
+  .dot,
+  .mark {
+    animation: none !important;
+  }
+
+  .loader {
+    opacity: 0.85;
+  }
+}

@@ -13,7 +13,7 @@
   </div>
 
   @if (loading() && !screen()) {
-    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Calculando as retenções...</p>
+    <app-loader message="Calculando as retenções..."></app-loader>
   } @else if (screen()) {
     @let s = screen()!;
     <div class="results-summary">
@@ -61,7 +61,7 @@
           <app-table [columns]="columns()" [data]="rows()" [config]="tableConfig()" (selectionChange)="selected.set($event)"></app-table>
         }
         @if (loading()) {
-          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Atualizando...</div>
+          <app-loader variant="overlay" message="Atualizando..."></app-loader>
         }
       </div>
     }

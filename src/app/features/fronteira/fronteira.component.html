@@ -47,7 +47,7 @@
       <p>Escolha uma empresa de Pernambuco e importe o extrato de notas do ICMS antecipado baixado no e-Fisco.</p>
     </div>
   } @else if (loading() && !report()) {
-    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando...</p>
+    <app-loader message="Carregando..."></app-loader>
   } @else if (report()) {
     @let r = report()!;
     @if (!r.extract) {
@@ -154,7 +154,7 @@
       <div class="table-wrapper" [class.is-loading]="loading()">
         <app-table [columns]="columns()" [data]="filtered()" [config]="tableConfig"></app-table>
         @if (loading()) {
-          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Carregando...</div>
+          <app-loader variant="overlay" message="Carregando..."></app-loader>
         }
       </div>
 

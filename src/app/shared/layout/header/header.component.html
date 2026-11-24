@@ -32,7 +32,7 @@
 <app-modal [open]="firmDialogOpen()" title="Dados do escritório" size="xl" (closed)="closeFirmDialog()">
   @if (firmDialogOpen()) {
     @if (firmLoading()) {
-      <p class="loading-text">Carregando...</p>
+      <app-loader message="Carregando os dados do escritório..."></app-loader>
     } @else {
       <app-accounting-firm-form
         [firm]="firm()"

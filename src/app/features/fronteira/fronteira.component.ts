@@ -81,10 +81,11 @@ const STANDARD_FORMULAS: Record<string, string> = {
 import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
 import { EfiscoService, FirmCertificateDTO } from '../../core/services/efisco.service';
 import { EfiscoMemoryDTO, EfiscoMemoryItemDTO } from '../../core/models/fronteira.model';
+import { LoaderComponent } from '../../shared/components/loader/loader';
 @Component({
   selector: 'app-fronteira',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table, FormulaEditorComponent, MonthNavComponent],
+  imports: [LoaderComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table, FormulaEditorComponent, MonthNavComponent],
   templateUrl: './fronteira.component.html',
   styleUrl: './fronteira.component.scss',
 })

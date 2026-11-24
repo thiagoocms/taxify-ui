@@ -9,7 +9,7 @@
     <app-table [columns]="columns" [data]="plans()" [config]="tableConfig"></app-table>
 
     @if (loading()) {
-      <p class="loading-text">Carregando...</p>
+      <app-loader></app-loader>
     }
 
     <app-pagination

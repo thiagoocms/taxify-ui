@@ -34,10 +34,11 @@ import { monthLabel, shiftMonth, toMonth } from '../assessment/assessment-format
  * Mesmo desenho da Apuração: navegação de mês, resumo, atalhos e tabela.
  */
 import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
+import { LoaderComponent } from '../../shared/components/loader/loader';
 @Component({
   selector: 'app-service-invoices',
   standalone: true,
-  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
+  imports: [LoaderComponent, MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
   templateUrl: './service-invoices.component.html',
   styleUrl: './service-invoices.component.scss',
 })

@@ -15,11 +15,12 @@ import { ProductFiscalRuleService } from '../../../core/services/product-fiscal-
 import { RuleFormComponent } from './rule-form/rule-form.component';
 import { formatDocument } from '../../../shared/utils/document-mask';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 @Component({
   selector: 'app-company-product-fiscal-rules',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Pagination, Table, RuleFormComponent],
+  imports: [LoaderComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Pagination, Table, RuleFormComponent],
   templateUrl: './company-product-fiscal-rules.component.html',
   styleUrl: './company-product-fiscal-rules.component.scss',
 })

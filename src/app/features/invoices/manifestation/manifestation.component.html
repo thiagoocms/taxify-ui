@@ -26,7 +26,7 @@
       <p>Escolha a empresa acima para ver as notas de entrada que ainda aguardam manifestação.</p>
     </div>
   } @else if (loading() && !data()) {
-    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando as notas...</p>
+    <app-loader message="Carregando as notas..."></app-loader>
   } @else if (data()) {
     @let d = data()!;
     @if (!d.habilitada) {
@@ -102,9 +102,9 @@
           ></app-table>
         }
         @if (sending()) {
-          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Enviando à SEFAZ...</div>
+          <app-loader variant="overlay" message="Enviando à SEFAZ..."></app-loader>
         } @else if (loading()) {
-          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Atualizando...</div>
+          <app-loader variant="overlay" message="Atualizando..."></app-loader>
         }
       </div>
       @if (!filtered().length) {

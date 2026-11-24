@@ -13,6 +13,7 @@ import {
 import { CompanyService } from '../../../core/services/company.service';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent, SelectOption } from '../../../shared/components/input/input';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 /**
  * Histórico de regime da empresa: cada mês é apurado com o regime vigente nele. O regime do
@@ -22,13 +23,13 @@ import { InputComponent, SelectOption } from '../../../shared/components/input/i
 @Component({
   selector: 'app-company-tax-regimes',
   standalone: true,
-  imports: [CommonModule, FormsModule, Button, InputComponent],
+  imports: [LoaderComponent, CommonModule, FormsModule, Button, InputComponent],
   template: `
     <section class="mt-4">
       <h6 class="section-title">Histórico de regime</h6>
       <p class="section-hint">Cada mês é apurado com o regime vigente nele.</p>
       @if (loading()) {
-        <p class="muted">Carregando...</p>
+        <app-loader variant="inline"></app-loader>
       } @else if (!periods().length) {
         <p class="muted">Sem histórico — cadastre o regime da empresa acima.</p>
       } @else {

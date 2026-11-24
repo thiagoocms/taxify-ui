@@ -9,11 +9,12 @@ import { AccountingFirmFormComponent } from '../../../features/accounting-firm/a
 import { AccountingFirmDTO } from '../../../core/models/accounting-firm.model';
 import { AccountingFirmService } from '../../../core/services/accounting-firm.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { LoaderComponent } from '../../components/loader/loader';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, FaIconComponent, Button, Modal, AccountingFirmFormComponent],
+  imports: [LoaderComponent, CommonModule, FaIconComponent, Button, Modal, AccountingFirmFormComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })

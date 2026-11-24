@@ -35,10 +35,11 @@ const PAGE_SIZE = 20;
  * RBT12, impostos estimados, alertas e fechamento. Clicar abre o detalhe da empresa.
  */
 import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
+import { LoaderComponent } from '../../shared/components/loader/loader';
 @Component({
   selector: 'app-tax-assessment',
   standalone: true,
-  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Page, InputComponent, Table, Pagination],
+  imports: [LoaderComponent, MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Page, InputComponent, Table, Pagination],
   templateUrl: './tax-assessment.component.html',
   styleUrl: './tax-assessment.component.scss',
 })

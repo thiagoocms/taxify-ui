@@ -29,10 +29,11 @@ import {
  * o fechamento (checklist, guia, fechar/reabrir).
  */
 import { MonthNavComponent } from '../../../shared/components/month-nav/month-nav.component';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 @Component({
   selector: 'app-tax-assessment-detail',
   standalone: true,
-  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Page, Button, InputComponent, Toggle],
+  imports: [LoaderComponent, MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Page, Button, InputComponent, Toggle],
   templateUrl: './tax-assessment-detail.component.html',
   styleUrl: './tax-assessment-detail.component.scss',
 })

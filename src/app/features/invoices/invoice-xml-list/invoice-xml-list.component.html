@@ -146,7 +146,7 @@
         (rowClick)="openDetail($event)"
       ></app-table>
       @if (loading()) {
-        <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Carregando notas...</div>
+        <app-loader variant="overlay" message="Carregando notas..."></app-loader>
       }
     </div>
 
@@ -156,7 +156,7 @@
       (pageIndexChange)="onPageIndexChange($event)"
     ></app-pagination>
   } @else if (loading()) {
-    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Buscando notas fiscais...</p>
+    <app-loader message="Buscando notas fiscais..."></app-loader>
   }
 </app-page>
 
@@ -267,7 +267,7 @@
       </label>
 
       @if (importing()) {
-        <p class="loading-text mt-2"><span class="spinner-border spinner-border-sm me-2"></span>Importando XML...</p>
+        <app-loader message="Importando XML..."></app-loader>
       }
 
       @if (importResult(); as r) {

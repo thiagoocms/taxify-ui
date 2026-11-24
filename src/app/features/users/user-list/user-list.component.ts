@@ -17,6 +17,7 @@ import { AcessoriasService } from '../../../core/services/acessorias.service';
 import { UserService } from '../../../core/services/user.service';
 import { UserFormComponent } from '../user-form/user-form.component';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 const PROFILE_LABELS: Record<string, string> = {
   ADMIN: 'Administrador',
@@ -41,7 +42,7 @@ type ViewMode = 'list' | 'form';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, Toggle, Button, InputComponent, Modal, Page, Pagination, Table, UserFormComponent],
+  imports: [LoaderComponent, CommonModule, FormsModule, ReactiveFormsModule, Toggle, Button, InputComponent, Modal, Page, Pagination, Table, UserFormComponent],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss',
 })

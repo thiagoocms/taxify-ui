@@ -13,6 +13,7 @@ import { PlanService } from '../../../core/services/plan.service';
 import { BILLING_CYCLE_LABELS } from '../../../core/models/billing.model';
 import { PlanFormComponent } from '../plan-form/plan-form.component';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 interface PlanRow extends PlanDTO {
   servicesLabel: string;
@@ -25,7 +26,7 @@ type ViewMode = 'list' | 'form';
 @Component({
   selector: 'app-plan-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputComponent, Page, Pagination, Table, PlanFormComponent],
+  imports: [LoaderComponent, CommonModule, ReactiveFormsModule, InputComponent, Page, Pagination, Table, PlanFormComponent],
   templateUrl: './plan-list.component.html',
   styleUrl: './plan-list.component.scss',
 })

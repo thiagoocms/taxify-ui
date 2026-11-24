@@ -31,7 +31,7 @@
       <p>Escolha a empresa acima para ver a auditoria do mês. Ela roda sozinha todo dia para os planos com "Auditoria de notas fiscais", ou em "Rodar auditoria".</p>
     </div>
   } @else if (loading() && !report()) {
-    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando a auditoria...</p>
+    <app-loader message="Carregando a auditoria..."></app-loader>
   } @else if (report()) {
     @let r = report()!;
     @if (!r.run) {
@@ -81,7 +81,7 @@
       <div class="table-wrapper" [class.is-loading]="loading()">
         <app-table [columns]="columns()" [data]="filtered()" [config]="tableConfig"></app-table>
         @if (loading()) {
-          <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Auditando...</div>
+          <app-loader variant="overlay" message="Auditando..."></app-loader>
         }
       </div>
     }

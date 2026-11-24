@@ -16,6 +16,7 @@ import { PlanService } from '../../../core/services/plan.service';
 import { SubscriptionService } from '../../../core/services/subscription.service';
 import { SubscriptionFormComponent } from './subscription-form/subscription-form.component';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 interface SubscriptionRow extends SubscriptionDTO {
   planName: string;
@@ -28,7 +29,7 @@ interface SubscriptionRow extends SubscriptionDTO {
 @Component({
   selector: 'app-company-subscriptions',
   standalone: true,
-  imports: [CommonModule, FaIconComponent, Button, Modal, Table, SubscriptionFormComponent],
+  imports: [LoaderComponent, CommonModule, FaIconComponent, Button, Modal, Table, SubscriptionFormComponent],
   templateUrl: './company-subscriptions.component.html',
   styleUrl: './company-subscriptions.component.scss',
 })

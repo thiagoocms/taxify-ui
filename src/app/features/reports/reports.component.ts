@@ -25,10 +25,11 @@ type View = 'monthly' | 'abc' | 'simulation';
  * e simulação de Simples × Presumido × Real com os números das notas. Mesmo desenho da Apuração.
  */
 import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
+import { LoaderComponent } from '../../shared/components/loader/loader';
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Page, Table],
+  imports: [LoaderComponent, MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Page, Table],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.scss',
 })

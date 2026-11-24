@@ -15,7 +15,7 @@
       <app-table [columns]="columns" [data]="subscriptions()" [config]="tableConfig"></app-table>
 
       @if (loading()) {
-        <p class="loading-text">Carregando...</p>
+        <app-loader variant="inline"></app-loader>
       }
     </div>
   }

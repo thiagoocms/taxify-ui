@@ -35,10 +35,11 @@ type QuickFilter = 'UNDUE' | 'PENDING';
  * Mesmo desenho da Apuração: navegação de mês, resumo, atalhos e tabela.
  */
 import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
+import { LoaderComponent } from '../../shared/components/loader/loader';
 @Component({
   selector: 'app-retentions',
   standalone: true,
-  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, InputComponent, Page, Table, HelpTipComponent],
+  imports: [LoaderComponent, MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, InputComponent, Page, Table, HelpTipComponent],
   templateUrl: './retentions.component.html',
   styleUrl: './retentions.component.scss',
 })

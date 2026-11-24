@@ -15,10 +15,11 @@ import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent } from '../../../shared/components/input/input';
 import { Toggle } from '../../../shared/components/toggle/toggle';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 @Component({
   selector: 'app-company-billing',
   standalone: true,
-  imports: [Button, CurrencyPipe, DatePipe, FaIconComponent, FormsModule, InputComponent, Toggle],
+  imports: [LoaderComponent, Button, CurrencyPipe, DatePipe, FaIconComponent, FormsModule, InputComponent, Toggle],
   templateUrl: './company-billing.component.html',
   styleUrl: './company-billing.component.scss',
 })

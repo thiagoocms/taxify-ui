@@ -21,13 +21,14 @@ import { pollUntilDone } from '../../../core/services/sync-job-polling';
 import { CompanyFormComponent } from '../company-form/company-form.component';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { formatDocument } from '../../../shared/utils/document-mask';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 
 type ViewMode = 'list' | 'form';
 
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputComponent, Modal, Page, Pagination, Table, CompanyFormComponent],
+  imports: [LoaderComponent, CommonModule, ReactiveFormsModule, InputComponent, Modal, Page, Pagination, Table, CompanyFormComponent],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })

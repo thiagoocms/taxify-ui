@@ -1,6 +1,6 @@
 <app-page [pageTitle]="title()" [pageDescription]="subtitle()" [pageButtons]="pageButtons()">
   @if (loading()) {
-    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando nota fiscal...</p>
+    <app-loader message="Carregando nota fiscal..."></app-loader>
   } @else if (notFound() || !xml()) {
     <div class="not-found">
       <fa-icon [icon]="['fas', 'triangle-exclamation']" class="not-found-icon"></fa-icon>
@@ -193,7 +193,7 @@
 
         @case ('produtos') {
           @if (produtosLoading()) {
-            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando produtos...</p>
+            <app-loader message="Carregando produtos..."></app-loader>
           } @else if (produtos().length) {
             <div class="items-table-wrapper">
               <table class="items-table">
@@ -340,7 +340,7 @@
 
         @case ('divergencias') {
           @if (divergencesLoading()) {
-            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Verificando regras fiscais...</p>
+            <app-loader message="Verificando regras fiscais..."></app-loader>
           } @else if (divergences().length) {
             <div class="divergence-header">
               <p>
@@ -399,7 +399,7 @@
 
           <h6 class="findings-title">Conferência tributária</h6>
           @if (findingsLoading()) {
-            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Conferindo impostos...</p>
+            <app-loader message="Conferindo impostos..."></app-loader>
           } @else if (findings().length) {
             <p class="muted">
               Classificação, cálculo dos impostos, alíquota interestadual, IBS/CBS e totais. Na retificação, só os códigos que não mudam a
@@ -444,7 +444,7 @@
           </div>
 
           @if (auditLoading()) {
-            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando auditoria...</p>
+            <app-loader message="Carregando auditoria..."></app-loader>
           }
 
           <app-table [columns]="auditColumns()" [data]="auditLogs()" [config]="auditTableConfig"></app-table>
@@ -452,7 +452,7 @@
 
         @case ('xml') {
           @if (xmlLoading()) {
-            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando XML...</p>
+            <app-loader message="Carregando XML..."></app-loader>
           } @else if (xmlContent()) {
             <div class="xml-toolbar">
               <app-button label="Copiar" icon="copy" variant="outlined" severity="secondary" (onClick)="copyXml()"></app-button>
@@ -466,7 +466,7 @@
 
         @case ('eventos') {
           @if (eventsLoading()) {
-            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Carregando eventos...</p>
+            <app-loader message="Carregando eventos..."></app-loader>
           } @else if (events()?.length) {
             <div class="events-list">
               @for (event of events(); track event.type + '-' + event.sequence) {
@@ -497,7 +497,7 @@
 
         @case ('pdf') {
           @if (pdfLoading()) {
-            <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Gerando PDF...</p>
+            <app-loader message="Gerando PDF..."></app-loader>
           } @else if (pdfUrl()) {
             <div class="xml-toolbar">
               <app-button label="Abrir em nova aba" icon="up-right-from-square" variant="outlined" severity="secondary" (onClick)="openPdfInNewTab()"></app-button>

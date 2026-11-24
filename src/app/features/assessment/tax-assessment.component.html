@@ -28,7 +28,7 @@
   </div>
 
   @if (loading() && !loaded()) {
-    <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Calculando a apuração do mês...</p>
+    <app-loader message="Calculando a apuração do mês..."></app-loader>
   } @else if (loaded() && !rows().length) {
     <div class="empty-hero">
       <fa-icon [icon]="['fas', 'calculator']" class="empty-hero-icon"></fa-icon>
@@ -80,7 +80,7 @@
     <div class="table-wrapper" [class.is-loading]="loading()">
       <app-table [columns]="columns()" [data]="pageRows()" [config]="tableConfig" (rowClick)="open($event)"></app-table>
       @if (loading()) {
-        <div class="table-overlay"><span class="spinner-border spinner-border-sm"></span> Atualizando...</div>
+        <app-loader variant="overlay" message="Atualizando..."></app-loader>
       }
     </div>
     @if (!filtered().length) {

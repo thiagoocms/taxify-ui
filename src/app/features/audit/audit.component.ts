@@ -29,10 +29,11 @@ type CloseAction = 'resolver' | 'desconsiderar';
  * conferência do time fiscal. Mesmo desenho da Apuração.
  */
 import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
+import { LoaderComponent } from '../../shared/components/loader/loader';
 @Component({
   selector: 'app-audit',
   standalone: true,
-  imports: [MonthNavComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table],
+  imports: [LoaderComponent, MonthNavComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table],
   templateUrl: './audit.component.html',
   styleUrl: './audit.component.scss',
 })

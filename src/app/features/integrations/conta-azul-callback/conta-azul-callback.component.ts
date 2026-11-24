@@ -1,6 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from '../../../shared/components/button/button';
+import { LoaderComponent } from '../../../shared/components/loader/loader';
 import { ContaAzulService } from '../../../core/services/conta-azul.service';
 import { CONTA_AZUL_CHANNEL, ContaAzulPopupMessage } from '../../../core/services/conta-azul-popup';
 
@@ -13,12 +14,11 @@ import { CONTA_AZUL_CHANNEL, ContaAzulPopupMessage } from '../../../core/service
 @Component({
   selector: 'app-conta-azul-callback',
   standalone: true,
-  imports: [Button],
+  imports: [Button, LoaderComponent],
   template: `
     <div class="d-flex flex-column align-items-center justify-content-center gap-3 py-5 px-3 text-center min-vh-100">
       @if (status() === 'loading') {
-        <span class="spinner-border" role="status"></span>
-        <p class="mb-0">Concluindo a conexão com a Conta Azul...</p>
+        <app-loader message="Concluindo a conexão com a Conta Azul..."></app-loader>
       } @else if (status() === 'success') {
         <h5 class="mb-0">Conta Azul conectada</h5>
         <p class="text-muted mb-0">
