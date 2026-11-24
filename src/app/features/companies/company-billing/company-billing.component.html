@@ -21,9 +21,8 @@
                 {{ b.externalCustomerName ? 'Cliente: ' + b.externalCustomerName : (b.externalCustomerId ? 'Cliente: ' + b.externalCustomerId : 'Ainda não vinculada (mesmo CNPJ/CPF não encontrado)') }}
               </small>
               @if (canManage) {
-                <button type="button" class="btn btn-link btn-sm p-0 text-start" (click)="openLinkForm()">
-                  {{ b.externalCustomerId ? 'Corrigir vínculo' : 'Vincular cliente' }}
-                </button>
+                <app-button [label]="b.externalCustomerId ? 'Corrigir vínculo' : 'Vincular cliente'" variant="text" styleClass="p-0 text-start"
+                  (onClick)="openLinkForm()"></app-button>
               }
             }
           </div>
@@ -44,28 +43,27 @@
           <div class="inline-form">
             <h6>Vínculo com o cliente no {{ providerLabels[b.provider] }}</h6>
             <div class="row-fields">
-              <input type="text" class="form-control form-control-sm" placeholder="CNPJ/CPF do cliente lá" inputmode="numeric" maxlength="18"
-                [ngModel]="linkForm.document" (ngModelChange)="linkForm.document = maskDocument($event)" />
-              <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="saving()" (click)="lookupLink()">Procurar e vincular</button>
+              <app-input class="grow" size="sm" label="CNPJ/CPF do cliente lá" mask="document" [(ngModel)]="linkForm.document"></app-input>
+              <app-button label="Procurar e vincular" variant="outlined" [disabled]="saving()" (onClick)="lookupLink()"></app-button>
             </div>
             <p class="text-muted small mb-1">Ou informe o cliente direto:</p>
             <div class="row-fields">
-              <input type="text" class="form-control form-control-sm" placeholder="ID do cliente" [(ngModel)]="linkForm.externalId" />
-              <input type="text" class="form-control form-control-sm" placeholder="Nome (opcional)" [(ngModel)]="linkForm.externalName" />
-              <button type="button" class="btn btn-sm btn-primary" [disabled]="saving() || !linkForm.externalId.trim()" (click)="saveLink()">Salvar</button>
+              <app-input class="grow" size="sm" label="ID do cliente" [(ngModel)]="linkForm.externalId"></app-input>
+              <app-input class="grow" size="sm" label="Nome (opcional)" [(ngModel)]="linkForm.externalName"></app-input>
+              <app-button label="Salvar" [disabled]="saving() || !linkForm.externalId.trim()" (onClick)="saveLink()"></app-button>
             </div>
             <div class="d-flex gap-2 mt-1">
               @if (b.externalCustomerId) {
-                <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="removeLink()">Desfazer vínculo</button>
+                <app-button label="Desfazer vínculo" variant="text" severity="danger" styleClass="p-0" (onClick)="removeLink()"></app-button>
               }
-              <button type="button" class="btn btn-sm btn-link p-0" (click)="linkFormOpen.set(false)">Fechar</button>
+              <app-button label="Fechar" variant="text" severity="secondary" styleClass="p-0" (onClick)="linkFormOpen.set(false)"></app-button>
             </div>
           </div>
         }
 
         @if (canManage) {
           <div class="d-flex justify-content-end mb-2">
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="newCharge()">Nova cobrança manual</button>
+            <app-button label="Nova cobrança manual" icon="plus" variant="outlined" (onClick)="newCharge()"></app-button>
           </div>
         }
 
@@ -73,16 +71,16 @@
           <div class="inline-form">
             <h6>{{ chargeForm.id ? 'Editar cobrança manual' : 'Nova cobrança manual' }}</h6>
             <div class="row-fields">
-              <input type="text" class="form-control form-control-sm grow" placeholder="Descrição (ex.: Honorário outubro)" maxlength="500" [(ngModel)]="chargeForm.description" />
-              <label>Competência <input type="month" class="form-control form-control-sm" [(ngModel)]="chargeForm.competenceDate" /></label>
-              <label>Vencimento <input type="date" class="form-control form-control-sm" [(ngModel)]="chargeForm.dueDate" /></label>
-              <label>Valor <input type="number" min="0.01" step="0.01" class="form-control form-control-sm" [(ngModel)]="chargeForm.amount" /></label>
-              <label>Pago <input type="number" min="0" step="0.01" class="form-control form-control-sm" [(ngModel)]="chargeForm.paidAmount" /></label>
-              <label class="check"><input type="checkbox" [(ngModel)]="chargeForm.canceled" /> Cancelada</label>
+              <app-input class="grow" size="sm" label="Descrição (ex.: Honorário outubro)" [maxLength]="500" [(ngModel)]="chargeForm.description"></app-input>
+              <app-input size="sm" label="Competência" type="month" [(ngModel)]="chargeForm.competenceDate"></app-input>
+              <app-input size="sm" label="Vencimento" type="date" [(ngModel)]="chargeForm.dueDate"></app-input>
+              <app-input size="sm" label="Valor" type="number" min="0.01" step="0.01" [(ngModel)]="chargeForm.amount"></app-input>
+              <app-input size="sm" label="Pago" type="number" min="0" step="0.01" [(ngModel)]="chargeForm.paidAmount"></app-input>
+              <app-toggle label="Cancelada" [(ngModel)]="chargeForm.canceled"></app-toggle>
             </div>
             <div class="d-flex justify-content-end gap-2">
-              <button type="button" class="btn btn-sm btn-link" (click)="chargeFormOpen.set(false)">Cancelar</button>
-              <button type="button" class="btn btn-sm btn-primary" [disabled]="saving() || !chargeForm.dueDate || !chargeForm.amount" (click)="saveCharge()">Salvar</button>
+              <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="chargeFormOpen.set(false)"></app-button>
+              <app-button label="Salvar" [disabled]="saving() || !chargeForm.dueDate || !chargeForm.amount" (onClick)="saveCharge()"></app-button>
             </div>
           </div>
         }

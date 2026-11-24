@@ -230,3 +230,31 @@ input.with-clear {
 
 
 
+
+// Compacto: edições em linha, cartões e filtros apertados. Mesma caixa e rótulo flutuante,
+// menor e sem reservar a linha de erro.
+.custom-input-container.sm {
+  min-height: 0;
+
+  input,
+  select {
+    padding: 7px 8px 6px;
+    font-size: 14px;
+  }
+
+  textarea {
+    min-height: 80px;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  label {
+    top: 18px;
+    font-size: 14px;
+
+    &.filled {
+      top: 0;
+      font-size: 0.8rem;
+    }
+  }
+}

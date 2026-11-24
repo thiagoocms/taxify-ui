@@ -34,10 +34,8 @@
       "Importar do Acessórias" em Empresas para vinculá-los às empresas em que são responsáveis.
     </p>
 
-    <label class="acessorias-toggle">
-      <input type="checkbox" [checked]="showInactiveAcessorias()" (change)="toggleInactiveAcessorias()" />
-      Mostrar inativos
-    </label>
+    <app-toggle class="acessorias-toggle" label="Mostrar inativos" [ngModel]="showInactiveAcessorias()"
+      (selectionChange)="toggleInactiveAcessorias()"></app-toggle>
 
     <table class="acessorias-table">
       <thead>

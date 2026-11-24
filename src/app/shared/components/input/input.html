@@ -1,4 +1,4 @@
-<div class="custom-input-container">
+<div class="custom-input-container" [class.sm]="size === 'sm'">
   <label [class.filled]="hasValue || focused || alwaysFloatLabel">{{ label }}</label>
 
   <div class="wrapper">
@@ -52,13 +52,13 @@
           (focus)="focused = true"
           (blur)="onBlur()"
         >
-          @if (!value) {
+          @if (!value && !hasEmptyOption) {
             <option value="" hidden disabled selected></option>
           }
           @for (option of options; track option.value) {
             <!-- [selected] per option: [value] on the <select> is applied before the options exist,
                  so the browser falls back to the first one ("Não informado") on edit forms. -->
-            <option [value]="option.value" [selected]="option.value === value">{{ option.label }}</option>
+            <option [value]="option.value ?? ''" [selected]="(option.value ?? '') === value">{{ option.label }}</option>
           }
         </select>
       }
@@ -67,6 +67,9 @@
           [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
           [type]="type"
           [attr.inputmode]="mask === 'document' ? 'numeric' : null"
+          [attr.step]="step"
+          [attr.min]="min"
+          [attr.autocomplete]="autocomplete"
           [disabled]="disabled"
           [maxLength]="mask === 'document' ? 18 : maxLength"
           [value]="value"

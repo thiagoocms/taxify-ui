@@ -11,6 +11,8 @@ import {
   TaxRegime,
 } from '../../../core/models/tax-assessment.model';
 import { CompanyService } from '../../../core/services/company.service';
+import { Button } from '../../../shared/components/button/button';
+import { InputComponent, SelectOption } from '../../../shared/components/input/input';
 
 /**
  * Histórico de regime da empresa: cada mês é apurado com o regime vigente nele. O regime do
@@ -20,7 +22,7 @@ import { CompanyService } from '../../../core/services/company.service';
 @Component({
   selector: 'app-company-tax-regimes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Button, InputComponent],
   template: `
     <section class="mt-4">
       <h6 class="section-title">Histórico de regime</h6>
@@ -40,7 +42,7 @@ import { CompanyService } from '../../../core/services/company.service';
                 <td>{{ period.taxRegime === 'SIMPLES_NACIONAL' ? (period.simplesServiceAnnex ?? 'III') : '—' }}</td>
                 <td class="text-end">
                   @if (!readonly && periods().length > 1) {
-                    <button type="button" class="btn btn-sm btn-link text-danger" (click)="remove(period)">Remover</button>
+                    <app-button label="Remover" variant="text" severity="danger" (onClick)="remove(period)"></app-button>
                   }
                 </td>
               </tr>
@@ -51,30 +53,13 @@ import { CompanyService } from '../../../core/services/company.service';
 
       @if (!readonly) {
         <div class="add-row">
-          <select class="form-select form-select-sm" [(ngModel)]="newRegime">
-            <option value="">Regime...</option>
-            @for (option of regimeOptions; track option[0]) {
-              <option [value]="option[0]">{{ option[1] }}</option>
-            }
-          </select>
-          <select class="form-select form-select-sm" [(ngModel)]="newActivity">
-            <option value="">Atividade...</option>
-            @for (option of activityOptions; track option[0]) {
-              <option [value]="option[0]">{{ option[1] }}</option>
-            }
-          </select>
+          <app-input size="sm" type="select" label="Regime" [options]="regimeSelect" [(ngModel)]="newRegime"></app-input>
+          <app-input size="sm" type="select" label="Atividade" [options]="activitySelect" [(ngModel)]="newActivity"></app-input>
           @if (newRegime === 'SIMPLES_NACIONAL') {
-            <select class="form-select form-select-sm" [(ngModel)]="newAnnex">
-              <option value="">Anexo III (padrão)</option>
-              @for (option of annexOptions; track option[0]) {
-                <option [value]="option[0]">{{ option[1] }}</option>
-              }
-            </select>
+            <app-input size="sm" type="select" label="Anexo (vazio = III)" [options]="annexSelect" [(ngModel)]="newAnnex"></app-input>
           }
-          <input type="month" class="form-control form-control-sm" [(ngModel)]="newFrom" title="A partir de (vazio = desde sempre)" />
-          <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="!newRegime || saving()" (click)="add()">
-            Registrar período
-          </button>
+          <app-input size="sm" type="month" label="A partir de (vazio = sempre)" [(ngModel)]="newFrom"></app-input>
+          <app-button label="Registrar período" icon="plus" variant="outlined" [disabled]="!newRegime || saving()" (onClick)="add()"></app-button>
         </div>
       }
     </section>
@@ -84,8 +69,8 @@ import { CompanyService } from '../../../core/services/company.service';
     .section-hint { font-size: 0.85rem; opacity: 0.75; margin-bottom: 0.5rem; }
     .muted { opacity: 0.7; font-size: 0.9rem; }
     .regimes { max-width: 900px; font-size: 0.9rem; }
-    .add-row { display: flex; flex-wrap: wrap; gap: 6px; max-width: 900px; }
-    .add-row select, .add-row input { width: auto; }
+    .add-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 900px; }
+    .add-row app-input { flex: 1 1 170px; }
   `,
 })
 export class CompanyTaxRegimesComponent implements OnChanges {
@@ -97,6 +82,9 @@ export class CompanyTaxRegimesComponent implements OnChanges {
   readonly regimeOptions = Object.entries(TAX_REGIME_LABELS) as [TaxRegime, string][];
   readonly activityOptions = Object.entries(BUSINESS_ACTIVITY_LABELS) as [BusinessActivity, string][];
   readonly annexOptions = Object.entries(SERVICE_ANNEX_LABELS) as [SimplesAnnex, string][];
+  readonly regimeSelect: SelectOption[] = this.regimeOptions.map(([value, label]) => ({ value, label }));
+  readonly activitySelect: SelectOption[] = this.activityOptions.map(([value, label]) => ({ value, label }));
+  readonly annexSelect: SelectOption[] = this.annexOptions.map(([value, label]) => ({ value, label }));
 
   readonly periods = signal<CompanyTaxRegimeDTO[]>([]);
   readonly loading = signal(false);

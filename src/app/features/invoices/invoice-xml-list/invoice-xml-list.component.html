@@ -123,30 +123,17 @@
       <button type="button" role="tab" [class.active]="direction() === null" (click)="selectDirection(null)">Todas</button>
       <button type="button" role="tab" [class.active]="direction() === 'INBOUND'" (click)="selectDirection('INBOUND')">Entradas</button>
       <button type="button" role="tab" [class.active]="direction() === 'OUTBOUND'" (click)="selectDirection('OUTBOUND')">Saídas</button>
-      <select class="form-select form-select-sm review-filter" [value]="reviewFilter() ?? ''" (change)="selectReviewFilter($any($event.target).value)">
-        <option value="">Toda conferência</option>
-        <option value="PENDING">A conferir</option>
-        <option value="REVIEWED">Conferidas</option>
-        <option value="DIVERGENT">Com divergência</option>
-      </select>
-      <select class="form-select form-select-sm review-filter" [value]="sourceFilter()" (change)="selectSourceFilter($any($event.target).value)"
-        title="De onde a nota veio, ou o confronto entre SIEG e SEFAZ">
-        <option value="">Toda origem</option>
-        <option value="SIEG">Veio do SIEG</option>
-        <option value="SEFAZ_DIST">Veio da SEFAZ</option>
-        <option value="UPLOAD">Upload manual</option>
-        <option value="SO_SIEG">Só no SIEG (48h+)</option>
-        <option value="SO_SEFAZ">Só na SEFAZ (48h+)</option>
-      </select>
-      <button type="button" class="btn btn-sm divergence-chip" [class.btn-danger]="onlyDivergent()" [class.btn-outline-danger]="!onlyDivergent()" [attr.aria-pressed]="onlyDivergent()"
-        (click)="toggleOnlyDivergent()" title="Só as notas em que as checagens fiscais acharam algo, ou marcadas com divergência na conferência">
-        <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon> Só com divergência
-      </button>
+      <app-input class="review-filter" size="sm" type="select" label="Conferência" [options]="reviewFilterOptions"
+        [ngModel]="reviewFilter() ?? ''" (ngModelChange)="selectReviewFilter($event)"></app-input>
+      <app-input class="review-filter" size="sm" type="select" label="Origem" [options]="sourceFilterOptions"
+        [ngModel]="sourceFilter()" (ngModelChange)="selectSourceFilter($event)"></app-input>
+      <app-button label="Só com divergência" icon="triangle-exclamation" severity="danger" [variant]="onlyDivergent() ? undefined : 'outlined'"
+        class="divergence-chip" tooltip="Só as notas em que as checagens fiscais acharam algo, ou marcadas com divergência na conferência"
+        (onClick)="toggleOnlyDivergent()"></app-button>
       <app-help-tip text="Origem: de onde a nota veio primeiro. 'Só no SIEG' / 'Só na SEFAZ': está numa fonte e não na outra há mais de 48h (a SEFAZ não entrega as notas emitidas pela própria empresa)."></app-help-tip>
       @if (canReview && pendingOnPage().length) {
-        <button type="button" class="btn btn-sm btn-outline-success" [disabled]="reviewing()" (click)="reviewPage()">
-          Marcar {{ pendingOnPage().length }} da página como conferidas
-        </button>
+        <app-button [label]="'Marcar ' + pendingOnPage().length + ' da página como conferidas'" icon="check" variant="outlined" severity="success"
+          [disabled]="reviewing()" (onClick)="reviewPage()"></app-button>
       }
       <span class="tabs-count">{{ totalElements() }} {{ totalElements() === 1 ? 'nota' : 'notas' }}</span>
     </div>

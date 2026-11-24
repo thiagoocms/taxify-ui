@@ -30,13 +30,8 @@
         </div>
         @if (editingKey() === type) {
           <div class="key-edit">
-            <input
-              class="form-control form-control-sm"
-              type="password"
-              autocomplete="off"
-              [(ngModel)]="keyDraft"
-              [placeholder]="type === 'SIEG' ? 'X-API-Key da SIEG' : 'Token de API do Acessórias'"
-            />
+            <app-input size="sm" type="password" autocomplete="off" [(ngModel)]="keyDraft"
+              [label]="type === 'SIEG' ? 'X-API-Key da SIEG' : 'Token de API do Acessórias'"></app-input>
             <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancelEditKey()"></app-button>
             <app-button [label]="savingKey() ? 'Salvando...' : 'Salvar'" [disabled]="savingKey() || !keyDraft.trim()" (onClick)="saveKey(type)"></app-button>
           </div>
@@ -100,12 +95,8 @@
       </div>
     </header>
     <div class="billing-body">
-      <label class="form-label small mb-1" for="billing-provider">De onde vêm os contratos e honorários</label>
-      <select id="billing-provider" class="form-select form-select-sm" [(ngModel)]="providerDraft">
-        @for (provider of settings.availableProviders; track provider) {
-          <option [value]="provider">{{ providerLabels[provider] }}</option>
-        }
-      </select>
+      <app-input size="sm" type="select" label="De onde vêm os contratos e honorários" [options]="providerOptions()"
+        [(ngModel)]="providerDraft"></app-input>
       <small class="text-muted d-block mt-1">
         @if (providerDraft === 'MANUAL') {
           O valor do honorário e o status são informados à mão em cada assinatura.

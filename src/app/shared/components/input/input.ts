@@ -57,6 +57,12 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() minRequired: number = 2;
   /** 'document': máscara de CPF/CNPJ na tela; o formulário recebe só os dígitos. */
   @Input() mask: 'document' | '' = '';
+  /** 'sm': a versão compacta, para edições em linha e cartões (sem a reserva da linha de erro). */
+  @Input() size: 'default' | 'sm' = 'default';
+  /** Número: o passo do campo (ex.: '0.01'); o formulário recebe number (ou null, vazio). */
+  @Input() step: string | null = null;
+  @Input() min: string | number | null = null;
+  @Input() autocomplete: string | null = null;
 
   @Output() onClick: EventEmitter<any> = new EventEmitter();
   @Output() itemSelected = new EventEmitter<any>();
@@ -122,6 +128,9 @@ export class InputComponent implements ControlValueAccessor, OnInit {
       return;
     }
     this.value = this.mask === 'document' ? maskDocument(value) : (value ?? '');
+    if (typeof this.value === 'number') {
+      this.value = String(this.value);
+    }
     this.cdr.detectChanges();
   }
 
@@ -154,7 +163,7 @@ export class InputComponent implements ControlValueAccessor, OnInit {
       newVal = formatted;
     }
     this.value = newVal;
-    this.onChange(newVal);
+    this.onChange(this.type === 'number' ? (newVal === '' ? null : Number(newVal)) as any : newVal);
     if (this.type === 'autocomplete') {
       this.search$.next(newVal);
     }
@@ -211,7 +220,12 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   // even when empty, so the floating label must stay floated for them - otherwise
   // it sits on top of that native placeholder instead of floating out of the way.
   get alwaysFloatLabel(): boolean {
-    return ['date', 'time', 'datetime-local', 'month', 'week'].includes(this.type);
+    return ['date', 'time', 'datetime-local', 'month', 'week'].includes(this.type) || (this.type === 'select' && this.hasEmptyOption);
+  }
+
+  /** Select com uma opção de valor vazio ("Todas", "Toda origem"): ela é a escolha "sem filtro", não o placeholder. */
+  get hasEmptyOption(): boolean {
+    return this.options.some((option) => option.value === '' || option.value === null);
   }
 
   get hasErrors() {

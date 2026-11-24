@@ -177,10 +177,7 @@
         </ul>
 
         <form class="guide-form" [formGroup]="guideForm" (ngSubmit)="saveGuide()">
-          <label class="guide-check">
-            <input type="checkbox" class="form-check-input" formControlName="guideIssued" />
-            Guia emitida
-          </label>
+          <app-toggle class="guide-check" label="Guia emitida" formControlName="guideIssued"></app-toggle>
           <div class="guide-field">
             <app-input formControlName="guideAmount" label="Valor da guia" type="number"></app-input>
           </div>

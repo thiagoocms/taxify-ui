@@ -32,17 +32,17 @@
       @if (authService.can('INVOICES_AUDIT') && nota.status !== 'CANCELED') {
         <div class="review-actions">
           @if (divergenceOpen()) {
-            <input type="text" class="form-control form-control-sm" placeholder="O que está divergente?" maxlength="500"
-                   [value]="divergenceNote()" (input)="divergenceNote.set($any($event.target).value)" />
-            <button type="button" class="btn btn-sm btn-warning" [disabled]="!divergenceNote().trim() || reviewSaving()" (click)="review('DIVERGENT')">Salvar</button>
-            <button type="button" class="btn btn-sm btn-link" (click)="divergenceOpen.set(false)">Cancelar</button>
+            <app-input class="divergence-field" size="sm" label="O que está divergente?" [maxLength]="500"
+                       [ngModel]="divergenceNote()" (ngModelChange)="divergenceNote.set($event)"></app-input>
+            <app-button label="Salvar" severity="warning" [disabled]="!divergenceNote().trim() || reviewSaving()" (onClick)="review('DIVERGENT')"></app-button>
+            <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="divergenceOpen.set(false)"></app-button>
           } @else {
             @if (reviewState !== 'REVIEWED') {
-              <button type="button" class="btn btn-sm btn-success" [disabled]="reviewSaving()" (click)="review('REVIEWED')">Marcar como conferida</button>
+              <app-button label="Marcar como conferida" icon="check" severity="success" [disabled]="reviewSaving()" (onClick)="review('REVIEWED')"></app-button>
             }
-            <button type="button" class="btn btn-sm btn-outline-warning" [disabled]="reviewSaving()" (click)="openDivergence()">Divergência</button>
+            <app-button label="Divergência" icon="triangle-exclamation" variant="outlined" severity="warning" [disabled]="reviewSaving()" (onClick)="openDivergence()"></app-button>
             @if (reviewState !== 'PENDING') {
-              <button type="button" class="btn btn-sm btn-link" [disabled]="reviewSaving()" (click)="review('PENDING')">Voltar para a conferir</button>
+              <app-button label="Voltar para a conferir" icon="rotate-left" variant="text" [disabled]="reviewSaving()" (onClick)="review('PENDING')"></app-button>
             }
           }
         </div>
@@ -106,9 +106,7 @@
       <div class="hero-key">
         <span class="hero-key-label">Chave de acesso</span>
         <span class="hero-key-value mono">{{ formatAccessKey(nota.accessKey) }}</span>
-        <button type="button" class="icon-btn" title="Copiar chave de acesso" (click)="copyKey()">
-          <fa-icon [icon]="['fas', 'copy']"></fa-icon>
-        </button>
+        <app-button icon="copy" variant="text" severity="secondary" tooltip="Copiar chave de acesso" (onClick)="copyKey()"></app-button>
       </div>
     </section>
 

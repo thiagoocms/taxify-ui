@@ -31,7 +31,7 @@ import { CompanyService } from '../../core/services/company.service';
 import { CurrentCompanyService } from '../../core/services/current-company.service';
 import { FronteiraService } from '../../core/services/fronteira.service';
 import { Button } from '../../shared/components/button/button';
-import { InputComponent } from '../../shared/components/input/input';
+import { InputComponent, SelectOption } from '../../shared/components/input/input';
 import { Modal } from '../../shared/components/modal/modal';
 import { Page, PageButton } from '../../shared/components/page/page';
 import { Table, TableColumn, TableConfig } from '../../shared/components/table/table';
@@ -161,6 +161,27 @@ export class FronteiraComponent implements OnInit {
   readonly kinds: FronteiraRuleKind[] = ['ALIQUOTA_INTERNA', 'AGREGACAO', 'ST_MVA', 'SIMPLES_PERCENTUAL', 'FORMULA'];
   readonly aplicaEmOptions: FronteiraAplicaEm[] = ['SEM_ENCERRAMENTO', 'MERCADORIA', 'ST', 'CARGA_LIQUIDA', 'USO_CONSUMO'];
   readonly aplicaEmLabels = APLICA_EM_LABELS;
+  readonly aplicaEmSelect: SelectOption[] = [
+    { value: '', label: 'Qualquer cálculo' },
+    ...this.aplicaEmOptions.map((value) => ({ value, label: APLICA_EM_LABELS[value] })),
+  ];
+  readonly regiaoOptions: SelectOption[] = [
+    { value: '', label: 'Qualquer origem' },
+    { value: 'SUL_SUDESTE', label: 'Sul / Sudeste' },
+    { value: 'DEMAIS', label: 'Norte, Nordeste e Centro-Oeste' },
+  ];
+  readonly fornecedorOptions: SelectOption[] = [
+    { value: '', label: 'Qualquer fornecedor' },
+    { value: 'true', label: 'Só do Simples Nacional' },
+    { value: 'false', label: 'Só fora do Simples' },
+  ];
+  /** Os extratos já importados, para trocar de mês direto. */
+  readonly periodOptions = computed<SelectOption[]>(() =>
+    (this.report()?.periodos ?? []).map((p) => ({
+      value: p.periodo,
+      label: `Extrato de ${monthLabel(p.periodo)} · ${formatCurrency(p.icmsDevido)}`,
+    })),
+  );
   readonly quickResults: FronteiraResultado[] = ['COBROU_A_MAIS', 'COBROU_A_MENOS', 'NAO_CALCULOU', 'SEM_REGRA', 'PENDENTE', 'CONFERE'];
   readonly quickFlags: FronteiraFlag[] = ['SEM_XML', 'SO_RESUMO', 'NOTA_CANCELADA', 'VALOR_DIFERENTE', 'DIVERGENCIA_FISCAL', 'FORA_DA_TAXA'];
   readonly tableConfig: TableConfig = { headerVisible: true, actions: [] };

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { CompanyCertificateDTO, NfseAdnStatusDTO, SefazNotesDTO, SefazNoteSummaryDTO } from '../../../core/models/company.model';
 import { CompanyService } from '../../../core/services/company.service';
+import { Button } from '../../../shared/components/button/button';
+import { InputComponent } from '../../../shared/components/input/input';
 
 /**
  * Certificado A1 da empresa e captura de XML direto da SEFAZ (NFeDistribuicaoDFe). O .pfx
@@ -13,7 +15,7 @@ import { CompanyService } from '../../../core/services/company.service';
 @Component({
   selector: 'app-company-certificate',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Button, InputComponent],
   template: `
     <section class="mt-4">
       <h6 class="section-title">Certificado A1 e captura pela SEFAZ</h6>
@@ -93,9 +95,8 @@ import { CompanyService } from '../../../core/services/company.service';
               }
               @if (!readonly && s.present) {
                 <div class="mt-1">
-                  <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="capturingAdn()" (click)="captureAdn()">
-                    {{ capturingAdn() ? 'Consultando o Ambiente Nacional...' : 'Capturar NFS-e agora' }}
-                  </button>
+                  <app-button [label]="capturingAdn() ? 'Consultando o Ambiente Nacional...' : 'Capturar NFS-e agora'" icon="cloud-arrow-down"
+                    variant="outlined" severity="secondary" [disabled]="capturingAdn()" (onClick)="captureAdn()"></app-button>
                 </div>
               }
             }
@@ -154,9 +155,8 @@ import { CompanyService } from '../../../core/services/company.service';
                           </td>
                           <td class="text-end">
                             @if (!readonly && nota.ciencia === 'ERRO') {
-                              <button type="button" class="btn btn-sm btn-link p-0" [disabled]="retrying() === nota.chave" (click)="retry(nota.chave)">
-                                Reenviar ciência
-                              </button>
+                              <app-button label="Reenviar ciência" variant="text" styleClass="p-0" [disabled]="retrying() === nota.chave"
+                                (onClick)="retry(nota.chave)"></app-button>
                             }
                           </td>
                         </tr>
@@ -177,29 +177,21 @@ import { CompanyService } from '../../../core/services/company.service';
           }
           <div class="add-row mt-2">
               <input type="file" class="form-control form-control-sm" accept=".pfx,.p12" (change)="pick($event)" />
-              <input
-                type="password"
-                class="form-control form-control-sm"
-                placeholder="Senha do certificado"
-                autocomplete="new-password"
-                [(ngModel)]="password"
-              />
-              <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="!file || !password || saving()" (click)="upload()">
-                {{ saving() ? 'Enviando...' : s.present && !s.inherited ? 'Trocar certificado' : 'Enviar certificado' }}
-              </button>
+              <app-input size="sm" type="password" label="Senha do certificado" autocomplete="new-password" [(ngModel)]="password"></app-input>
+              <app-button [label]="saving() ? 'Enviando...' : s.present && !s.inherited ? 'Trocar certificado' : 'Enviar certificado'"
+                icon="upload" variant="outlined" [disabled]="!file || !password || saving()" (onClick)="upload()"></app-button>
           </div>
           <div class="d-flex gap-2 mt-2">
             @if (s.present && s.sefazInPlan) {
-              <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="capturing()" (click)="capture()">
-                {{ capturing() ? 'Consultando a SEFAZ...' : 'Capturar agora' }}
-              </button>
+              <app-button [label]="capturing() ? 'Consultando a SEFAZ...' : 'Capturar agora'" icon="cloud-arrow-down" variant="outlined"
+                severity="secondary" [disabled]="capturing()" (onClick)="capture()"></app-button>
             }
             @if (s.present && !s.inherited) {
               @if (confirmingDelete()) {
-                <button type="button" class="btn btn-sm btn-danger" (click)="remove()">Confirmar remoção</button>
-                <button type="button" class="btn btn-sm btn-link" (click)="confirmingDelete.set(false)">Cancelar</button>
+                <app-button label="Confirmar remoção" severity="danger" (onClick)="remove()"></app-button>
+                <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="confirmingDelete.set(false)"></app-button>
               } @else {
-                <button type="button" class="btn btn-sm btn-link text-danger" (click)="confirmingDelete.set(true)">Remover certificado</button>
+                <app-button label="Remover certificado" variant="text" severity="danger" (onClick)="confirmingDelete.set(true)"></app-button>
               }
             }
           </div>
@@ -215,9 +207,9 @@ import { CompanyService } from '../../../core/services/company.service';
     .cert-card.expired { border-left-color: var(--bs-danger, #dc3545); }
     .sefaz { max-width: 900px; }
     .plan-note { max-width: 900px; }
-    .add-row { display: flex; flex-wrap: wrap; gap: 6px; max-width: 900px; }
+    .add-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 900px; }
     .add-row input[type='file'] { max-width: 320px; }
-    .add-row input[type='password'] { max-width: 220px; }
+    .add-row app-input { flex: 0 1 220px; }
     .summaries { max-width: 900px; }
     .counters { display: flex; flex-wrap: wrap; gap: 6px; }
     .mono { font-family: var(--bs-font-monospace, monospace); font-size: 0.75rem; }

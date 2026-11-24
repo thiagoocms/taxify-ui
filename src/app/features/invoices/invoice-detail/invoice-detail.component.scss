@@ -776,10 +776,11 @@ $line: #eef0f4;
 
 .review-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   align-items: center;
 
-  input {
+  .divergence-field {
     width: 280px;
   }
 }

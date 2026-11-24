@@ -176,8 +176,7 @@
       Para {{ selected().length }} nota(s). Use quando a operação foi acordada mas não aconteceu (devolução, recusa no
       recebimento...). A SEFAZ exige a justificativa.
     </p>
-    <textarea class="form-control" rows="3" maxlength="255" [(ngModel)]="justification"
-      placeholder="Justificativa (15 a 255 caracteres)"></textarea>
+    <app-input type="textarea" label="Justificativa (15 a 255 caracteres)" [maxLength]="255" [(ngModel)]="justification"></app-input>
     <div class="small text-muted mt-1">{{ justification.trim().length }}/255</div>
     <div class="d-flex justify-content-end gap-2 mt-3">
       <app-button label="Cancelar" variant="text" (onClick)="notPerformedOpen.set(false)"></app-button>

@@ -76,29 +76,16 @@
 .row-fields {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  align-items: flex-end;
-  margin-bottom: 6px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
 
-  input {
-    width: auto;
+  app-input {
+    flex: 0 1 160px;
   }
 
   .grow {
     flex: 1 1 240px;
-  }
-
-  label {
-    font-size: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-
-    &.check {
-      flex-direction: row;
-      align-items: center;
-      gap: 4px;
-    }
   }
 }
 

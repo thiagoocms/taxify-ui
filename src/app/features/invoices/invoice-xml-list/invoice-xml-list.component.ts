@@ -2,14 +2,14 @@ import { HelpTipComponent } from '../../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { Component, DestroyRef, computed, inject, OnDestroy, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastrService } from 'ngx-toastr';
 import { map, Observable, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { Button } from '../../../shared/components/button/button';
-import { InputComponent } from '../../../shared/components/input/input';
+import { InputComponent, SelectOption } from '../../../shared/components/input/input';
 import { Modal } from '../../../shared/components/modal/modal';
 import { Page, PageButton } from '../../../shared/components/page/page';
 import { Pagination } from '../../../shared/components/pagination/pagination';
@@ -93,7 +93,7 @@ function periodRange(key: PeriodKey): { inicio: string; fim: string } | null {
 @Component({
   selector: 'app-invoice-xml-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
   templateUrl: './invoice-xml-list.component.html',
   styleUrl: './invoice-xml-list.component.scss',
 })
@@ -129,6 +129,20 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
 
   /** Origem da nota ou confronto SIEG × SEFAZ ('' = tudo). */
   readonly sourceFilter = signal<string>('');
+  readonly reviewFilterOptions: SelectOption[] = [
+    { value: '', label: 'Toda conferência' },
+    { value: 'PENDING', label: 'A conferir' },
+    { value: 'REVIEWED', label: 'Conferidas' },
+    { value: 'DIVERGENT', label: 'Com divergência' },
+  ];
+  readonly sourceFilterOptions: SelectOption[] = [
+    { value: '', label: 'Toda origem' },
+    { value: 'SIEG', label: 'Veio do SIEG' },
+    { value: 'SEFAZ_DIST', label: 'Veio da SEFAZ' },
+    { value: 'UPLOAD', label: 'Upload manual' },
+    { value: 'SO_SIEG', label: 'Só no SIEG (48h+)' },
+    { value: 'SO_SEFAZ', label: 'Só na SEFAZ (48h+)' },
+  ];
   /** Filtro de conferência (null = todas). */
   readonly reviewFilter = signal<ReviewStatus | null>(null);
   readonly reviewing = signal(false);

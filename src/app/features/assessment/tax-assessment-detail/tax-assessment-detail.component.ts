@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { Toggle } from '../../../shared/components/toggle/toggle';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastrService } from 'ngx-toastr';
@@ -31,7 +32,7 @@ import { MonthNavComponent } from '../../../shared/components/month-nav/month-na
 @Component({
   selector: 'app-tax-assessment-detail',
   standalone: true,
-  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Page, Button, InputComponent],
+  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Page, Button, InputComponent, Toggle],
   templateUrl: './tax-assessment-detail.component.html',
   styleUrl: './tax-assessment-detail.component.scss',
 })
@@ -136,7 +137,7 @@ export class TaxAssessmentDetailComponent implements OnInit {
     this.run(
       this.service.updateGuide(this.companyId(), this.month(), {
         guideIssued: raw.guideIssued,
-        guideAmount: raw.guideAmount === '' ? null : Number(raw.guideAmount),
+        guideAmount: raw.guideAmount === '' || raw.guideAmount == null ? null : Number(raw.guideAmount),
         guideDueDate: raw.guideDueDate || null,
         notes: raw.notes || null,
       }),

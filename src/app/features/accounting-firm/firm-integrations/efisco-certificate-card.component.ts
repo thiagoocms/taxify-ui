@@ -6,6 +6,7 @@ import { faCertificate } from '@fortawesome/free-solid-svg-icons';
 import { ToastrService } from 'ngx-toastr';
 import { EfiscoService, FirmCertificateDTO } from '../../../core/services/efisco.service';
 import { Button } from '../../../shared/components/button/button';
+import { InputComponent } from '../../../shared/components/input/input';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 
 /**
@@ -15,7 +16,7 @@ import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/
 @Component({
   selector: 'app-efisco-certificate-card',
   standalone: true,
-  imports: [DatePipe, FormsModule, Button, FaIconComponent],
+  imports: [DatePipe, FormsModule, Button, InputComponent, FaIconComponent],
   template: `
     @let s = status();
     <div class="integration-card">
@@ -48,8 +49,7 @@ import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/
       @if (editing()) {
         <div class="key-edit">
           <input class="form-control form-control-sm" type="file" accept=".pfx,.p12" (change)="pick($event)" />
-          <input class="form-control form-control-sm" type="password" autocomplete="new-password" placeholder="Senha do certificado"
-            [(ngModel)]="password" />
+          <app-input size="sm" type="password" autocomplete="new-password" label="Senha do certificado" [(ngModel)]="password"></app-input>
         </div>
         <small class="text-muted">O arquivo e a senha ficam guardados cifrados. Só e-CPF (pessoa física).</small>
         <div class="integration-actions">

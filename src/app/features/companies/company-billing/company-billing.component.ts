@@ -7,22 +7,22 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { BILLING_PROVIDER_LABELS, BillingChargeDTO, CHARGE_STATUS_LABELS, CompanyBillingDTO } from '../../../core/models/billing.model';
 import { BillingService } from '../../../core/services/billing.service';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
-import { maskDocument } from '../../../shared/utils/document-mask';
 
 /**
  * Honorários da empresa: situação (em aberto / atrasado), a qual cliente do sistema de
  * cobrança ela está vinculada e as cobranças (mais recentes primeiro). Carrega ao abrir.
  */
 import { Button } from '../../../shared/components/button/button';
+import { InputComponent } from '../../../shared/components/input/input';
+import { Toggle } from '../../../shared/components/toggle/toggle';
 @Component({
   selector: 'app-company-billing',
   standalone: true,
-  imports: [Button, CurrencyPipe, DatePipe, FaIconComponent, FormsModule],
+  imports: [Button, CurrencyPipe, DatePipe, FaIconComponent, FormsModule, InputComponent, Toggle],
   templateUrl: './company-billing.component.html',
   styleUrl: './company-billing.component.scss',
 })
 export class CompanyBillingComponent implements OnChanges {
-  protected readonly maskDocument = maskDocument;
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly billingService = inject(BillingService);
 

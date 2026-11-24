@@ -6,6 +6,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faKey, faLink } from '@fortawesome/free-solid-svg-icons';
 import { ToastrService } from 'ngx-toastr';
 import { Button } from '../../../shared/components/button/button';
+import { InputComponent, SelectOption } from '../../../shared/components/input/input';
 import {
   BILLING_PROVIDER_LABELS,
   BillingCategoryDTO,
@@ -32,7 +33,7 @@ import { EfiscoCertificateCardComponent } from './efisco-certificate-card.compon
 @Component({
   selector: 'app-firm-integrations',
   standalone: true,
-  imports: [DatePipe, FormsModule, Button, FaIconComponent, EfiscoCertificateCardComponent],
+  imports: [DatePipe, FormsModule, Button, InputComponent, FaIconComponent, EfiscoCertificateCardComponent],
   templateUrl: './firm-integrations.component.html',
   styleUrl: './firm-integrations.component.scss',
 })
@@ -72,6 +73,10 @@ export class FirmIntegrationsComponent implements OnInit, OnDestroy {
   readonly syncing = computed(() => isRunning(this.syncJob()));
   readonly syncProgress = computed(() => progressLabel(this.syncJob()));
   readonly syncResult = computed(() => this.syncJob()?.result ?? null);
+
+  readonly providerOptions = computed<SelectOption[]>(() =>
+    (this.billing()?.availableProviders ?? []).map((value) => ({ value, label: BILLING_PROVIDER_LABELS[value] })),
+  );
 
   readonly providerIsIntegrated = computed(() => (this.billing()?.provider ?? 'MANUAL') !== 'MANUAL');
 

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Toggle } from '../../../shared/components/toggle/toggle';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent } from '../../../shared/components/input/input';
@@ -40,7 +41,7 @@ type ViewMode = 'list' | 'form';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Button, InputComponent, Modal, Page, Pagination, Table, UserFormComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, Toggle, Button, InputComponent, Modal, Page, Pagination, Table, UserFormComponent],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss',
 })
