@@ -52,6 +52,16 @@ interface CalcView {
   calc: FronteiraNoteCalcDTO;
   cnpjFornecedor?: string | null;
   charged?: number | null;
+  /** O registro da nota no extrato: com ele dá para buscar a memória de cálculo do e-Fisco. */
+  registro?: string | null;
+}
+
+/** Uma etapa da comparação e-Fisco × Taxify de um item. */
+interface CompareRow {
+  etapa: string;
+  efisco: string;
+  taxify: string;
+  difere: boolean;
 }
 
 const STANDARD_FORMULAS: Record<string, string> = {
@@ -69,6 +79,7 @@ const STANDARD_FORMULAS: Record<string, string> = {
  */
 import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
 import { EfiscoService, FirmCertificateDTO } from '../../core/services/efisco.service';
+import { EfiscoMemoryDTO, EfiscoMemoryItemDTO } from '../../core/models/fronteira.model';
 @Component({
   selector: 'app-fronteira',
   standalone: true,
@@ -129,6 +140,9 @@ export class FronteiraComponent implements OnInit {
   /** O certificado do contador (Integrações): sem ele, nada de "Sincronizar com e-Fisco". */
   readonly efiscoCertificate = signal<FirmCertificateDTO | null>(null);
   readonly syncing = signal(false);
+  /** A memória do e-Fisco da nota aberta em "Ver cálculo". */
+  readonly efiscoMemory = signal<EfiscoMemoryDTO | null>(null);
+  readonly efiscoMemoryLoading = signal(false);
   /** Uma fórmula com nome que não existe (ou parêntese aberto, ou que o servidor recusou) não é salva. */
   readonly formulaOk = computed(() => {
     const form = this.ruleForm();
@@ -393,7 +407,8 @@ export class FronteiraComponent implements OnInit {
   showCalc(line: FronteiraLineDTO): void {
     if (line.calculo) {
       this.calcView.set({ title: `NF ${line.numeroNota} · ${this.lineTitle(line)}`, calc: line.calculo,
-        cnpjFornecedor: line.cnpjEmitente, charged: line.icmsDevido });
+        cnpjFornecedor: line.cnpjEmitente, charged: line.icmsDevido, registro: line.registro });
+      this.loadEfiscoMemory(line.registro);
     }
   }
 
@@ -455,6 +470,106 @@ export class FronteiraComponent implements OnInit {
 
   editRule(rule: FronteiraRuleDTO): void {
     this.openRuleForm({ ...rule, global: !rule.companyId }, false);
+  }
+
+  // ---------------------------------------------------------------- e-Fisco × Taxify
+
+  private loadEfiscoMemory(registro?: string | null): void {
+    this.efiscoMemory.set(null);
+    const companyId = this.companyId();
+    if (!companyId || !registro) {
+      return;
+    }
+    this.fronteiraService.efiscoMemory(companyId, registro).subscribe({
+      next: (memory) => this.efiscoMemory.set(memory ?? null),
+      error: () => this.efiscoMemory.set(null),
+    });
+  }
+
+  /** "Buscar cálculo do e-Fisco": a memória de cálculo da nota, agora, com o certificado do contador. */
+  fetchEfiscoMemory(): void {
+    const companyId = this.companyId();
+    const registro = this.calcView()?.registro;
+    if (!companyId || !registro || this.efiscoMemoryLoading()) {
+      return;
+    }
+    this.efiscoMemoryLoading.set(true);
+    this.fronteiraService.fetchEfiscoMemory(companyId, registro).subscribe({
+      next: (memory) => {
+        this.efiscoMemory.set(memory);
+        this.efiscoMemoryLoading.set(false);
+      },
+      error: () => this.efiscoMemoryLoading.set(false),
+    });
+  }
+
+  /** O item do e-Fisco que corresponde ao do Taxify: pela ordem (a mesma da nota). */
+  efiscoItem(index: number): EfiscoMemoryItemDTO | null {
+    return this.efiscoMemory()?.itens[index] ?? null;
+  }
+
+  /** A comparação etapa por etapa - o que difere fica marcado; é por onde o contador decide. */
+  compareRows(efisco: EfiscoMemoryItemDTO, item: FronteiraItemCalcDTO): CompareRow[] {
+    const v = item.variaveis ?? {};
+    const money = (n?: number | null) => (n == null ? '—' : formatCurrency(n));
+    const rate = (n?: number | null) => (n == null ? '—' : this.formatRate(n * 100));
+    const differs = (a?: number | null, b?: number | null, tolerance = 0.01) =>
+      a != null && b != null && Math.abs(a - b) > tolerance;
+    const coefTaxify = v['agregacao'] != null ? 1 + v['agregacao'] : null;
+    const cargaTaxify = v['percentual'] ? v['percentual'] * 100 : null;
+    const efiscoKind = efisco.calculo ?? (efisco.percentualCargaLiquida ? 'Carga líquida' : '—');
+    const efiscoUsesCarga = !!efisco.percentualCargaLiquida;
+    const taxifyUsesCarga = item.tratamento === 'CARGA_LIQUIDA';
+    return [
+      { etapa: 'Tipo de cálculo', efisco: efiscoKind, taxify: item.tratamentoLabel ?? item.tratamento, difere: efiscoUsesCarga !== taxifyUsesCarga },
+      { etapa: 'Base de partida', efisco: money(efisco.partida), taxify: money(item.partida), difere: differs(efisco.partida, item.partida) },
+      { etapa: 'Coeficiente de agregação', efisco: efisco.coefAgregacao == null ? '—' : String(efisco.coefAgregacao).replace('.', ','),
+        taxify: coefTaxify == null ? '1' : String(coefTaxify).replace('.', ','), difere: differs(efisco.coefAgregacao, coefTaxify ?? 1, 0.0001) },
+      ...(efiscoUsesCarga || taxifyUsesCarga
+        ? [{ etapa: 'Carga líquida', efisco: efisco.percentualCargaLiquida == null ? '—' : this.formatRate(efisco.percentualCargaLiquida),
+            taxify: cargaTaxify == null ? '—' : this.formatRate(cargaTaxify), difere: differs(efisco.percentualCargaLiquida, cargaTaxify, 0.001) || efiscoUsesCarga !== taxifyUsesCarga }]
+        : [{ etapa: 'Alíquota interna', efisco: rate(efisco.aliquotaInterna), taxify: rate(v['interna']), difere: differs(efisco.aliquotaInterna, v['interna'], 0.00001) },
+          { etapa: 'Interestadual', efisco: rate(efisco.aliquotaInterestadual), taxify: rate(v['inter']), difere: differs(efisco.aliquotaInterestadual, v['inter'], 0.00001) },
+          { etapa: 'Crédito', efisco: money(efisco.credito), taxify: money(v['credito']), difere: differs(efisco.credito, v['credito']) }]),
+      { etapa: 'ICMS', efisco: money(efisco.icms), taxify: item.tratamento === 'SEM_REGRA' ? '—' : money(item.valor), difere: differs(efisco.icms, item.valor) },
+    ];
+  }
+
+  /**
+   * "Adotar o cálculo do e-Fisco": a regra que faz o Taxify chegar no valor do e-Fisco, já preenchida - a carga
+   * líquida do credenciamento, a agregação do NCM ou uma fórmula do item. O contador confere e salva; vale para as
+   * próximas notas.
+   */
+  adoptEfisco(efisco: EfiscoMemoryItemDTO, item: FronteiraItemCalcDTO): void {
+    const view = this.calcView();
+    const memory = this.efiscoMemory();
+    const fundamento = `Memória de cálculo do e-Fisco · ${view?.title ?? ''} (registro ${memory?.registro ?? ''})`.slice(0, 500);
+    this.calcView.set(null);
+    if (efisco.percentualCargaLiquida) {
+      const credenciamento = memory?.tipos.find((t) => t.tipo === 'CREDENCIAMENTO');
+      this.openRuleForm({
+        kind: 'SIMPLES_PERCENTUAL', companyId: this.companyId(), global: false,
+        percentual: efisco.percentualCargaLiquida,
+        descricao: this.report()?.extract?.credenciamentoInterno ?? credenciamento?.descricao ?? null,
+        fundamento,
+      }, false);
+    } else if (efisco.coefAgregacao && efisco.coefAgregacao > 1) {
+      this.openRuleForm({
+        kind: 'AGREGACAO', companyId: this.companyId(), global: false,
+        agregacao: Math.round((efisco.coefAgregacao - 1) * 10000) / 100,
+        ncm: item.ncm ? item.ncm.slice(0, 4) : null,
+        fornecedorSimples: /simples/i.test(memory?.regras ?? '') ? true : null,
+        fundamento,
+      }, false);
+    } else {
+      this.openRuleForm({
+        kind: 'FORMULA', companyId: this.companyId(), global: false,
+        codigoProduto: item.codigo, cnpjFornecedor: view?.cnpjFornecedor,
+        descricao: item.descricao ? `Como o e-Fisco: ${item.descricao}`.slice(0, 255) : null,
+        formula: 'partida * interna - credito',
+        fundamento,
+      }, false);
+    }
   }
 
   /** "Usar fórmula própria" no item: a regra já vem com o produto, o fornecedor e a fórmula do cálculo padrão. */

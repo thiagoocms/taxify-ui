@@ -346,7 +346,31 @@
       </div>
       @if (v.charged != null) { <div>Cobrado no e-Fisco: <strong>{{ formatCurrency(v.charged) }}</strong></div> }
     </div>
-    @for (item of v.calc.itens; track item.numeroItem) {
+    @if (v.registro && companyId()) {
+      <div class="efisco-compare-head">
+        @if (efiscoMemory(); as m) {
+          <span>Cálculo do e-Fisco: <strong>{{ formatCurrency(m.icmsTotal) }}</strong>
+            <span class="cell-sub">· buscado em {{ m.buscadaEm | date: 'dd/MM/yyyy HH:mm' }}
+              @if (m.regras) { · regras de {{ m.regras }} }</span></span>
+        } @else {
+          <span class="cell-sub">Veja como o e-Fisco calculou esta nota, etapa por etapa, lado a lado com o Taxify.</span>
+        }
+        @if (efiscoCertificate()?.present && canImport) {
+          <app-button [label]="efiscoMemoryLoading() ? 'Buscando no e-Fisco...' : (efiscoMemory() ? 'Atualizar do e-Fisco' : 'Buscar cálculo do e-Fisco')"
+            icon="cloud-arrow-down" variant="outlined" [disabled]="efiscoMemoryLoading()" (onClick)="fetchEfiscoMemory()"></app-button>
+        }
+      </div>
+      @if (efiscoMemory(); as m) {
+        @if (m.tipos.length) {
+          <div class="cell-sub efisco-types">Tipos de cálculo no e-Fisco:
+            @for (t of m.tipos; track $index) {
+              <span class="state-badge" [class.ok]="t.interrompe">{{ t.tipo }} {{ t.codigo }} · {{ t.descricao }} · prioridade {{ t.prioridade }}{{ t.interrompe ? ' · interrompe' : '' }}</span>
+            }
+          </div>
+        }
+      }
+    }
+    @for (item of v.calc.itens; track item.numeroItem; let idx = $index) {
       <div class="calc-item">
         <div class="calc-item-head">
           <div>
@@ -359,14 +383,40 @@
             <div><strong>{{ item.tratamento === 'SEM_REGRA' ? '—' : formatCurrency(item.valor) }}</strong></div>
           </div>
         </div>
-        <ul class="memoria">
-          @for (line of item.memoria; track $index) { <li>{{ line }}</li> }
-        </ul>
+        @if (efiscoItem(idx); as ef) {
+          <table class="compare-table">
+            <thead><tr><th>Etapa</th><th>e-Fisco</th><th>Taxify</th></tr></thead>
+            <tbody>
+              @for (row of compareRows(ef, item); track row.etapa) {
+                <tr [class.differs]="row.difere"><td>{{ row.etapa }}</td><td>{{ row.efisco }}</td><td>{{ row.taxify }}</td></tr>
+              }
+            </tbody>
+          </table>
+          @if (canWriteRules) {
+            <div class="compare-actions">
+              <app-button label="Adotar o cálculo do e-Fisco" icon="check" variant="outlined" (onClick)="adoptEfisco(ef, item)"></app-button>
+              <span class="cell-sub">Abre a regra já preenchida para as próximas notas. Se o Taxify estiver certo, mantenha e use o PDF e
+                esta memória para contestar.</span>
+            </div>
+          }
+        }
+        <details class="memoria-details" [open]="!efiscoItem(idx)">
+          <summary class="cell-sub">Memória de cálculo do Taxify</summary>
+          <ul class="memoria">
+            @for (line of item.memoria; track $index) { <li>{{ line }}</li> }
+          </ul>
+        </details>
         @if (canWriteRules) {
           <app-button [label]="item.tratamento === 'FORMULA' ? 'Usar outra fórmula' : 'Usar fórmula própria'" variant="text" icon="pen"
             (onClick)="formulaFromItem(item)"></app-button>
         }
       </div>
+    }
+    @if (efiscoMemory(); as m) {
+      <details class="memoria-details">
+        <summary class="cell-sub">Memória completa do e-Fisco (registro {{ m.registro }})</summary>
+        <pre class="efisco-text">{{ m.texto }}</pre>
+      </details>
     }
   }
 </app-modal>

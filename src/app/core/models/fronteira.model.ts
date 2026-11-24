@@ -313,3 +313,39 @@ export interface FronteiraReportDTO {
   previaIcms: number;
   periodos: FronteiraPeriodDTO[];
 }
+
+/** Uma linha de "Tipos de Cálculo" do e-Fisco: CNAE, CREDENCIAMENTO, MERCADORIA... */
+export interface EfiscoCalculationTypeDTO {
+  tipo: string;
+  codigo?: string | null;
+  prioridade: number;
+  interrompe: boolean;
+  descricao?: string | null;
+}
+
+/** Um item da memória do e-Fisco. Alíquotas em fração (0,205); a carga líquida em % (5,5). */
+export interface EfiscoMemoryItemDTO {
+  mercadoria?: string | null;
+  calculo?: string | null;
+  valorItem?: number | null;
+  partida?: number | null;
+  coefAgregacao?: number | null;
+  base?: number | null;
+  aliquotaInterna?: number | null;
+  aliquotaInterestadual?: number | null;
+  percentualCargaLiquida?: number | null;
+  credito?: number | null;
+  icms?: number | null;
+}
+
+/** A memória de cálculo que o e-Fisco mostra para a nota (buscada pelo registro do extrato). */
+export interface EfiscoMemoryDTO {
+  registro: string;
+  chaveAcesso?: string | null;
+  regras?: string | null;
+  buscadaEm: string;
+  tipos: EfiscoCalculationTypeDTO[];
+  itens: EfiscoMemoryItemDTO[];
+  icmsTotal: number;
+  texto: string;
+}

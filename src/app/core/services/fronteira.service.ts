@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FormulaCheckDTO, FronteiraReportDTO, FronteiraRuleDTO, FronteiraRuleInput } from '../models/fronteira.model';
+import { EfiscoMemoryDTO, FormulaCheckDTO, FronteiraReportDTO, FronteiraRuleDTO, FronteiraRuleInput } from '../models/fronteira.model';
 
 @Injectable({ providedIn: 'root' })
 export class FronteiraService {
@@ -20,6 +20,16 @@ export class FronteiraService {
   }
 
   /** O PDF do extrato baixado no e-Fisco; o período sai do próprio arquivo (reimportar substitui). */
+  /** A memória do e-Fisco já buscada para a nota (null = nunca buscada). */
+  efiscoMemory(companyId: string, registro: string): Observable<EfiscoMemoryDTO | null> {
+    return this.http.get<EfiscoMemoryDTO | null>(`${this.baseUrl}/memoria`, { params: { companyId, registro } });
+  }
+
+  /** Busca agora no e-Fisco a memória de cálculo da nota (com o certificado do contador) e guarda. */
+  fetchEfiscoMemory(companyId: string, registro: string): Observable<EfiscoMemoryDTO> {
+    return this.http.post<EfiscoMemoryDTO>(`${this.baseUrl}/memoria/buscar`, null, { params: { companyId, registro } });
+  }
+
   /** O PDF guardado do extrato do período. */
   extractPdf(companyId: string, periodo: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/extrato/pdf`, { params: { companyId, periodo }, responseType: 'blob' });
