@@ -1,0 +1,24 @@
+@use '../firm-section' as *;
+
+@include firm-section;
+
+.firm-name-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.firm-name-field {
+  flex: 1 1 360px;
+  max-width: 560px;
+}
+
+// alinha os botões com a caixa do app-input (49px), não com a linha de erro reservada embaixo
+.firm-name-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 49px;
+  margin-left: auto;
+}

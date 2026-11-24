@@ -2,6 +2,8 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faKey, faLink } from '@fortawesome/free-solid-svg-icons';
 import { ToastrService } from 'ngx-toastr';
 import { Button } from '../../../shared/components/button/button';
 import {
@@ -30,7 +32,7 @@ import { EfiscoCertificateCardComponent } from './efisco-certificate-card.compon
 @Component({
   selector: 'app-firm-integrations',
   standalone: true,
-  imports: [DatePipe, FormsModule, Button, EfiscoCertificateCardComponent],
+  imports: [DatePipe, FormsModule, Button, FaIconComponent, EfiscoCertificateCardComponent],
   templateUrl: './firm-integrations.component.html',
   styleUrl: './firm-integrations.component.scss',
 })
@@ -42,6 +44,7 @@ export class FirmIntegrationsComponent implements OnInit, OnDestroy {
   private readonly toastr = inject(ToastrService);
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly icons = { key: faKey, link: faLink };
   readonly labels = INTEGRATION_LABELS;
   readonly providerLabels = BILLING_PROVIDER_LABELS;
   readonly keyIntegrations: IntegrationType[] = ['SIEG', 'ACESSORIAS'];

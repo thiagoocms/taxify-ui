@@ -15,6 +15,7 @@ import { FirmIntegrationsComponent } from '../firm-integrations/firm-integration
   standalone: true,
   imports: [ReactiveFormsModule, InputComponent, Button, FirmIntegrationsComponent],
   templateUrl: './accounting-firm-form.component.html',
+  styleUrl: './accounting-firm-form.component.scss',
 })
 export class AccountingFirmFormComponent implements OnChanges {
   private readonly fb = inject(FormBuilder);

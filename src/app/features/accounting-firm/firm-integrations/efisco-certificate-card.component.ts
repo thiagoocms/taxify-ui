@@ -1,6 +1,8 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faCertificate } from '@fortawesome/free-solid-svg-icons';
 import { ToastrService } from 'ngx-toastr';
 import { EfiscoService, FirmCertificateDTO } from '../../../core/services/efisco.service';
 import { Button } from '../../../shared/components/button/button';
@@ -13,61 +15,66 @@ import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/
 @Component({
   selector: 'app-efisco-certificate-card',
   standalone: true,
-  imports: [DatePipe, FormsModule, Button],
+  imports: [DatePipe, FormsModule, Button, FaIconComponent],
   template: `
+    @let s = status();
     <div class="integration-card">
       <div class="integration-head">
-        <div>
-          <div class="fw-semibold">e-Fisco PE · certificado do contador</div>
-          @if (status(); as s) {
-            @if (s.present) {
-              <small [class]="s.expired ? 'text-danger' : 'text-success'">
-                {{ s.holder }} · CPF {{ s.cpf }} · {{ s.expired ? 'vencido em' : 'válido até' }} {{ s.validUntil | date: 'dd/MM/yyyy' }}
-              </small>
-              @if (s.lastSyncAt) {
-                <small class="text-muted d-block">
-                  Última sincronização: {{ s.lastSyncAt | date: 'dd/MM/yyyy HH:mm' }} · {{ syncLabel(s.lastSyncStatus) }}
-                </small>
-              }
-            } @else {
-              <small class="text-muted">
-                Não configurado. Com o e-CPF A1 do contador (vinculado às empresas no "Controle de Acesso" do e-Fisco), o Taxify
-                busca sozinho o extrato do Fronteira das empresas de PE.
+        <span class="integration-icon"><fa-icon [icon]="icon"></fa-icon></span>
+        <div class="integration-info">
+          <div class="integration-name">
+            e-Fisco PE · certificado do contador
+            <span class="status-pill" [class.ok]="s?.present && !s?.expired" [class.danger]="s?.expired">
+              {{ !s?.present ? 'Não configurado' : s?.expired ? 'Vencido' : 'Válido' }}
+            </span>
+          </div>
+          @if (s?.present) {
+            <div class="integration-desc">
+              {{ s?.holder }} · CPF {{ s?.cpf }} · {{ s?.expired ? 'vencido em' : 'válido até' }} {{ s?.validUntil | date: 'dd/MM/yyyy' }}
+            </div>
+            @if (s?.lastSyncAt) {
+              <small class="text-muted d-block">
+                Última sincronização: {{ s?.lastSyncAt | date: 'dd/MM/yyyy HH:mm' }} · {{ syncLabel(s?.lastSyncStatus) }}
               </small>
             }
+          } @else {
+            <div class="integration-desc">
+              Com o e-CPF A1 do contador (vinculado às empresas no "Controle de Acesso" do e-Fisco), o Taxify busca sozinho o
+              extrato do Fronteira das empresas de PE.
+            </div>
           }
         </div>
-        @if (!editing()) {
-          <div class="d-flex gap-2">
-            @if (status()?.present) {
-              <app-button label="Remover" variant="text" severity="danger" [disabled]="busy()" (onClick)="remove()"></app-button>
-            }
-            <app-button [label]="status()?.present ? 'Trocar certificado' : 'Enviar certificado'" variant="outlined" icon="upload"
-              (onClick)="editing.set(true)"></app-button>
-          </div>
-        }
       </div>
       @if (editing()) {
         <div class="key-edit">
           <input class="form-control form-control-sm" type="file" accept=".pfx,.p12" (change)="pick($event)" />
           <input class="form-control form-control-sm" type="password" autocomplete="new-password" placeholder="Senha do certificado"
             [(ngModel)]="password" />
+        </div>
+        <small class="text-muted">O arquivo e a senha ficam guardados cifrados. Só e-CPF (pessoa física).</small>
+        <div class="integration-actions">
           <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
           <app-button [label]="busy() ? 'Enviando...' : 'Salvar'" [disabled]="busy() || !file" (onClick)="upload()"></app-button>
         </div>
-        <small class="text-muted d-block mt-2">
-          O arquivo e a senha ficam guardados cifrados; a tela nunca mostra os dois de volta. Só e-CPF (pessoa física).
-        </small>
+      } @else {
+        <div class="integration-actions">
+          @if (s?.present) {
+            <app-button label="Remover" variant="text" severity="danger" [disabled]="busy()" (onClick)="remove()"></app-button>
+          }
+          <app-button [label]="s?.present ? 'Trocar certificado' : 'Enviar certificado'" variant="outlined" icon="upload"
+            (onClick)="editing.set(true)"></app-button>
+        </div>
       }
     </div>
   `,
-  styleUrl: './firm-integrations.component.scss',
+  styleUrl: './efisco-certificate-card.component.scss',
 })
 export class EfiscoCertificateCardComponent implements OnInit {
   private readonly efisco = inject(EfiscoService);
   private readonly toastr = inject(ToastrService);
   private readonly confirmDialog = inject(ConfirmDialogService);
 
+  readonly icon = faCertificate;
   readonly status = signal<FirmCertificateDTO | null>(null);
   readonly editing = signal(false);
   readonly busy = signal(false);

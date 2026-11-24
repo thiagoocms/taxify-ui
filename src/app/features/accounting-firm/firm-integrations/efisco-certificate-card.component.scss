@@ -1,0 +1,12 @@
+@use '../firm-section' as *;
+
+@include firm-section;
+
+:host {
+  display: flex;
+  flex: 1;
+}
+
+.integration-card {
+  flex: 1;
+}

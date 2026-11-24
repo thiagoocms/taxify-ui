@@ -1,19 +1,25 @@
-<form [formGroup]="form" (ngSubmit)="submit()">
-  <div class="row">
-    <div class="col-12">
+<section class="firm-section">
+  <header class="firm-section-head">
+    <div>
+      <h6 class="firm-section-title">Dados do escritório</h6>
+      <small class="text-muted">O nome que aparece nos relatórios e nas telas do Taxify.</small>
+    </div>
+  </header>
+
+  <form class="firm-name-form" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="firm-name-field">
       <app-input formControlName="name" label="Nome do escritório"></app-input>
     </div>
-  </div>
-
-  <div class="d-flex justify-content-end gap-2 mt-3">
-    <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
-    <app-button
-      type="submit"
-      [label]="loading() ? 'Salvando...' : 'Salvar'"
-      [disabled]="loading()"
-    ></app-button>
-  </div>
-</form>
+    <div class="firm-name-actions">
+      <app-button label="Fechar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
+      <app-button
+        type="submit"
+        [label]="loading() ? 'Salvando...' : 'Salvar'"
+        [disabled]="loading() || form.pristine"
+      ></app-button>
+    </div>
+  </form>
+</section>
 
 @if (isEdit) {
   <app-firm-integrations></app-firm-integrations>

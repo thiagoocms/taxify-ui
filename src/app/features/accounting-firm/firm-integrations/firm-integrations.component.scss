@@ -1,45 +1,30 @@
-.section-title {
-  font-weight: 600;
-  margin: 16px 0 8px;
+@use '../firm-section' as *;
+
+@include firm-section;
+
+:host {
+  display: block;
 }
 
-.integration-card {
-  border: 1px solid var(--border-color, #dfe3ea);
-  border-radius: var(--border-radius, 8px);
-  padding: 12px;
-  margin-bottom: 8px;
-}
-
-.integration-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.key-edit {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-
-  input {
-    flex: 1 1 220px;
-  }
+.billing-body {
+  max-width: 720px;
 }
 
 .category-list {
-  max-height: 180px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 2px 12px;
+  max-height: 200px;
   overflow: auto;
-  padding: 4px 0;
+  padding: 6px 10px;
+  border: 1px solid #eef0f4;
+  border-radius: var(--radius-control);
 }
 
 .sync-result {
   margin-top: 12px;
-  padding: 10px;
-  border-radius: var(--border-radius, 8px);
-  background: var(--surface-muted, #f4f6fa);
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  background: var(--app-bg);
   font-size: 0.85rem;
 }

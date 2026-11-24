@@ -29,7 +29,7 @@
   </div>
 </div>
 
-<app-modal [open]="firmDialogOpen()" title="Dados do escritório" (closed)="closeFirmDialog()">
+<app-modal [open]="firmDialogOpen()" title="Dados do escritório" size="xl" (closed)="closeFirmDialog()">
   @if (firmDialogOpen()) {
     @if (firmLoading()) {
       <p class="loading-text">Carregando...</p>
