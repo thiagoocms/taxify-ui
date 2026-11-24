@@ -20,7 +20,7 @@ $cycle: 2.2s;
   padding: 16px 0;
   opacity: 0.75;
 
-  .mark {
+  .loader-mark {
     width: 32px;
     height: 32px;
   }
@@ -34,7 +34,7 @@ $cycle: 2.2s;
     opacity: 0.8;
   }
 
-  .mark {
+  .loader-mark {
     width: 18px;
     height: 18px;
   }
@@ -155,7 +155,7 @@ $cycle: 2.2s;
     border-radius: 0;
   }
 
-  .mark {
+  .loader-mark {
     width: 104px;
     height: 104px;
     // sem filter/backdrop-filter: juntos, o Chrome "fura" o véu num quadrado em volta do SVG
