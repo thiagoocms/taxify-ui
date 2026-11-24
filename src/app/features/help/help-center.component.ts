@@ -5,9 +5,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { InputComponent } from '../../shared/components/input/input';
 import { Page } from '../../shared/components/page/page';
 import { HelpArticleComponent } from '../../shared/help/help-article.component';
-import { FAQ, findArticle, GLOSSARY, HELP_ARTICLES, HelpArticle } from '../../shared/help/help-content';
+import {
+  FAQ, findArticle, findTutorial, GLOSSARY, HELP_ARTICLES, HELP_TUTORIALS, HelpArticle, HelpTutorial,
+} from '../../shared/help/help-content';
 
-type View = { kind: 'article'; id: string } | { kind: 'glossary' } | { kind: 'faq' };
+type View = { kind: 'article'; id: string } | { kind: 'tutorial'; id: string } | { kind: 'glossary' } | { kind: 'faq' };
 
 const GROUPS: HelpArticle['group'][] = ['Notas e documentos', 'Obrigações e controles', 'Configuração'];
 
@@ -17,7 +19,7 @@ function normalize(text: string): string {
 }
 
 /**
- * Central de Ajuda: um artigo por tela, o glossário e as perguntas frequentes, com busca. O "?" de cada
+ * Central de Ajuda: os tutoriais dos fluxos principais, um artigo por tela, o glossário e as perguntas frequentes, com busca. O "?" de cada
  * tela abre o mesmo artigo num painel lateral.
  */
 @Component({
@@ -25,13 +27,21 @@ function normalize(text: string): string {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, InputComponent, Page, HelpArticleComponent],
   template: `
-    <app-page pageTitle="Ajuda" pageDescription="Como cada tela funciona, o glossário fiscal e as perguntas frequentes">
+    <app-page pageTitle="Ajuda" pageDescription="Tutoriais passo a passo, como cada tela funciona, o glossário fiscal e as perguntas frequentes">
       <div class="search-field">
         <app-input label="Buscar na ajuda (ex.: ciência, retenção, certificado)" [formControl]="search"></app-input>
       </div>
 
       <div class="help-layout">
         <nav class="help-nav" aria-label="Artigos da ajuda">
+          @if (tutorials().length) {
+            <div class="nav-group">Tutoriais</div>
+            @for (tutorial of tutorials(); track tutorial.id) {
+              <button type="button" class="nav-item" [class.active]="isTutorial(tutorial.id)" (click)="go(tutorial.id)">
+                {{ tutorial.title }} <span class="count">{{ tutorial.minutes }} min</span>
+              </button>
+            }
+          }
           @for (group of groups; track group) {
             @if (articlesOf(group).length) {
               <div class="nav-group">{{ group }}</div>
@@ -76,6 +86,52 @@ function normalize(text: string): string {
                 </div>
               }
             }
+            @case ('tutorial') {
+              @if (currentTutorial(); as t) {
+                <h5>{{ t.title }}</h5>
+                <p class="tutorial-summary">{{ t.summary }} <span class="count">· cerca de {{ t.minutes }} min</span></p>
+                @if (t.prerequisites.length) {
+                  <div class="tutorial-box">
+                    <strong>Antes de começar</strong>
+                    <ul>
+                      @for (item of t.prerequisites; track $index) { <li>{{ item }}</li> }
+                    </ul>
+                  </div>
+                }
+                <ol class="tutorial-steps">
+                  @for (step of t.steps; track $index) {
+                    <li>
+                      <span class="step-number">{{ $index + 1 }}</span>
+                      <div class="step-body">
+                        <h6>{{ step.title }}</h6>
+                        <p>{{ step.text }}</p>
+                        @if (step.route) {
+                          <button type="button" class="link" (click)="router.navigate([step.route])">{{ step.routeLabel || 'Abrir a tela' }} →</button>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ol>
+                @if (t.pitfalls?.length) {
+                  <div class="tutorial-box warn">
+                    <strong>O que pode dar errado</strong>
+                    <ul>
+                      @for (item of t.pitfalls; track $index) { <li>{{ item }}</li> }
+                    </ul>
+                  </div>
+                }
+                @if (t.related?.length) {
+                  <div class="tutorial-related">
+                    <span class="count">Para saber mais:</span>
+                    @for (id of t.related; track id) {
+                      <button type="button" class="link inline" (click)="openArticle(id)">{{ titleOf(id) }}</button>
+                    }
+                  </div>
+                }
+              } @else {
+                <p class="empty">Nenhum tutorial com "{{ search.value }}".</p>
+              }
+            }
             @default {
               @if (current(); as article) {
                 <h5>{{ article.title }}</h5>
@@ -115,6 +171,20 @@ function normalize(text: string): string {
     .faq-item h6 { font-weight: 600; margin-bottom: 4px; }
     .faq-item p { margin-bottom: 6px; color: #4b5563; font-size: 14px; }
     .empty { color: #6c757d; }
+    .link.inline { display: inline; margin-left: 10px; }
+    .tutorial-summary { color: #4b5563; margin-bottom: 14px; }
+    .tutorial-box { border: 1px solid #e3e8f0; background: #f8fafc; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
+    .tutorial-box.warn { border-color: #f5d9a8; background: #fffaf0; margin-top: 8px; }
+    .tutorial-box ul { margin: 6px 0 0; padding-left: 18px; color: #4b5563; }
+    .tutorial-steps { list-style: none; padding: 0; margin: 0 0 8px; }
+    .tutorial-steps li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eef1f6; }
+    .tutorial-steps li:last-child { border-bottom: none; }
+    .step-number { flex: 0 0 28px; height: 28px; border-radius: 50%; background: #e6eefb; color: var(--color-primary);
+      font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .step-body { flex: 1; min-width: 0; }
+    .step-body h6 { font-weight: 600; margin: 3px 0 4px; }
+    .step-body p { margin-bottom: 4px; color: #4b5563; font-size: 14px; }
+    .tutorial-related { margin-top: 12px; font-size: 14px; }
   `,
 })
 export class HelpCenterComponent implements OnInit {
@@ -124,7 +194,25 @@ export class HelpCenterComponent implements OnInit {
   readonly groups = GROUPS;
   readonly search = new FormControl('', { nonNullable: true });
   private readonly term = signal('');
-  readonly view = signal<View>({ kind: 'article', id: HELP_ARTICLES[0].id });
+  readonly view = signal<View>({ kind: 'tutorial', id: HELP_TUTORIALS[0].id });
+
+  /** Tutoriais que batem com a busca (título, resumo, passos e cuidados). */
+  readonly tutorials = computed(() => {
+    const term = normalize(this.term().trim());
+    if (!term) {
+      return HELP_TUTORIALS;
+    }
+    return HELP_TUTORIALS.filter((t) =>
+      normalize([t.title, t.summary, ...t.prerequisites, ...t.steps.flatMap((s) => [s.title, s.text]), ...(t.pitfalls ?? [])].join(' ')).includes(term),
+    );
+  });
+  readonly currentTutorial = computed<HelpTutorial | undefined>(() => {
+    const view = this.view();
+    if (view.kind !== 'tutorial') {
+      return undefined;
+    }
+    return this.tutorials().find((t) => t.id === view.id) ?? this.tutorials()[0];
+  });
 
   /** Artigos que batem com a busca (título, resumo ou conteúdo). */
   readonly articles = computed(() => {
@@ -162,8 +250,13 @@ export class HelpCenterComponent implements OnInit {
         this.view.set({ kind: 'glossary' });
       } else if (id === 'perguntas') {
         this.view.set({ kind: 'faq' });
+      } else if (findTutorial(id)) {
+        this.view.set({ kind: 'tutorial', id: id! });
+      } else if (findArticle(id)) {
+        this.view.set({ kind: 'article', id: id! });
       } else {
-        this.view.set({ kind: 'article', id: findArticle(id)?.id ?? HELP_ARTICLES[0].id });
+        // a Central abre pelos tutoriais: os fluxos de ponta a ponta são o caminho mais curto para quem chega
+        this.view.set({ kind: 'tutorial', id: HELP_TUTORIALS[0].id });
       }
     });
     this.search.valueChanges.subscribe((value) => this.term.set(value ?? ''));
@@ -171,6 +264,10 @@ export class HelpCenterComponent implements OnInit {
 
   articlesOf(group: HelpArticle['group']): HelpArticle[] {
     return this.articles().filter((article) => article.group === group);
+  }
+
+  isTutorial(id: string): boolean {
+    return this.view().kind === 'tutorial' && this.currentTutorial()?.id === id;
   }
 
   isArticle(id: string): boolean {

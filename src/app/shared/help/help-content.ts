@@ -495,6 +495,293 @@ export const FAQ: FaqEntry[] = [
   },
 ];
 
+/** Um passo de um tutorial: o que fazer e, quando há, a tela onde se faz. */
+export interface TutorialStep {
+  title: string;
+  text: string;
+  route?: string;
+  /** Rótulo do botão que abre a tela (padrão: "Abrir a tela"). */
+  routeLabel?: string;
+}
+
+/** Um fluxo de trabalho de ponta a ponta, que atravessa várias telas. */
+export interface HelpTutorial {
+  id: string;
+  title: string;
+  summary: string;
+  minutes: number;
+  prerequisites: string[];
+  steps: TutorialStep[];
+  /** O que costuma dar errado e como sair. */
+  pitfalls?: string[];
+  /** Artigos relacionados (ids). */
+  related?: string[];
+}
+
+export const HELP_TUTORIALS: HelpTutorial[] = [
+  {
+    id: 'tutorial-nova-empresa',
+    title: 'Cadastrar uma empresa nova',
+    summary: 'Do cadastro até as notas chegando sozinhas: dados, regime, certificado A1, plano e quem atende a empresa.',
+    minutes: 10,
+    prerequisites: [
+      'CNPJ, inscrição estadual (quando houver) e regime tributário da empresa.',
+      'O certificado A1 da empresa (.pfx) e a senha — ou o da matriz, que vale para as filiais.',
+    ],
+    steps: [
+      {
+        title: 'Crie a empresa',
+        text: 'Em Empresas, use "Nova empresa" e preencha documento, nome, inscrição estadual e municipal, CNAE e endereço. A UF decide telas como a Fronteira PE.',
+        route: '/cadastro/empresas',
+        routeLabel: 'Abrir Empresas',
+      },
+      {
+        title: 'Informe o regime tributário',
+        text: 'Na seção de regime, escolha o regime e a data a partir da qual ele vale. Ele é usado na Apuração, nas checagens e nas Retenções; sem regime a empresa ganha uma pendência.',
+      },
+      {
+        title: 'Envie o certificado A1',
+        text: 'Em "Certificado A1 e captura pela SEFAZ", envie o .pfx com a senha (ficam guardados cifrados). Ele é usado na captura de notas e para assinar a Ciência e a manifestação.',
+      },
+      {
+        title: 'Assine um plano',
+        text: 'Em Assinaturas, use "Nova assinatura" e escolha o plano. Os serviços do plano ligam as integrações: Importação de XML fiscal, SIEG, SEFAZ, NFS-e Nacional, Manifestação e Auditoria.',
+      },
+      {
+        title: 'Vincule quem atende a empresa',
+        text: 'Em Usuários, abra o usuário e use "Vincular empresa". A empresa passa a aparecer na carteira dele (Apuração, Pendências, Retenções).',
+        route: '/cadastro/usuarios',
+        routeLabel: 'Abrir Usuários',
+      },
+      {
+        title: 'Confira se as notas estão chegando',
+        text: 'No cadastro da empresa, "Capturar agora" roda a captura pela SEFAZ na hora (respeitando a pausa de 1h da SEFAZ). Depois veja as notas em Notas fiscais e a situação das coletas em Pendências → Saúde das integrações.',
+        route: '/pendencias',
+        routeLabel: 'Abrir Pendências',
+      },
+    ],
+    pitfalls: [
+      'A captura não roda: falta certificado válido, ou o plano não tem "Importação de XML fiscal" + "Integração SEFAZ".',
+      'Filial sem certificado próprio usa o da matriz (mesma raiz de CNPJ) — não precisa enviar de novo.',
+      'A SEFAZ não entrega as notas emitidas pela própria empresa: as saídas vêm pelo SIEG ou por upload.',
+    ],
+    related: ['empresas', 'planos'],
+  },
+  {
+    id: 'tutorial-fronteira',
+    title: 'Conferir a Fronteira PE do mês',
+    summary: 'O ICMS antecipado que o e-Fisco cobra, conferido nota a nota: buscar o extrato, ver o que diverge, comparar com a memória do e-Fisco e decidir.',
+    minutes: 15,
+    prerequisites: [
+      'Empresa de Pernambuco, com a inscrição estadual no cadastro.',
+      'O certificado do contador (e-CPF A1) cadastrado nas Integrações do escritório — para o Taxify buscar o extrato e a memória sozinho.',
+      'As notas de entrada do mês importadas (XML completo).',
+    ],
+    steps: [
+      {
+        title: 'Cadastre o certificado do contador (uma vez só)',
+        text: 'No botão "Editar dados do escritório" (canto superior), seção Integrações → "e-Fisco PE · certificado do contador", envie o e-CPF A1. Com ele, o Taxify busca o extrato de todas as empresas de PE todo dia às 7h.',
+      },
+      {
+        title: 'Escolha o mês e a empresa',
+        text: 'Na Fronteira PE, escolha o mês nas setas e a empresa. Se o extrato do mês ainda não veio, use "Sincronizar com e-Fisco" (ou "Importar extrato do e-Fisco" com o PDF baixado à mão).',
+        route: '/fronteira',
+        routeLabel: 'Abrir Fronteira PE',
+      },
+      {
+        title: 'Leia o resumo',
+        text: 'Os cartões mostram o cobrado no extrato, o cálculo do Taxify, o cobrado a mais e o cobrado a menos. Os atalhos filtram a lista: cobrou a mais, confere, divergência fiscal, taxa diferente.',
+      },
+      {
+        title: 'Abra o "Ver cálculo" das notas que divergem',
+        text: 'O modal mostra o Taxify, o cobrado e a diferença. Em "Buscar cálculo do e-Fisco", o Taxify traz a memória do e-Fisco e compara etapa por etapa: base de partida, agregação, carga líquida ou alíquotas e o ICMS. O que difere fica destacado.',
+      },
+      {
+        title: 'Decida: adotar ou contestar',
+        text: 'Se o e-Fisco estiver certo, "Adotar o cálculo do e-Fisco" abre a regra já preenchida para as próximas notas — confira e salve. Se o Taxify estiver certo, use o PDF do extrato ("Ver PDF") e a memória para pedir a revisão.',
+      },
+      {
+        title: 'Confira as regras "a conferir"',
+        text: 'Em "Tabela de ICMS e fórmulas", as regras novas ou alteradas ficam "a conferir" até o time fiscal marcar. Enquanto isso, os resultados que as usam também aparecem "a conferir".',
+      },
+    ],
+    pitfalls: [
+      '"Sem regra": algum item não tem alíquota ou regra na tabela — nunca vira "cobrou a mais"; cadastre a regra.',
+      '"Pendente": a nota não tem o XML completo (só o resumo da SEFAZ). Veja a Manifestação.',
+      'O e-Fisco calcula por mercadoria dele, não item a item: numa nota com vários itens ele pode mostrar um grupo só; a comparação usa a soma dos itens.',
+      'Desafio do Cloudflare ou login recusado param a sincronização e o motivo aparece na tela: tente mais tarde ou importe o PDF à mão.',
+    ],
+    related: ['fronteira', 'notas-fiscais'],
+  },
+  {
+    id: 'tutorial-notas-mes',
+    title: 'Importar e auditar as notas do mês',
+    summary: 'Garantir que todas as notas do mês chegaram, conferir as divergências e deixar a malha limpa.',
+    minutes: 15,
+    prerequisites: ['Empresa com plano de Importação de XML fiscal e as integrações (SIEG e/ou SEFAZ).'],
+    steps: [
+      {
+        title: 'Veja se tudo chegou',
+        text: 'Em Notas fiscais, escolha a empresa e o período. Os cartões de entradas e saídas mostram os totais. O filtro "Origem" com "Só no SIEG" / "Só na SEFAZ" mostra as notas que estão numa fonte e não na outra há mais de 48h.',
+        route: '/notas-fiscais',
+        routeLabel: 'Abrir Notas fiscais',
+      },
+      {
+        title: 'Importe o que faltar',
+        text: '"Importar XML" aceita um XML ou um .zip. A mesma nota vinda de mais de uma fonte é guardada uma vez só; NFS-e enviadas por aqui vão para Notas de serviço.',
+      },
+      {
+        title: 'Trate as divergências',
+        text: 'O chip de divergência mostra as entradas que não batem com as regras fiscais por produto. Abra a nota, veja a aba Divergências e, se for o caso, use "Retificar" para gerar o XML com o CFOP/NCM da regra.',
+      },
+      {
+        title: 'Confira as notas',
+        text: 'Marque cada nota como conferida ou com divergência — ou "Marcar N da página como conferidas" para conferir em lote. Nota conferida com divergência vira pendência.',
+      },
+      {
+        title: 'Rode a auditoria do mês',
+        text: 'Em Auditoria, escolha a competência e a empresa. Ela roda sozinha todo dia às 05:30; "Rodar auditoria" roda na hora. Os achados aparecem por grupo e viram pendências.',
+        route: '/auditoria',
+        routeLabel: 'Abrir Auditoria',
+      },
+      {
+        title: 'Gere o laudo',
+        text: '"Laudo PDF" e "Exportar CSV" trazem os achados do mês com os fundamentos — para guardar ou mostrar ao cliente.',
+      },
+    ],
+    pitfalls: [
+      'Entrada que aparece só com resumo: falta a manifestação — veja o tutorial de Manifestação.',
+      'Notas canceladas aparecem na lista mas ficam fora dos totais.',
+      'Achados de uma regra "a conferir" são indícios ainda não validados pelo time fiscal.',
+    ],
+    related: ['notas-fiscais', 'regras-fiscais', 'auditoria'],
+  },
+  {
+    id: 'tutorial-manifestacao',
+    title: 'Fazer a manifestação do destinatário',
+    summary: 'Responder à SEFAZ sobre as notas de entrada dentro do prazo e liberar o XML completo das que vieram só com resumo.',
+    minutes: 5,
+    prerequisites: [
+      'Plano com "Manifestação do destinatário" (junto com "Integração SEFAZ").',
+      'Certificado A1 válido da empresa (ou da matriz).',
+    ],
+    steps: [
+      {
+        title: 'Abra a lista da empresa',
+        text: 'Em Manifestação, escolha a empresa. A lista traz as notas dos últimos 180 dias sem manifestação conclusiva, com o prazo mais próximo primeiro.',
+        route: '/manifestacao',
+        routeLabel: 'Abrir Manifestação',
+      },
+      {
+        title: 'Comece pelos prazos',
+        text: 'O atalho de prazo mostra as notas que vencem em breve. Os outros separam as sem ciência, as só com ciência e as que vieram só com o resumo.',
+      },
+      {
+        title: 'Marque e envie',
+        text: 'Marque as notas e use o botão certo: "Confirmar operação" (recebi), "Só ciência" (libera o XML, mas não conclui), "Não realizada" (a operação não aconteceu — pede justificativa de 15 a 255 caracteres) ou "Desconhecer" (não reconheço a nota). Até 100 notas por vez.',
+      },
+      {
+        title: 'Veja o retorno',
+        text: 'A SEFAZ responde nota a nota: as registradas saem da lista; as recusadas mostram o motivo na linha.',
+      },
+      {
+        title: 'Confira o XML completo',
+        text: 'A nota que só tinha o resumo é liberada pela manifestação e o XML completo chega na captura seguinte — aí ela entra em Notas fiscais com os itens.',
+        route: '/notas-fiscais',
+        routeLabel: 'Abrir Notas fiscais',
+      },
+    ],
+    pitfalls: [
+      'O evento fica registrado na SEFAZ e o emitente vê — não dá para desfazer.',
+      'Devolução ou recusa no recebimento é "Não realizada", não "Desconhecer".',
+      'Prazo em até 15 dias vira pendência alta.',
+    ],
+    related: ['manifestacao', 'notas-fiscais'],
+  },
+  {
+    id: 'tutorial-fechamento',
+    title: 'Fechar a apuração e as retenções do mês',
+    summary: 'O fechamento mensal da carteira: impostos estimados, retenções a recolher e a compensar e o relatório para o cliente.',
+    minutes: 20,
+    prerequisites: ['As notas do mês importadas (NF-e e NFS-e).', 'O regime tributário de cada empresa informado.'],
+    steps: [
+      {
+        title: 'Revise as retenções',
+        text: 'Em Retenções, a competência padrão é o mês anterior; sem empresa escolhida aparece a carteira toda. Veja o que recolher (com o vencimento) e o que compensar. O atalho "provável indevida" mostra retenções de prestador do Simples que merecem ajuste.',
+        route: '/retencoes',
+        routeLabel: 'Abrir Retenções',
+      },
+      {
+        title: 'Marque o que já foi conferido',
+        text: 'Marque as linhas e use "Marcar como conferidas" (fica registrado quem e quando). "Exportar CSV" gera a planilha para emitir as guias.',
+      },
+      {
+        title: 'Confira a apuração da carteira',
+        text: 'Em Apuração, as setas trocam o mês e os atalhos mostram as empresas com alerta, sem nota de saída, a fechar e fechadas.',
+        route: '/apuracao',
+        routeLabel: 'Abrir Apuração',
+      },
+      {
+        title: 'Feche o mês de cada empresa',
+        text: 'Clique na empresa para ver o detalhe do mês e os 13 meses anteriores e feche o período.',
+      },
+      {
+        title: 'Envie o relatório ao cliente',
+        text: 'Em Relatórios, o relatório mensal traz faturamento, impostos, compras, CFOPs, retenções, pendências e achados. "Relatório PDF" gera a versão para enviar.',
+        route: '/relatorios',
+        routeLabel: 'Abrir Relatórios',
+      },
+    ],
+    pitfalls: [
+      'A apuração é uma estimativa pelas notas: não considera folha (fator R), segregação de ST/monofásico nem receita sem nota — confira no PGDAS/DCTFWeb antes de emitir a guia.',
+      'Feriados não entram no vencimento; o ISS vence conforme o município.',
+    ],
+    related: ['retencoes', 'apuracao', 'relatorios'],
+  },
+  {
+    id: 'tutorial-pendencias',
+    title: 'Tratar pendências e achados da auditoria',
+    summary: 'Zerar o que falta na carteira por prioridade, registrando o porquê de cada decisão.',
+    minutes: 10,
+    prerequisites: ['Empresas atribuídas a você (a carteira).'],
+    steps: [
+      {
+        title: 'Abra as pendências da carteira',
+        text: 'Em Pendências, deixe a empresa vazia para ver toda a carteira, ou escolha uma. Os chips filtram por situação e severidade; os cartões, por tipo. Comece pelas de severidade alta.',
+        route: '/pendencias',
+        routeLabel: 'Abrir Pendências',
+      },
+      {
+        title: 'Resolva a causa',
+        text: 'Abra a pendência para ir até a tela da causa (certificado, nota, manifestação, retenção). Quando a causa some, a pendência fecha sozinha no próximo recálculo (de hora em hora, ou "Atualizar agora").',
+      },
+      {
+        title: 'Resolva ou desconsidere à mão quando for o caso',
+        text: '"Resolver" e "Desconsiderar" pedem um comentário e registram quem e quando. Uma pendência fechada à mão fica fechada enquanto a causa for a mesma.',
+      },
+      {
+        title: 'Trate os achados da auditoria',
+        text: 'Em Auditoria, os achados aparecem por grupo, com o fundamento. Resolva, desconsidere ou reabra — o mesmo achado é a pendência em Pendências.',
+        route: '/auditoria',
+        routeLabel: 'Abrir Auditoria',
+      },
+      {
+        title: 'Acompanhe as integrações',
+        text: 'Embaixo, em Pendências, a saúde das integrações mostra a última coleta da SEFAZ e da NFS-e Nacional de cada empresa e as falhas dos últimos 7 dias.',
+      },
+    ],
+    pitfalls: [
+      'Pendência que volta: a causa apareceu de novo (ex.: um novo certificado também vencendo).',
+      'Uma regra da auditoria pode ser desativada na visão "Regras" — os achados dela saem das próximas auditorias.',
+    ],
+    related: ['pendencias', 'auditoria'],
+  },
+];
+
+export function findTutorial(id: string | null | undefined): HelpTutorial | undefined {
+  return HELP_TUTORIALS.find((tutorial) => tutorial.id === id);
+}
+
 export function findArticle(id: string | null | undefined): HelpArticle | undefined {
   return HELP_ARTICLES.find((article) => article.id === id);
 }
