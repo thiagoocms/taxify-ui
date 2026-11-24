@@ -34,10 +34,11 @@ const PAGE_SIZE = 20;
  * Apuração do escritório: uma linha por empresa da carteira no mês, com faturamento,
  * RBT12, impostos estimados, alertas e fechamento. Clicar abre o detalhe da empresa.
  */
+import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
 @Component({
   selector: 'app-tax-assessment',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Page, InputComponent, Table, Pagination],
+  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Page, InputComponent, Table, Pagination],
   templateUrl: './tax-assessment.component.html',
   styleUrl: './tax-assessment.component.scss',
 })

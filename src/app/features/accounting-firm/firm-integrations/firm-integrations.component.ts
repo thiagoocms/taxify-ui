@@ -26,10 +26,11 @@ import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/
  * inteiras), conexão com a Conta Azul (login em janela pop-up) e de onde vêm contratos e
  * honorários (Manual ou um sistema integrado), com a sincronização manual.
  */
+import { EfiscoCertificateCardComponent } from './efisco-certificate-card.component';
 @Component({
   selector: 'app-firm-integrations',
   standalone: true,
-  imports: [DatePipe, FormsModule, Button],
+  imports: [DatePipe, FormsModule, Button, EfiscoCertificateCardComponent],
   templateUrl: './firm-integrations.component.html',
   styleUrl: './firm-integrations.component.scss',
 })

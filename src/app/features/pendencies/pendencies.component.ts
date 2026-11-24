@@ -34,10 +34,11 @@ type CloseAction = 'resolver' | 'desconsiderar';
  * com link para resolver e fechamento sempre com comentário; embaixo, a saúde das integrações.
  * Mesmo desenho da Apuração: filtros em chips, resumo, atalhos por tipo e tabela.
  */
+import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
 @Component({
   selector: 'app-pendencies',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
+  imports: [MonthNavComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
   templateUrl: './pendencies.component.html',
   styleUrl: './pendencies.component.scss',
 })

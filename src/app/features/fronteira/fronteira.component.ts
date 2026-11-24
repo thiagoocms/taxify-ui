@@ -67,10 +67,11 @@ const STANDARD_FORMULAS: Record<string, string> = {
  * ao lado do cálculo do Taxify — pela tabela de ICMS (alíquotas, ST, percentual do Simples) ou pela
  * fórmula própria que a contadora registrar, que passa a valer para as próximas notas.
  */
+import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
 @Component({
   selector: 'app-fronteira',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table, FormulaEditorComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table, FormulaEditorComponent, MonthNavComponent],
   templateUrl: './fronteira.component.html',
   styleUrl: './fronteira.component.scss',
 })

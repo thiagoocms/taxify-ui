@@ -1,14 +1,9 @@
 <app-page pageTitle="Pendências" helpId="pendencias" pageDescription="O que falta em cada empresa da carteira, por prioridade" [pageButtons]="pageButtons()">
   <div class="filters">
     <div class="filters-main">
-      <div class="month-nav" role="group" aria-label="Competência">
-        <button type="button" class="chip icon-chip" (click)="shiftCompetence(-1)" aria-label="Mês anterior">
-          <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
-        </button>
-        <span class="month-label">{{ competence() ? monthLabel(competence()) : 'Todas as competências' }}</span>
-        <button type="button" class="chip icon-chip" (click)="shiftCompetence(1)" aria-label="Próximo mês">
-          <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
-        </button>
+      <div class="competence-filter">
+        <app-month-nav [month]="competence()" emptyLabel="Todas as competências" ariaLabel="Competência"
+          (stepped)="shiftCompetence($event)"></app-month-nav>
         @if (competence()) {
           <button type="button" class="chip" (click)="setCompetence('')">Todas</button>
         }

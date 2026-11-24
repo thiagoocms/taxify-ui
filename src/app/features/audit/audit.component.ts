@@ -28,10 +28,11 @@ type CloseAction = 'resolver' | 'desconsiderar';
  * coerência dos itens emitidos e anomalias —, o laudo em PDF/CSV e o catálogo de regras com a
  * conferência do time fiscal. Mesmo desenho da Apuração.
  */
+import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
 @Component({
   selector: 'app-audit',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table],
+  imports: [MonthNavComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table],
   templateUrl: './audit.component.html',
   styleUrl: './audit.component.scss',
 })

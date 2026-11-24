@@ -34,10 +34,11 @@ type QuickFilter = 'UNDUE' | 'PENDING';
  * e a compensar (sofreram como prestador), com a ação, o vencimento e a conferência por linha.
  * Mesmo desenho da Apuração: navegação de mês, resumo, atalhos e tabela.
  */
+import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
 @Component({
   selector: 'app-retentions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, InputComponent, Page, Table, HelpTipComponent],
+  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, InputComponent, Page, Table, HelpTipComponent],
   templateUrl: './retentions.component.html',
   styleUrl: './retentions.component.scss',
 })

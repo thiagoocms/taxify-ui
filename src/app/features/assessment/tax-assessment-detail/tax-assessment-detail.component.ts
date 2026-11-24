@@ -27,10 +27,11 @@ import {
  * Apuração de uma empresa no mês: faturamento, impostos estimados, histórico de 13 meses e
  * o fechamento (checklist, guia, fechar/reabrir).
  */
+import { MonthNavComponent } from '../../../shared/components/month-nav/month-nav.component';
 @Component({
   selector: 'app-tax-assessment-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Page, Button, InputComponent],
+  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Page, Button, InputComponent],
   templateUrl: './tax-assessment-detail.component.html',
   styleUrl: './tax-assessment-detail.component.scss',
 })

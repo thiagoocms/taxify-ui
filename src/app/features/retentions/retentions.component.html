@@ -1,15 +1,7 @@
 <app-page pageTitle="Retenções" helpId="retencoes" pageDescription="O que cada cliente tem a recolher e a compensar na competência" [pageButtons]="pageButtons()">
   <div class="filters">
     <div class="filters-main">
-      <div class="month-nav" role="group" aria-label="Competência">
-        <button type="button" class="chip icon-chip" (click)="shift(-1)" aria-label="Mês anterior">
-          <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
-        </button>
-        <span class="month-label">{{ monthLabel(month()) }}</span>
-        <button type="button" class="chip icon-chip" (click)="shift(1)" aria-label="Próximo mês">
-          <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
-        </button>
-      </div>
+      <app-month-nav [month]="month()" ariaLabel="Competência" (stepped)="shift($event)"></app-month-nav>
       <form class="company-field" [formGroup]="form">
         <app-input formControlName="company" label="Empresa (vazio = toda a carteira)" type="autocomplete"
           [searchFn]="searchCompanies" [displayFn]="companyLabel" displayField="name" displayFieldTooltip="documentNumber"></app-input>

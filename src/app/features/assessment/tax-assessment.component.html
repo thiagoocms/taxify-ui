@@ -5,15 +5,7 @@
 >
   <div class="filters">
     <div class="filters-main">
-      <div class="month-nav" role="group" aria-label="Mês de apuração">
-        <button type="button" class="chip icon-chip" (click)="shift(-1)" aria-label="Mês anterior">
-          <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
-        </button>
-        <span class="month-label">{{ monthLabel(month()) }}</span>
-        <button type="button" class="chip icon-chip" (click)="shift(1)" aria-label="Próximo mês">
-          <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
-        </button>
-      </div>
+      <app-month-nav [month]="month()" ariaLabel="Mês de apuração" (stepped)="shift($event)"></app-month-nav>
 
       <form class="search-field" [formGroup]="form">
         <app-input formControlName="search" label="Empresa ou CNPJ"></app-input>

@@ -3,15 +3,7 @@
   [pageDescription]="assessment() ? formatDocument(assessment()!.companyDocument) + ' · apuração de ' + monthLabel(month()) : ''"
   [pageButtons]="pageButtons()"
 >
-  <div class="month-nav mb-3" role="group" aria-label="Mês de apuração">
-    <button type="button" class="chip icon-chip" (click)="shift(-1)" aria-label="Mês anterior">
-      <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
-    </button>
-    <span class="month-label">{{ monthLabel(month()) }}</span>
-    <button type="button" class="chip icon-chip" (click)="shift(1)" aria-label="Próximo mês">
-      <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
-    </button>
-  </div>
+  <app-month-nav class="mb-3" [month]="month()" ariaLabel="Mês de apuração" (stepped)="shift($event)"></app-month-nav>
 
   @if (loading() && !assessment()) {
     <p class="loading-text"><span class="spinner-border spinner-border-sm me-2"></span>Calculando a apuração...</p>

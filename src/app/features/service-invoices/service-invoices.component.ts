@@ -33,10 +33,11 @@ import { monthLabel, shiftMonth, toMonth } from '../assessment/assessment-format
  * (uma vez por dia, os últimos 35 dias) ou de upload; "Buscar este mês no SIEG" traz um mês anterior.
  * Mesmo desenho da Apuração: navegação de mês, resumo, atalhos e tabela.
  */
+import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
 @Component({
   selector: 'app-service-invoices',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
+  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Pagination, Table, HelpTipComponent],
   templateUrl: './service-invoices.component.html',
   styleUrl: './service-invoices.component.scss',
 })

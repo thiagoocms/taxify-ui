@@ -24,10 +24,11 @@ type View = 'monthly' | 'abc' | 'simulation';
  * Relatórios e simulação (roadmap M12): relatório mensal para o cliente (com PDF), curva ABC de compras
  * e simulação de Simples × Presumido × Real com os números das notas. Mesmo desenho da Apuração.
  */
+import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Page, Table],
+  imports: [MonthNavComponent, CommonModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Page, Table],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.scss',
 })

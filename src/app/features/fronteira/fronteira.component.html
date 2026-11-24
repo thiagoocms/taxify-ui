@@ -11,8 +11,7 @@
           [displayFn]="companyLabel" displayField="name" displayFieldTooltip="documentNumber"></app-input>
       </form>
       @if (view() === 'conferencia' && report()) {
-        <input type="month" class="form-control month-input" aria-label="Período" [value]="report()!.periodo"
-          (change)="selectPeriod($any($event.target).value)" />
+        <app-month-nav [month]="report()!.periodo" ariaLabel="Período do extrato" (monthChange)="selectPeriod($event)"></app-month-nav>
         @if (report()!.periodos.length) {
           <select class="form-select period-select" aria-label="Extratos importados" [value]="report()!.periodo"
             (change)="selectPeriod($any($event.target).value)">
