@@ -31,7 +31,7 @@
   @if (view() === 'conferencia' && efiscoCertificate()?.present && efiscoCertificate()?.lastSyncAt && companyId()) {
     <div class="efisco-sync cell-sub" [title]="efiscoCertificate()?.lastSyncDetail ?? ''">
       e-Fisco: última sincronização em {{ efiscoCertificate()?.lastSyncAt | date: 'dd/MM/yyyy HH:mm' }} ·
-      {{ efiscoStatusLabel(efiscoCertificate()?.lastSyncStatus) }} — busca sozinho às 7h, 13h e 19h
+      {{ efiscoStatusLabel(efiscoCertificate()?.lastSyncStatus) }} — confere sozinho todo dia às 7h
     </div>
   }
 

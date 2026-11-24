@@ -2,7 +2,7 @@ import { Component, ElementRef, HostListener, inject, input, output, signal } fr
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { monthLabel, shiftMonth, toMonth } from '../../../features/assessment/assessment-format';
 
-const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 /**
  * O seletor de mês de todas as telas que filtram por mês: ‹ Novembro de 2026 ›. As setas andam um mês; clicar no
@@ -16,7 +16,7 @@ const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', '
   imports: [FaIconComponent],
   template: `
     <div class="month-nav" role="group" [attr.aria-label]="ariaLabel()">
-      <button type="button" class="chip icon-chip" (click)="go(-1)" aria-label="Mês anterior" title="Mês anterior">
+      <button type="button" class="nav-btn" (click)="go(-1)" aria-label="Mês anterior" title="Mês anterior">
         <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
       </button>
       <button type="button" class="month-label" [class.open]="open()" (click)="toggle()" title="Escolher o mês"
@@ -24,18 +24,18 @@ const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', '
         {{ label() }}
         <fa-icon class="caret" [icon]="['fas', open() ? 'chevron-up' : 'chevron-down']"></fa-icon>
       </button>
-      <button type="button" class="chip icon-chip" (click)="go(1)" aria-label="Próximo mês" title="Próximo mês">
+      <button type="button" class="nav-btn" (click)="go(1)" aria-label="Próximo mês" title="Próximo mês">
         <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
       </button>
 
       @if (open()) {
         <div class="picker" role="dialog" aria-label="Escolher o mês">
           <div class="picker-year">
-            <button type="button" class="chip icon-chip" (click)="year.set(year() - 1)" aria-label="Ano anterior">
+            <button type="button" class="nav-btn" (click)="year.set(year() - 1)" aria-label="Ano anterior">
               <fa-icon [icon]="['fas', 'chevron-left']"></fa-icon>
             </button>
             <strong>{{ year() }}</strong>
-            <button type="button" class="chip icon-chip" (click)="year.set(year() + 1)" aria-label="Próximo ano">
+            <button type="button" class="nav-btn" (click)="year.set(year() + 1)" aria-label="Próximo ano">
               <fa-icon [icon]="['fas', 'chevron-right']"></fa-icon>
             </button>
           </div>
@@ -58,13 +58,31 @@ const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', '
       gap: 8px;
     }
 
-    .icon-chip {
-      width: 34px;
-      height: 34px;
+    .nav-btn {
+      width: 32px;
+      height: 32px;
       padding: 0;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      border: 1px solid #dde1ea;
+      border-radius: 50%;
+      background: #fff;
+      color: #4b5563;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+      &:hover {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        background: #f3f7ff;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+      }
     }
 
     .month-label {
@@ -80,11 +98,6 @@ const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', '
       font-weight: 600;
       color: var(--text-title);
       cursor: pointer;
-
-      /* "Novembro de 2026": só a primeira letra (capitalize daria "Novembro De 2026"). */
-      &::first-letter {
-        text-transform: uppercase;
-      }
 
       &:hover,
       &.open {
@@ -118,9 +131,10 @@ const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', '
       justify-content: space-between;
       margin-bottom: 8px;
 
-      .icon-chip {
+      .nav-btn {
         width: 28px;
         height: 28px;
+        font-size: 11px;
       }
     }
 
@@ -190,7 +204,9 @@ export class MonthNavComponent {
 
   label(): string {
     const month = this.month();
-    return month ? monthLabel(month) : this.emptyLabel();
+    // "Novembro de 2026": só a primeira letra (o toLocaleDateString dá "novembro de 2026")
+    const text = month ? monthLabel(month) : this.emptyLabel();
+    return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
   go(delta: number): void {

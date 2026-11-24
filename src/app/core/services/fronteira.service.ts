@@ -73,7 +73,7 @@ export interface EfiscoCompanyResultDTO {
   companyId: string;
   companyName: string;
   period: string;
-  status: 'IMPORTADO' | 'SEM_EXTRATO' | 'SEM_IE' | 'ERRO';
+  status: 'IMPORTADO' | 'SEM_MUDANCA' | 'SEM_EXTRATO' | 'SEM_IE' | 'ERRO';
   detail?: string | null;
 }
 

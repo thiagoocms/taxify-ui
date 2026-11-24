@@ -270,6 +270,8 @@ export class FronteiraComponent implements OnInit {
         const company = sync.companies[0];
         if (company?.status === 'IMPORTADO') {
           this.toastr.success(`${company.detail} (${monthLabel(company.period)})`, 'e-Fisco');
+        } else if (company?.status === 'SEM_MUDANCA') {
+          this.toastr.info('O extrato no e-Fisco é o mesmo já importado - nada mudou.', 'e-Fisco');
         } else if (company?.status === 'SEM_EXTRATO') {
           this.toastr.info(company.detail ?? 'O e-Fisco não tem extrato para o período.', 'e-Fisco');
         } else if (sync.status === 'OK') {
