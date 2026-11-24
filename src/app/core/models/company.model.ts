@@ -52,6 +52,8 @@ export interface CompanyFilterDTO {
   deleted?: boolean;
   /** Busca livre: parte do nome OU do CNPJ/CPF (com ou sem pontuação). */
   search?: string;
+  /** Só as empresas desta UF ("PE"). */
+  uf?: string;
 }
 
 /** Um período do histórico de regime; validFrom/validUntil em "AAAA-MM", null = sempre / atual. */

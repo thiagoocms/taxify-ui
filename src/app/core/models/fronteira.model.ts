@@ -209,6 +209,8 @@ export interface FronteiraExtractDTO {
   codigoReceita?: string | null;
   credenciamentoAntecipacao?: string | null;
   credenciamentoInterno?: string | null;
+  /** O PDF do extrato está guardado: "Ver PDF" abre. */
+  temPdf?: boolean;
   dataVencimento?: string | null;
   emitidoEm?: string | null;
   icmsARecolher?: number | null;

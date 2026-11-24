@@ -214,7 +214,8 @@ export class FronteiraComponent implements OnInit {
   ]);
 
   readonly searchCompanies = (term: string): Observable<CompanyDTO[]> =>
-    this.companyService.getAll({ page: 0, size: 10 }, { search: term }).pipe(map((page) => page.content));
+    // só empresas de Pernambuco: o Fronteira é o ICMS antecipado de PE
+    this.companyService.getAll({ page: 0, size: 10 }, { search: term, uf: 'PE' }).pipe(map((page) => page.content));
 
   readonly companyLabel = (company: CompanyDTO): string =>
     company.documentNumber ? `${company.name} - ${formatDocument(company.documentNumber)}` : company.name;
@@ -251,6 +252,29 @@ export class FronteiraComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  /** "Ver PDF": o extrato guardado, numa aba nova. */
+  openExtractPdf(): void {
+    const companyId = this.companyId();
+    const periodo = this.report()?.periodo;
+    if (!companyId || !periodo) {
+      return;
+    }
+    // a aba abre já no clique (o navegador bloqueia janela aberta depois de uma resposta)
+    const tab = window.open('', '_blank');
+    this.fronteiraService.extractPdf(companyId, periodo).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+        if (tab) {
+          tab.location.href = url;
+        } else {
+          window.open(url, '_blank');
+        }
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      },
+      error: () => tab?.close(),
     });
   }
 

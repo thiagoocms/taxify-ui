@@ -86,6 +86,9 @@
       <div class="extract-strip">
         <div>
           <strong>Extrato nº {{ e.numeroExtrato || '—' }}</strong> · período {{ monthLabel(r.periodo) }}
+          @if (e.temPdf) {
+            <app-button icon="file-pdf" label="Ver PDF" variant="text" tooltip="Abrir o PDF do extrato" (onClick)="openExtractPdf()"></app-button>
+          }
           @if (e.dataVencimento) { · vence em {{ e.dataVencimento | date: 'dd/MM/yyyy' }} }
         </div>
         <div class="cell-sub">

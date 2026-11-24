@@ -20,6 +20,11 @@ export class FronteiraService {
   }
 
   /** O PDF do extrato baixado no e-Fisco; o período sai do próprio arquivo (reimportar substitui). */
+  /** O PDF guardado do extrato do período. */
+  extractPdf(companyId: string, periodo: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/extrato/pdf`, { params: { companyId, periodo }, responseType: 'blob' });
+  }
+
   /** Busca agora no e-Fisco o extrato da empresa no período (com o certificado do contador) e importa. */
   syncWithEfisco(companyId: string, periodo: string | null): Observable<EfiscoSyncResponseDTO> {
     const params: Record<string, string> = { companyId };
