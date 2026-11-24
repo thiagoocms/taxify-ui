@@ -18,6 +18,8 @@ import {debounceTime, distinctUntilChanged, Observable, of, Subject, Subscriber,
 import {formatDocument, maskDocument, onlyDigits} from '../../utils/document-mask';
 
 
+let nextInputId = 0;
+
 export type SelectOption = {
   value: any;
   label: string;
@@ -63,6 +65,12 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() step: string | null = null;
   @Input() min: string | number | null = null;
   @Input() autocomplete: string | null = null;
+  /** Id do campo (o label aponta para ele); sem valor, um único é gerado. */
+  @Input() inputId = `app-input-${++nextInputId}`;
+  /** Rótulo acessível do ícone clicável (ex.: "Mostrar senha"): com ele, o ícone vira um botão. */
+  @Input() iconLabel: string | null = null;
+  /** Estado de alternância do botão do ícone (aria-pressed), ex.: senha visível. */
+  @Input() iconPressed: boolean | null = null;
 
   @Output() onClick: EventEmitter<any> = new EventEmitter();
   @Output() itemSelected = new EventEmitter<any>();

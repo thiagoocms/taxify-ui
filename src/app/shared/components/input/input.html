@@ -1,5 +1,5 @@
 <div class="custom-input-container" [class.sm]="size === 'sm'">
-  <label [class.filled]="hasValue || focused || alwaysFloatLabel">{{ label }}</label>
+  <label [attr.for]="inputId" [class.filled]="hasValue || focused || alwaysFloatLabel">{{ label }}</label>
 
   <div class="wrapper">
     @switch (type) {
@@ -64,7 +64,10 @@
       }
       @default {
         <input
-          [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
+          [id]="inputId"
+          [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors, 'with-icon-button': !!icon && !!iconLabel }"
+          [attr.aria-invalid]="hasErrors ? true : null"
+          [attr.aria-describedby]="hasErrors ? inputId + '-error' : null"
           [type]="type"
           [attr.inputmode]="mask === 'document' ? 'numeric' : null"
           [attr.step]="step"
@@ -80,7 +83,15 @@
       }
     }
 
-    @if (icon) {
+    @if (icon && iconLabel) {
+      <!-- Com rótulo, o ícone é um botão de verdade (teclado e leitor de tela), ex.: mostrar/ocultar senha. -->
+      <button type="button" class="input-icon input-icon-button clickable"
+              [attr.aria-label]="iconLabel" [attr.title]="iconLabel" [attr.aria-controls]="inputId"
+              [attr.aria-pressed]="iconPressed"
+              (click)="toggle($event)">
+        <fa-icon [icon]="icon"></fa-icon>
+      </button>
+    } @else if (icon) {
       <div class="input-icon d-flex align-items-center justify-content-center h-100"
            [ngClass]="{
                 clickable: clickable
@@ -92,7 +103,7 @@
     <div class="underline"></div>
   </div>
 
-  <div *ngIf="hasErrors" class="error-messages active">
+  <div *ngIf="hasErrors" class="error-messages active" [id]="inputId + '-error'">
     <span *ngFor="let error of errorMessages">{{ error + " " }} </span>
   </div>
 

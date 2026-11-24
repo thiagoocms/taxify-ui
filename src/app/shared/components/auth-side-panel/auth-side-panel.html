@@ -1,41 +1,38 @@
-<div class="invoice-mock" aria-hidden="true">
-  <div class="invoice-mock-header">
-    <span class="invoice-mock-tag">NF-e</span>
-    <span class="invoice-mock-barcode"></span>
-  </div>
-  <div class="invoice-mock-key">{{ mockAccessKey }}</div>
-  <div class="invoice-mock-lines">
-    <div class="invoice-mock-line">
-      <span class="bar bar-lg"></span>
-      <span class="value">R$ 4.280,00</span>
-    </div>
-    <div class="invoice-mock-line">
-      <span class="bar bar-md"></span>
-      <span class="value">R$ 912,40</span>
-    </div>
-    <div class="invoice-mock-line">
-      <span class="bar bar-sm"></span>
-      <span class="value">R$ 156,00</span>
-    </div>
-  </div>
-  <div class="invoice-mock-audited">
-    <fa-icon [icon]="auditedIcon"></fa-icon>
-    Auditada
-  </div>
+<a class="panel-brand" [href]="siteUrl" aria-label="Taxify por CS Hub - ir para o site">
+  <img src="favicon.svg" alt="" width="36" height="36" />
+  <span>Taxify<small>por CS Hub</small></span>
+</a>
+
+<div class="panel-body">
+  <span class="panel-eyebrow">Começando pelo fiscal</span>
+  <h2>O escritório contábil num lugar só</h2>
+  <p class="panel-subtitle">
+    O Taxify busca as notas das empresas da carteira e a equipe trata só o que precisa de decisão.
+  </p>
+
+  <ul class="panel-features">
+    @for (feature of features; track feature.title) {
+      <li>
+        <span class="feature-icon" aria-hidden="true">
+          <fa-icon [icon]="feature.icon"></fa-icon>
+        </span>
+        <span class="feature-text">
+          <strong>{{ feature.title }}</strong>
+          <span>{{ feature.text }}</span>
+        </span>
+      </li>
+    }
+  </ul>
 </div>
 
-<h2>Auditoria contábil sem complicação</h2>
-<p class="panel-subtitle">
-  Centralize empresas, usuários e auditorias fiscais em uma única plataforma.
-</p>
-
-<ul class="panel-features">
-  @for (feature of features; track feature.text) {
-    <li>
-      <span class="feature-icon">
-        <fa-icon [icon]="feature.icon"></fa-icon>
-      </span>
-      {{ feature.text }}
-    </li>
-  }
-</ul>
+<div class="panel-links">
+  <a class="panel-link" [href]="siteUrl">
+    Conheça o Taxify
+    <fa-icon [icon]="arrowIcon" aria-hidden="true"></fa-icon>
+  </a>
+  <a class="panel-link panel-link-whats" [href]="whatsappUrl" target="_blank" rel="noopener">
+    <fa-icon [icon]="whatsappIcon" aria-hidden="true"></fa-icon>
+    Falar com a CS Hub
+    <span class="visually-hidden">(abre o WhatsApp em outra aba)</span>
+  </a>
+</div>

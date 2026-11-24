@@ -146,6 +146,24 @@ input.with-clear {
   color: #888;
 }
 
+.input-icon-button {
+  border: 0;
+  background: none;
+  padding: 6px;
+  height: auto;
+  line-height: 1;
+  border-radius: 6px;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+  }
+}
+
+input.with-icon-button {
+  padding-right: 40px;
+}
+
 .clickable{
   cursor: pointer;
 

@@ -1,154 +1,240 @@
-<div class="auth-page">
+<main class="auth-page">
+  <!-- Celular: o painel lateral some e vira este cabeçalho compacto, com a volta para o site. -->
+  <header class="mobile-brand">
+    <a class="mobile-brand-logo" [href]="siteUrl" aria-label="Taxify por CS Hub - ir para o site">
+      <img src="favicon.svg" alt="" width="32" height="32" />
+      <span>Taxify<small>por CS Hub</small></span>
+    </a>
+    <p>O escritório contábil num lugar só</p>
+    <a class="mobile-brand-link" [href]="siteUrl">
+      Conheça o Taxify <fa-icon [icon]="arrowRight" aria-hidden="true"></fa-icon>
+    </a>
+  </header>
+
   <div class="carousel-viewport shadow">
     <div class="form-panel" [class.slide-right]="activeIndex() === 1">
       <div class="form-track" [class.show-register]="activeIndex() === 1">
-        <!-- Login form -->
-        <div class="form-slide">
+        <!-- Login -->
+        <section class="form-slide" aria-labelledby="login-title" [attr.inert]="activeIndex() !== 0 ? '' : null">
           <div class="auth-header">
-            <h1>Entrar</h1>
-            <p class="text-muted">Acesse sua conta Taxify</p>
+            <h1 id="login-title">Entrar no Taxify</h1>
+            <p>Acesse a conferência fiscal do seu escritório.</p>
           </div>
 
-          <form [formGroup]="loginForm" (ngSubmit)="loginSubmit()">
-            <div class="mt-1">
-              <app-input formControlName="login" label="Login"></app-input>
+          @if (loginNotice()) {
+            <div class="form-alert success" role="status">
+              <fa-icon [icon]="successIcon" aria-hidden="true"></fa-icon>
+              <span>{{ loginNotice() }}</span>
             </div>
-            <div class="mt-3">
+          }
+
+          <form [formGroup]="loginForm" (ngSubmit)="loginSubmit()" novalidate [attr.aria-busy]="loginLoading()">
+            <div class="mt-1">
+              <app-input formControlName="login" label="Login" inputId="login-user" autocomplete="username"></app-input>
+            </div>
+            <div class="mt-2">
               <app-input
                 formControlName="password"
                 label="Senha"
+                inputId="login-password"
+                autocomplete="current-password"
                 [type]="hideLoginPassword() ? 'password' : 'text'"
                 [icon]="loginEyeIcon()"
+                [iconLabel]="hideLoginPassword() ? 'Mostrar senha' : 'Ocultar senha'"
+                [iconPressed]="!hideLoginPassword()"
                 [clickable]="true"
                 (onClick)="hideLoginPassword.set(!hideLoginPassword())"
               ></app-input>
             </div>
 
+            <div class="forgot-row">
+              <button
+                type="button"
+                class="link-btn small"
+                aria-controls="forgot-help"
+                [attr.aria-expanded]="showForgotHelp()"
+                (click)="showForgotHelp.set(!showForgotHelp())"
+              >
+                Esqueceu a senha?
+              </button>
+            </div>
+            @if (showForgotHelp()) {
+              <p id="forgot-help" class="forgot-help">
+                Peça ao administrador do seu escritório para definir uma nova senha em
+                <strong>Cadastro &rsaquo; Usuários</strong>. Se você é o administrador,
+                <a [href]="whatsappUrl" target="_blank" rel="noopener">fale com a CS Hub</a>.
+              </p>
+            }
+
+            <div aria-live="assertive">
+              @if (loginError()) {
+                <div class="form-alert error" role="alert">
+                  <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
+                  <span>{{ loginError() }}</span>
+                </div>
+              }
+            </div>
+
             <div class="d-grid mt-2">
               <app-button
                 type="submit"
+                size="large"
                 [label]="loginLoading() ? 'Entrando...' : 'Entrar'"
                 [disabled]="loginLoading()"
-                styleClass="w-100"
+                styleClass="w-100 auth-submit"
               ></app-button>
             </div>
           </form>
 
-          <p class="switch-link">
-            Não tem conta? <button type="button" class="link-btn" (click)="showRegister()">Cadastre-se</button>
-          </p>
-        </div>
+          <div class="not-client">
+            <p class="not-client-title">Ainda não é cliente?</p>
+            <a class="btn btn-outline-primary w-100 whats-btn" [href]="whatsappUrl" target="_blank" rel="noopener">
+              <fa-icon [icon]="whatsappIcon" aria-hidden="true"></fa-icon>
+              Fale com a CS Hub
+              <span class="visually-hidden">(abre o WhatsApp em outra aba)</span>
+            </a>
+            <p class="switch-link">
+              Ou <button type="button" class="link-btn" (click)="showRegister()">crie a conta do seu escritório</button>
+            </p>
+          </div>
+        </section>
 
-        <!-- Register wizard -->
-        <div class="form-slide">
+        <!-- Cadastro: cria um escritório novo, com quem se cadastra como administrador. -->
+        <section class="form-slide register-slide" aria-labelledby="register-title" [attr.inert]="activeIndex() !== 1 ? '' : null">
           @if (step() > 0) {
-            <button type="button" class="back-arrow" (click)="changeStep(-1)">
-              <fa-icon [icon]="arrowLeft"></fa-icon>
+            <button type="button" class="back-arrow" aria-label="Voltar para a etapa anterior" (click)="changeStep(-1)">
+              <fa-icon [icon]="arrowLeft" aria-hidden="true"></fa-icon>
             </button>
           }
 
-          <div class="brand">Taxify</div>
+          <div class="auth-header register-header" [class.with-back]="step() > 0">
+            <h1 id="register-title">Criar a conta do escritório</h1>
+            <p>Para escritórios contábeis que vão usar o Taxify.</p>
+          </div>
 
-          <div class="steps-row">
-            <div class="step-col">
+          <ol class="steps-row" aria-label="Etapas do cadastro">
+            <li class="step-col" [attr.aria-current]="step() === 1 ? 'step' : null">
               <app-step-indicator [stepIndex]="step()" [stepReference]="1"></app-step-indicator>
               <div class="step-labels">
                 <div class="step-title">Dados</div>
-                <div class="step-subtitle">Seus dados pessoais</div>
+                <div class="step-subtitle">Nome e documento</div>
               </div>
-            </div>
-            <div class="step-col">
+            </li>
+            <li class="step-col" [attr.aria-current]="step() === 2 ? 'step' : null">
               <app-step-indicator [stepIndex]="step()" [stepReference]="2"></app-step-indicator>
               <div class="step-labels">
-                <div class="step-title">Contato</div>
+                <div class="step-title">Acesso</div>
                 <div class="step-subtitle">Login e e-mail</div>
               </div>
-            </div>
-            <div class="step-col">
+            </li>
+            <li class="step-col" [attr.aria-current]="step() === 3 ? 'step' : null">
               <app-step-indicator [stepIndex]="step()" [stepReference]="3"></app-step-indicator>
               <div class="step-labels">
                 <div class="step-title">Senha</div>
-                <div class="step-subtitle">Crie uma senha segura</div>
+                <div class="step-subtitle">Mínimo de 6 caracteres</div>
+              </div>
+            </li>
+          </ol>
+
+          <form [formGroup]="registerForm" class="wizard-form" (ngSubmit)="changeStep()" novalidate [attr.aria-busy]="registerLoading()">
+            <div class="wizard-fields">
+              @switch (step()) {
+                @case (1) {
+                  <div class="mt-1">
+                    <app-input formControlName="name" label="Seu nome completo" inputId="register-name" autocomplete="name"></app-input>
+                  </div>
+
+                  <div class="mt-2 row-fields">
+                    <app-input
+                      formControlName="documentType"
+                      label="Documento"
+                      inputId="register-document-type"
+                      type="select"
+                      [options]="documentTypeOptions"
+                    ></app-input>
+                    <app-input formControlName="documentNumber" mask="document" label="CPF / CNPJ" inputId="register-document" autocomplete="off"></app-input>
+                  </div>
+                  <p class="field-hint">O escritório começa com o seu nome; dá para mudar depois.</p>
+                }
+                @case (2) {
+                  <div class="mt-1">
+                    <app-input formControlName="login" label="Login (para entrar no Taxify)" inputId="register-login" autocomplete="username"></app-input>
+                  </div>
+                  <div class="mt-2">
+                    <app-input formControlName="email" type="email" label="E-mail" inputId="register-email" autocomplete="email"></app-input>
+                  </div>
+                }
+                @case (3) {
+                  <div class="mt-1">
+                    <app-input
+                      formControlName="password"
+                      label="Senha"
+                      inputId="register-password"
+                      autocomplete="new-password"
+                      [type]="hidePassword() ? 'password' : 'text'"
+                      [icon]="eyeIcon()"
+                      [iconLabel]="hidePassword() ? 'Mostrar senha' : 'Ocultar senha'"
+                      [iconPressed]="!hidePassword()"
+                      [clickable]="true"
+                      (onClick)="hidePassword.set(!hidePassword())"
+                    ></app-input>
+                  </div>
+
+                  <div class="mt-2">
+                    <app-input
+                      formControlName="confirmPassword"
+                      label="Confirme a senha"
+                      inputId="register-password-confirm"
+                      autocomplete="new-password"
+                      [type]="hideConfirmPassword() ? 'password' : 'text'"
+                      [icon]="eyeIconConfirm()"
+                      [iconLabel]="hideConfirmPassword() ? 'Mostrar senha' : 'Ocultar senha'"
+                      [iconPressed]="!hideConfirmPassword()"
+                      [clickable]="true"
+                      (onClick)="hideConfirmPassword.set(!hideConfirmPassword())"
+                    ></app-input>
+                  </div>
+                }
+                @default {
+                  <div class="welcome-box">
+                    <p class="welcome-title">O que acontece no cadastro</p>
+                    <ul class="welcome-list">
+                      <li>Você cria a conta de um <strong>escritório novo</strong> e entra como <strong>administrador</strong>.</li>
+                      <li>Depois cadastra as empresas da carteira, a equipe e os certificados.</li>
+                      <li>Já trabalha num escritório que usa o Taxify? Não crie outra conta: peça ao administrador o seu usuário.</li>
+                    </ul>
+                  </div>
+                }
+              }
+            </div>
+
+            <div aria-live="assertive">
+              @if (registerError()) {
+                <div class="form-alert error" role="alert">
+                  <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
+                  <span>{{ registerError() }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="wizard-footer">
+              <div class="d-grid">
+                <app-button
+                  type="submit"
+                  size="large"
+                  [label]="buttonLabel()"
+                  [disabled]="registerLoading()"
+                  styleClass="w-100 auth-submit"
+                ></app-button>
               </div>
             </div>
-          </div>
-
-          <form [formGroup]="registerForm" class="wizard-form">
-            @switch (step()) {
-              @case (1) {
-                <div class="mt-1">
-                  <app-input formControlName="name" label="Nome completo"></app-input>
-                </div>
-
-                <div class="mt-3 row-fields">
-                  <app-input
-                    formControlName="documentType"
-                    label="Documento"
-                    type="select"
-                    [options]="documentTypeOptions"
-                  ></app-input>
-                  <app-input formControlName="documentNumber" mask="document" label="CPF / CNPJ"></app-input>
-                </div>
-              }
-              @case (2) {
-                <div class="mt-1">
-                  <app-input formControlName="login" label="Login"></app-input>
-                </div>
-                <div class="mt-3">
-                  <app-input formControlName="email" type="email" label="E-mail"></app-input>
-                </div>
-              }
-              @case (3) {
-                <div class="mt-1">
-                  <app-input
-                    formControlName="password"
-                    label="Senha"
-                    [type]="hidePassword() ? 'password' : 'text'"
-                    [icon]="eyeIcon()"
-                    [clickable]="true"
-                    (onClick)="hidePassword.set(!hidePassword())"
-                  ></app-input>
-                </div>
-
-                <div class="mt-3">
-                  <app-input
-                    formControlName="confirmPassword"
-                    label="Confirme a senha"
-                    [type]="hideConfirmPassword() ? 'password' : 'text'"
-                    [icon]="eyeIconConfirm()"
-                    [clickable]="true"
-                    (onClick)="hideConfirmPassword.set(!hideConfirmPassword())"
-                  ></app-input>
-                </div>
-              }
-              @default {
-                <div class="mt-3 welcome-box">
-                  <h5 class="fw-bold mb-2">Bem-vindo ao <span class="text-primary">Taxify</span>!</h5>
-                  <p class="text-muted mb-0">Vamos iniciar o seu cadastro?</p>
-                </div>
-              }
-            }
-
           </form>
 
-          <div class="wizard-footer">
-            <div class="d-grid">
-              <app-button
-                [label]="buttonLabel()"
-                [disabled]="registerLoading()"
-                styleClass="w-100"
-                (onClick)="changeStep()"
-              ></app-button>
-            </div>
-
-            @if (step() === 0) {
-              <p class="switch-link">Já tem conta? <button type="button" class="link-btn" (click)="showLogin()">Entrar</button></p>
-            }
-          </div>
-        </div>
+          <p class="switch-link">Já tem conta? <button type="button" class="link-btn" (click)="showLogin()">Entrar</button></p>
+        </section>
       </div>
     </div>
 
     <app-auth-side-panel class="auth-illustration" [class.slide-left]="activeIndex() === 1"></app-auth-side-panel>
   </div>
-</div>
+</main>

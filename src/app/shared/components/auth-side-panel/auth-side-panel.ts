@@ -1,7 +1,20 @@
 import { Component } from '@angular/core';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faBuilding, faCircleCheck, faClipboardCheck, faUserShield } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowRight,
+  faComments,
+  faCalendarCheck,
+  faFileCircleCheck,
+  faUsers,
+  faStopwatch,
+} from '@fortawesome/free-solid-svg-icons';
+import { CSHUB_WHATSAPP_URL, SITE_URL } from './auth-links';
 
+/**
+ * Lado institucional das telas de login e cadastro: continua o site de apresentação
+ * (https://taxify.cshub.com.br/) - mesma mensagem, mesmos destaques e a volta para o site.
+ * Só o que o sistema faz de verdade, sem números.
+ */
 @Component({
   selector: 'app-auth-side-panel',
   standalone: true,
@@ -10,13 +23,15 @@ import { faBuilding, faCircleCheck, faClipboardCheck, faUserShield } from '@fort
   styleUrl: './auth-side-panel.scss',
 })
 export class AuthSidePanel {
-  readonly auditedIcon = faCircleCheck;
-  // A real NF-e access key is 44 digits, always shown on the DANFE in
-  // 11 groups of 4 — the mock below borrows that exact shape.
-  readonly mockAccessKey = '3524 0114 2000 9900 0187 5500 1000 0012 3456 7890 1234';
+  readonly siteUrl = SITE_URL;
+  readonly whatsappUrl = CSHUB_WHATSAPP_URL;
+  readonly arrowIcon = faArrowRight;
+  readonly whatsappIcon = faComments;
+
   readonly features = [
-    { icon: faClipboardCheck, text: 'Auditoria de notas fiscais' },
-    { icon: faBuilding, text: 'Gestão centralizada de empresas' },
-    { icon: faUserShield, text: 'Controle de acesso por papel' },
+    { icon: faFileCircleCheck, title: 'Notas conferidas', text: 'NF-e de entrada e saída da SIEG e da SEFAZ, com os impostos refeitos item a item.' },
+    { icon: faUsers, title: 'Carteira, equipe e honorários', text: 'Cada pessoa com o seu perfil e as suas empresas, e o financeiro de cada cliente.' },
+    { icon: faStopwatch, title: 'Manifestação no prazo', text: 'Cada nota com o prazo da manifestação conclusiva e envio em lote.' },
+    { icon: faCalendarCheck, title: 'Apuração e fechamento do mês', text: 'Faturamento, RBT12 e impostos estimados por empresa, com relatório.' },
   ];
 }

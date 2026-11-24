@@ -1,140 +1,67 @@
+// Lado institucional do login/cadastro: o mesmo azul do site e do menu do sistema (tokens do styles.scss).
 :host {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 24px;
   height: 100%;
-  padding: 48px 40px;
+  padding: 36px 36px 32px;
   color: #fff;
-  background: linear-gradient(150deg, #2c65b8 0%, #10305e 100%);
+  background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-darker) 100%);
   position: relative;
   overflow: hidden;
 }
 
-// A stamped, slightly-tilted NF-e (the Brazilian electronic invoice) stands
-// in for the generic "icon in a colored square" opener — it's the one
-// artifact this product's whole job revolves around auditing.
-.invoice-mock {
-  position: relative;
-  background: #fbfaf7;
-  color: #1f2937;
-  border-radius: 14px;
-  padding: 16px 18px 20px;
-  margin-bottom: 32px;
-  max-width: 300px;
-  box-shadow: 0 20px 40px rgba(6, 20, 46, 0.35);
-  transform: rotate(-2deg);
-}
-
-.invoice-mock-header {
-  display: flex;
+.panel-brand {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px dashed #d8d3c8;
-}
-
-.invoice-mock-tag {
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
   font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.5px;
-  color: var(--color-primary);
+  font-size: 18px;
+  line-height: 1.1;
+  align-self: flex-start;
+  border-radius: 8px;
+
+  img {
+    border-radius: 9px;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+  }
+
+  small {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+  }
 }
 
-.invoice-mock-barcode {
-  width: 72px;
-  height: 20px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    #1f2937 0, #1f2937 2px,
-    transparent 2px, transparent 3px,
-    #1f2937 3px, #1f2937 4px,
-    transparent 4px, transparent 6px,
-    #1f2937 6px, #1f2937 8px,
-    transparent 8px, transparent 9px
-  );
-}
-
-.invoice-mock-key {
-  font-family: 'Courier New', monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.5px;
-  word-spacing: 2px;
-  color: #6b7280;
+.panel-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+  background: #fff;
+  border-radius: 999px;
+  padding: 3px 10px;
   margin-bottom: 14px;
 }
 
-.invoice-mock-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.invoice-mock-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-
-  .bar {
-    height: 8px;
-    border-radius: 4px;
-    background: #e5e1d8;
-  }
-
-  .bar-lg {
-    width: 120px;
-  }
-
-  .bar-md {
-    width: 90px;
-  }
-
-  .bar-sm {
-    width: 68px;
-  }
-
-  .value {
-    font-size: 12px;
-    font-weight: 600;
-    color: #1f2937;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-}
-
-.invoice-mock-audited {
-  position: absolute;
-  top: -12px;
-  right: -14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #16a34a;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 999px;
-  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.4);
-  transform: rotate(4deg);
-}
-
 h2 {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   line-height: 1.25;
-  position: relative;
 }
 
 .panel-subtitle {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 32px;
-  max-width: 320px;
-  position: relative;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0 0 24px;
+  line-height: 1.5;
 }
 
 .panel-features {
@@ -143,15 +70,12 @@ h2 {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  position: relative;
+  gap: 14px;
 
   li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
-    font-size: 14px;
-    font-weight: 500;
   }
 }
 
@@ -159,7 +83,8 @@ h2 {
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -167,13 +92,57 @@ h2 {
   font-size: 14px;
 }
 
-// The illustration panel becomes visible at 768px (see auth.component.scss)
-// but the carousel doesn't reach its comfortable 960px width until well
-// past that — without this, the headline was wider than the panel and got
-// silently clipped by :host's overflow: hidden instead of wrapping.
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+
+  strong {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+.panel-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.panel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 6px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.panel-brand:focus-visible,
+.panel-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+// Entre 768px e ~1000px o cartão ainda é estreito: tudo um pouco menor para não cortar.
 @media (min-width: 768px) and (max-width: 1000px) {
   :host {
-    padding: 36px 28px;
+    padding: 28px 24px 24px;
   }
 
   h2 {
@@ -182,20 +151,10 @@ h2 {
 
   .panel-subtitle {
     font-size: 13px;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
   }
 
-  .invoice-mock {
-    max-width: 220px;
-    padding: 12px 14px 16px;
-    margin-bottom: 24px;
-  }
-
-  .invoice-mock-key {
-    font-size: 9px;
-  }
-
-  .panel-features li {
-    font-size: 13px;
+  .feature-text span {
+    display: none;
   }
 }
