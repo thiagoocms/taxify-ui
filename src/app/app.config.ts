@@ -7,6 +7,7 @@ import { provideRouter, withNavigationErrorHandler, withViewTransitions } from '
 import { provideToastr } from 'ngx-toastr';
 
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { actionLoadingInterceptor } from './core/interceptors/action-loading.interceptor';
 import { ngrokInterceptor } from './core/interceptors/ngrok.interceptor';
 import { routes } from './app.routes';
 
@@ -40,7 +41,7 @@ export const appConfig: ApplicationConfig = {
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' },
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withViewTransitions(), withNavigationErrorHandler(reloadOnStaleChunk)),
-    provideHttpClient(withInterceptors([ngrokInterceptor, authInterceptor])),
+    provideHttpClient(withInterceptors([ngrokInterceptor, authInterceptor, actionLoadingInterceptor])),
     provideAnimations(),
     provideToastr({
       timeOut: 5000,

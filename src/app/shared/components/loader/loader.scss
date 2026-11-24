@@ -8,7 +8,11 @@ $cycle: 2.2s;
   animation: loader-appear 0.4s ease-out 0.3s both;
 }
 
-:host(.loader-block) .loader {
+:host(.loader-page) {
+  display: none;
+}
+
+:host(.loader-section) .loader {
   flex-direction: column;
   justify-content: center;
   gap: 10px;
@@ -70,6 +74,11 @@ $cycle: 2.2s;
 @keyframes loader-appear {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes loader-leave {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 .loader {
@@ -141,5 +150,40 @@ $cycle: 2.2s;
 
   .loader {
     opacity: 0.85;
+  }
+}
+
+// ---------------------------------------------------------------- véu de tela (renderizado no shell)
+:host(.loader-screen) {
+  position: fixed;
+  inset: 0;
+  z-index: 1035; // abaixo dos modais (1040+)
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.32);
+  animation: loader-appear 0.25s ease-out 0.15s both;
+
+  &.leaving {
+    animation: loader-leave 0.2s ease-in forwards;
+  }
+
+  .loader {
+    flex-direction: column;
+    gap: 12px;
+    min-width: 200px;
+    padding: 22px 28px;
+    border-radius: var(--border-radius);
+    background: #fff;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  }
+
+  .mark {
+    width: 40px;
+    height: 40px;
+  }
+
+  .message {
+    color: var(--text-title);
   }
 }

@@ -106,15 +106,13 @@ body { margin: 0; font-family: 'Poppins', 'Helvetica Neue', sans-serif; }
 }
 
 /* ---------------------------------------------------------------- transições
-   Só opacidade (sem transform, para não mudar a referência dos modais "fixed"): a tela que abre,
-   a tabela e o conteúdo da aba que chegam depois do carregando entram suaves, sem o "pulo". */
+   Só opacidade (sem transform, para não mudar a referência dos modais "fixed"): a tabela e o conteúdo
+   da aba que chegam depois do carregando entram suaves. A troca de tela fica por conta do véu do AppComponent. */
 @keyframes tx-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-app-root > *,
-.main-content > *:not(router-outlet),
 app-table,
 .table-responsive,
 .tab-panel > * {
@@ -122,8 +120,6 @@ app-table,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  app-root > *,
-  .main-content > *:not(router-outlet),
   app-table,
   .table-responsive,
   .tab-panel > * {

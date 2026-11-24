@@ -1,11 +1,13 @@
-<div class="loader">
-  <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
-    <rect class="tile" width="64" height="64" rx="14" />
-    <rect class="bar" x="14" y="14" width="36" height="10" rx="2" />
-    <rect class="stem" x="27" y="14" width="10" height="36" rx="2" />
-    <circle class="dot" cx="47" cy="46" r="6" />
-  </svg>
-  @if (message) {
-    <span class="message">{{ message }}</span>
-  }
-</div>
+@if (variant !== 'page') {
+  <div class="loader">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+      <rect class="tile" width="64" height="64" rx="14" />
+      <rect class="bar" x="14" y="14" width="36" height="10" rx="2" />
+      <rect class="stem" x="27" y="14" width="10" height="36" rx="2" />
+      <circle class="dot" cx="47" cy="46" r="6" />
+    </svg>
+    @if (message) {
+      <span class="message">{{ message }}</span>
+    }
+  </div>
+}

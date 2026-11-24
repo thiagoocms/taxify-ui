@@ -1,2 +1,5 @@
 <router-outlet></router-outlet>
 <app-confirm-dialog></app-confirm-dialog>
+@if (screen() !== 'hidden') {
+  <app-loader variant="screen" [class.leaving]="screen() === 'leaving'" [message]="overlay.message()"></app-loader>
+}
