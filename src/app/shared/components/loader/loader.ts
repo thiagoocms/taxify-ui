@@ -6,7 +6,7 @@ import { LoadingOverlayService } from './loading-overlay.service';
  * - page (padrão): a tela ainda não chegou - liga o véu escuro por cima da tela inteira (um só, no shell);
  * - section: centralizado na área, para o que carrega dentro de um modal;
  * - inline: pequeno, ao lado do texto (dentro de cartões e linhas);
- * - overlay: véu claro só sobre a tabela que está recarregando, com os dados de antes visíveis;
+ * - overlay: a tabela recarregando - também usa o véu escuro da tela (os dados de antes continuam por baixo);
  * - screen: o véu em si (uso interno do AppComponent).
  */
 @Component({
@@ -39,6 +39,6 @@ export class LoaderComponent implements OnInit, OnChanges, OnDestroy {
 
   private sync(): void {
     this.release?.();
-    this.release = this.variant === 'page' ? this.overlay.show(this.message) : null;
+    this.release = this.variant === 'page' || this.variant === 'overlay' ? this.overlay.show(this.message) : null;
   }
 }

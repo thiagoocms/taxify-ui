@@ -44,31 +44,8 @@ $cycle: 2.2s;
   }
 }
 
-// Sobre a tabela: só um véu claro e a logo pequena no alto; os dados de antes continuam visíveis.
 :host(.loader-overlay) {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 56px;
-  background: rgba(255, 255, 255, 0.4);
-  transition: background-color 0.2s ease;
-
-  .loader {
-    gap: 8px;
-    opacity: 0.85;
-  }
-
-  .mark {
-    width: 20px;
-    height: 20px;
-  }
-
-  .message {
-    font-size: 13px;
-  }
+  display: none;
 }
 
 @keyframes loader-appear {

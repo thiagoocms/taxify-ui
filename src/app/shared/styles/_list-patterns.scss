@@ -94,8 +94,8 @@
 .table-wrapper {
   position: relative;
 
+  // recarregando: quem escurece é o véu da tela; a tabela só não aceita clique
   &.is-loading app-table {
-    opacity: 0.45;
     pointer-events: none;
   }
 }
