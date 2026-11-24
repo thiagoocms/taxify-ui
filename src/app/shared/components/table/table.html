@@ -35,7 +35,7 @@
         <tbody>
           @for (row of data; track row.id || $index) {
             <tr
-              class="cursor-pointer"
+              [class.cursor-pointer]="rowClickable"
               (click)="handleRowClick(row)"
               [class.selected]="selectedRows.has(row)">
               @if (config.selectable) {

@@ -118,6 +118,11 @@ export class Table {
     }
   }
 
+  /** Só a tela que escuta o clique (ou seleciona a linha) mostra a linha como clicável. */
+  get rowClickable(): boolean {
+    return this.rowClick.observed || !!this.config.rowSelectable;
+  }
+
   public handleRowClick(row: any): void {
     if (this.config.rowSelectable) {
       this.selectedRows.clear();

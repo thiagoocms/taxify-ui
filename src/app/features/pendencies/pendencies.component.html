@@ -117,7 +117,11 @@
 <ng-template #pendencyCell let-row="row">
   <div class="pendency-cell">
     <div class="cell-sub">{{ typeLabel(row) }}</div>
-    <strong>{{ row.title }}</strong>
+    @if (linkFor(row)) {
+      <button type="button" class="note-link" title="Abrir" (click)="$event.stopPropagation(); open(row)">{{ row.title }}</button>
+    } @else {
+      <strong>{{ row.title }}</strong>
+    }
     @if (row.detail) { <div class="detail">{{ row.detail }}</div> }
     @if (row.status !== 'ABERTA') {
       <div class="cell-sub fst-italic">
@@ -139,9 +143,6 @@
 
 <ng-template #actionsCell let-row="row">
   <div class="row-actions">
-    @if (linkFor(row)) {
-      <app-button icon="up-right-from-square" tooltip="Abrir" variant="text" (onClick)="open(row)"></app-button>
-    }
     @if (canClose) {
       @if (row.status === 'ABERTA') {
         <app-button icon="check" tooltip="Resolver" variant="text" severity="success" (onClick)="askClose(row, 'resolver')"></app-button>

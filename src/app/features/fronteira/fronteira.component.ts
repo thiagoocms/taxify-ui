@@ -162,14 +162,14 @@ export class FronteiraComponent implements OnInit {
     { name: 'Cobrado no e-Fisco', cellTemplate: this.chargedCell(), headerClass: 'justify-content-end', width: '160px' },
     { name: 'Cálculo do Taxify', cellTemplate: this.calcCell(), headerClass: 'justify-content-end', width: '170px' },
     { name: 'Resultado', cellTemplate: this.resultCell(), width: '230px' },
-    { name: '', cellTemplate: this.actionsCell(), width: '96px' },
+    { name: '', cellTemplate: this.actionsCell(), width: '56px' },
   ]);
 
   readonly unchargedColumns = computed<TableColumn[]>(() => [
     { name: 'Nota', cellTemplate: this.unchargedNoteCell() },
     { name: 'Valor', cellTemplate: this.unchargedValueCell(), headerClass: 'justify-content-end', width: '140px' },
     { name: 'Prévia do ICMS', cellTemplate: this.unchargedCalcCell(), headerClass: 'justify-content-end', width: '170px' },
-    { name: '', cellTemplate: this.unchargedActionsCell(), width: '96px' },
+    { name: '', cellTemplate: this.unchargedActionsCell(), width: '56px' },
   ]);
 
   readonly ruleColumns = computed<TableColumn[]>(() => [

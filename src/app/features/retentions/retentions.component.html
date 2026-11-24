@@ -90,9 +90,7 @@
 
 <ng-template #noteCell let-row="row">
   <div>
-    <a href="" (click)="$event.preventDefault(); $event.stopPropagation(); openNote(row)">
-      {{ row.documentType === 'NFSE' ? 'NFS-e' : 'NF-e' }} {{ row.numero || '' }}
-    </a>
+    <button type="button" class="note-link" title="Abrir a nota" (click)="$event.stopPropagation(); openNote(row)">{{ row.documentType === 'NFSE' ? 'NFS-e' : 'NF-e' }} {{ row.numero || '' }}</button>
     <div class="cell-sub">{{ row.issueDate | date: 'dd/MM/yyyy' }}</div>
   </div>
 </ng-template>

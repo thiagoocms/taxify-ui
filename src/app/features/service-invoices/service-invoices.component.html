@@ -114,7 +114,7 @@
 
 <ng-template #noteCell let-row="row">
   <div>
-    <strong>Nº {{ row.numero || '—' }}</strong>
+    <button type="button" class="note-link" title="Abrir a nota" (click)="$event.stopPropagation(); openDetail(row)">Nº {{ row.numero || '—' }}</button>
     <div class="status-cell mt-1">
       <span [class]="'state-badge ' + (row.direction === 'PRESTADA' ? 'info' : '')">
         {{ row.direction === 'PRESTADA' ? 'Prestada' : row.direction === 'TOMADA' ? 'Tomada' : 'Terceiro' }}

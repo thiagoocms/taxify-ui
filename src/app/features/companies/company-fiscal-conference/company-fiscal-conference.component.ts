@@ -97,6 +97,12 @@ export class CompanyFiscalConferenceComponent {
     });
   }
 
+  /** "NF 473" - o número sai da chave de acesso (posições 26 a 34); sem chave, "Abrir nota". */
+  noteLabel(finding: FiscalCheckFindingDTO): string {
+    const key = (finding.accessKey ?? '').replace(/\D/g, '');
+    return key.length === 44 ? `NF ${Number(key.substring(25, 34))}` : 'Abrir nota';
+  }
+
   openNote(finding: FiscalCheckFindingDTO): void {
     this.router.navigate(['/notas-fiscais', finding.documentId]);
   }

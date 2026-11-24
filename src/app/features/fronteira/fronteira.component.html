@@ -167,7 +167,11 @@
 <ng-template #noteCell let-row="row">
   <div class="note-cell">
     <div>
-      <strong>NF {{ row.numeroNota }}</strong>
+      @if (row.nota?.documentId) {
+        <button type="button" class="note-link" title="Abrir a nota" (click)="$event.stopPropagation(); openNote(row.nota.documentId)">NF {{ row.numeroNota }}</button>
+      } @else {
+        <strong>NF {{ row.numeroNota }}</strong>
+      }
       <span class="state-badge uf-badge">{{ row.uf }}</span>
       <span class="party" [title]="lineTitle(row)">{{ lineTitle(row) }}</span>
     </div>
@@ -216,14 +220,13 @@
 <ng-template #actionsCell let-row="row">
   <div class="row-actions">
     @if (row.calculo) { <app-button icon="calculator" tooltip="Ver cálculo" variant="text" (onClick)="showCalc(row)"></app-button> }
-    @if (row.nota) { <app-button icon="file-invoice" tooltip="Abrir nota" variant="text" (onClick)="openNote(row.nota.documentId)"></app-button> }
   </div>
 </ng-template>
 
 <ng-template #unchargedNoteCell let-row="row">
   <div class="note-cell">
     <div>
-      <strong>NF {{ row.numero || '—' }}</strong>
+      <button type="button" class="note-link" title="Abrir a nota" (click)="$event.stopPropagation(); openNote(row.documentId)">NF {{ row.numero || '—' }}</button>
       <span class="state-badge uf-badge">{{ row.emitenteUf }}</span>
       <span class="party" [title]="unchargedTitle(row)">{{ unchargedTitle(row) }}</span>
     </div>
@@ -254,7 +257,6 @@
 <ng-template #unchargedActionsCell let-row="row">
   <div class="row-actions">
     @if (row.calculo) { <app-button icon="calculator" tooltip="Ver cálculo" variant="text" (onClick)="showUnchargedCalc(row)"></app-button> }
-    <app-button icon="file-invoice" tooltip="Abrir nota" variant="text" (onClick)="openNote(row.documentId)"></app-button>
   </div>
 </ng-template>
 

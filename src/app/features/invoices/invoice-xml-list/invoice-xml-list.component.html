@@ -178,7 +178,7 @@
     <div class="note-number">
       <span class="type-badge">{{ documentTypeLabel(row) }}</span>
       @if (row.numero) {
-        <strong>Nº {{ row.numero }}</strong>
+        <button type="button" class="note-link" title="Abrir a nota" (click)="$event.stopPropagation(); openDetail(row)">Nº {{ row.numero }}</button>
         @if (row.serie) {
           <span class="text-muted">· Série {{ row.serie }}</span>
         }

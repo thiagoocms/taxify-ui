@@ -113,7 +113,11 @@
         <span class="state-badge warn">a conferir</span>
       }
     </div>
-    <strong>{{ row.title }}</strong>
+    @if (row.objectType === 'NOTE' && row.objectId) {
+      <button type="button" class="note-link" title="Abrir a nota" (click)="$event.stopPropagation(); openNote(row)">{{ row.title }}</button>
+    } @else {
+      <strong>{{ row.title }}</strong>
+    }
     @if (row.detail) { <div class="detail">{{ row.detail }}</div> }
     @if (row.status !== 'ABERTA') {
       <div class="cell-sub fst-italic">
@@ -127,9 +131,6 @@
 
 <ng-template #actionsCell let-row="row">
   <div class="row-actions">
-    @if (row.objectType === 'NOTE' && row.objectId) {
-      <app-button icon="file-invoice" tooltip="Abrir nota" variant="text" (onClick)="openNote(row)"></app-button>
-    }
     @if (canClose) {
       @if (row.status === 'ABERTA') {
         <app-button icon="check" tooltip="Resolver" variant="text" severity="success" (onClick)="askClose(row, 'resolver')"></app-button>
