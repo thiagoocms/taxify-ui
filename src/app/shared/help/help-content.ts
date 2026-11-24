@@ -236,7 +236,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       {
         title: 'Como o Taxify calcula',
         items: [
-          'Cada item da nota é calculado pela Tabela de ICMS: alíquota interestadual pela origem e pela UF (4%, 7% ou 12%), alíquota interna de PE (modal e exceções por NCM), ST com a MVA ajustada e, para empresa do Simples, o percentual do art. 363-A.',
+          'Cada item da nota é calculado pela Tabela de ICMS: alíquota interestadual pela origem e pela UF (4%, 7% ou 12%), alíquota interna de PE (modal e exceções por NCM), ST com a MVA ajustada e a carga líquida do credenciamento (o "tipo de cálculo" do e-Fisco, que vale para a empresa credenciada de qualquer regime) ou do Simples (art. 363-A).',
           'Devolução, remessa e outras saídas ficam sem antecipação; item com ST já retido pelo fornecedor também.',
           'A SEFAZ-PE arredonda de um jeito próprio: o Taxify calcula de 4 formas e a nota confere quando o valor cobrado cai na faixa (tolerância de R$ 0,03).',
           '"Ver cálculo" mostra a memória de cada item: as regras usadas, os valores e a fórmula.',
@@ -248,6 +248,8 @@ export const HELP_ARTICLES: HelpArticle[] = [
           'Quando quiser calcular diferente, use "Usar fórmula própria" na memória do item (ou "Nova regra" na Tabela de ICMS e fórmulas).',
           'A fórmula usa variáveis da nota, como partida, icms_origem, interna, inter, mva_ajustada e percentual, e aceita 5,5%, parênteses, min, max e arred.',
           'Ela vale para o que você indicar (produto, fornecedor, NCM ou a empresa toda) e fica registrada para as próximas notas. A mais específica vence.',
+          '"Substitui qual cálculo" diz qual cálculo padrão ela troca (sem encerramento, ST, carga líquida, uso e consumo). Para deixar uma conta como padrão, crie a fórmula para todas as empresas, sem filtros, e escolha o cálculo. Devolução, remessa e ST já retido nunca são substituídos.',
+          'Variáveis do crédito: icms_origem (destacado), credito_sn (o que o fornecedor do Simples transfere) e credito (o destacado ou, sem ele, o do Simples).',
           'Regra nova ou alterada fica "a conferir" até o time fiscal conferir; o resultado que a usa mostra "a conferir".',
         ],
       },

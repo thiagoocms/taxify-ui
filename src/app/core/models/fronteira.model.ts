@@ -47,8 +47,18 @@ export type FronteiraRuleKind = 'ALIQUOTA_INTERNA' | 'ST_MVA' | 'SIMPLES_PERCENT
 export const RULE_KIND_LABELS: Record<FronteiraRuleKind, string> = {
   ALIQUOTA_INTERNA: 'Alíquota interna de PE',
   ST_MVA: 'ST com encerramento (MVA)',
-  SIMPLES_PERCENTUAL: 'Simples — percentual do art. 363-A',
+  SIMPLES_PERCENTUAL: 'Carga líquida (credenciamento / Simples)',
   FORMULA: 'Fórmula própria',
+};
+
+/** O cálculo padrão que uma fórmula própria substitui; vazio = qualquer um. */
+export type FronteiraAplicaEm = 'SEM_ENCERRAMENTO' | 'ST' | 'CARGA_LIQUIDA' | 'USO_CONSUMO';
+
+export const APLICA_EM_LABELS: Record<FronteiraAplicaEm, string> = {
+  SEM_ENCERRAMENTO: 'Sem encerramento (regime normal)',
+  ST: 'Com encerramento (ST)',
+  CARGA_LIQUIDA: 'Carga líquida (credenciamento / Simples)',
+  USO_CONSUMO: 'Uso e consumo / ativo',
 };
 
 export interface FronteiraRuleDTO {
@@ -64,6 +74,8 @@ export interface FronteiraRuleDTO {
   mva?: number | null;
   percentual?: number | null;
   formula?: string | null;
+  /** Fórmula: o cálculo padrão que ela substitui (vazio = todos; devolução, remessa e ST retido nunca). */
+  aplicaEm?: FronteiraAplicaEm | null;
   fundamento?: string | null;
   link?: string | null;
   validFrom?: string | null;

@@ -32,7 +32,7 @@
   @if (view() === 'regras') {
     <p class="cell-sub">
       O cálculo padrão usa esta tabela: a alíquota interna de PE (a modal e as exceções por NCM), os produtos com ST e a
-      MVA, e o percentual do art. 363-A para empresas do Simples. Uma <strong>fórmula própria</strong> substitui o cálculo
+      MVA, e a carga líquida do credenciamento (ou do Simples, art. 363-A). Uma <strong>fórmula própria</strong> substitui o cálculo
       padrão para o que ela cobrir (produto, fornecedor, NCM ou a empresa toda) e fica registrada para as próximas notas.
       Regra nova ou alterada fica "a conferir" até o time fiscal marcar.
       @if (!companyId()) { <br />Escolha uma empresa para ver também as regras dela. }
@@ -278,8 +278,11 @@
     @switch (row.kind) {
       @case ('ALIQUOTA_INTERNA') { <strong>{{ formatRate(row.aliquota) }}</strong> }
       @case ('ST_MVA') { MVA original <strong>{{ formatRate(row.mva) }}</strong> }
-      @case ('SIMPLES_PERCENTUAL') { <strong>{{ formatRate(row.percentual) }}</strong> da partida }
-      @case ('FORMULA') { <code class="formula">{{ row.formula }}</code> }
+      @case ('SIMPLES_PERCENTUAL') { carga líquida <strong>{{ formatRate(row.percentual) }}</strong> da partida }
+      @case ('FORMULA') {
+        <code class="formula">{{ row.formula }}</code>
+        <div class="cell-sub">no lugar de: {{ aplicaEmLabel(row.aplicaEm) }}</div>
+      }
     }
     @if (row.validFrom || row.validUntil) {
       <div class="cell-sub">Vigência: {{ row.validFrom ? (row.validFrom | date: 'dd/MM/yyyy') : 'início' }} a
@@ -377,12 +380,26 @@
           <div class="cell-sub">A MVA ajustada sai da fórmula: [(1 + MVA) × (1 − inter) ÷ (1 − interna)] − 1.</div>
         }
         @case ('SIMPLES_PERCENTUAL') {
-          <label class="form-label">Percentual do art. 363-A (%)
+          <label class="form-label">Carga líquida (%)
             <input type="number" step="0.01" class="form-control" [ngModel]="f.percentual" (ngModelChange)="updateForm({ percentual: $event })" />
           </label>
-          <div class="cell-sub">Na descrição, o credenciamento como sai no extrato (ex.: TECIDOS E ARMARINHO (INDUSTRIA)) — o Taxify casa pelo nome.</div>
+          <div class="cell-sub">
+            O percentual sobre a base de partida, sem abater crédito — como o "tipo de cálculo" do e-Fisco. Na descrição, o
+            credenciamento como sai no extrato (ex.: TECIDOS E ARMARINHO (INDUSTRIA)): vale para a empresa com esse
+            credenciamento, de qualquer regime. Sem descrição, vale para empresa do Simples (art. 363-A).
+          </div>
         }
         @case ('FORMULA') {
+          <label class="form-label">Substitui qual cálculo
+            <select class="form-select" [ngModel]="f.aplicaEm ?? ''" (ngModelChange)="updateForm({ aplicaEm: $event || null })">
+              <option value="">Qualquer cálculo</option>
+              @for (option of aplicaEmOptions; track option) { <option [value]="option">{{ aplicaEmLabels[option] }}</option> }
+            </select>
+          </label>
+          <div class="cell-sub">
+            Para deixar uma conta como padrão, crie a fórmula para todas as empresas, sem NCM, produto ou fornecedor, e escolha
+            aqui o cálculo que ela substitui. Devolução, remessa e ST já retido nunca são substituídos.
+          </div>
           <label class="form-label">Fórmula
             <textarea class="form-control formula-input" rows="3" maxlength="500" [ngModel]="f.formula"
               (ngModelChange)="updateForm({ formula: $event })" placeholder="(partida - icms_origem) * 5,5%"></textarea>

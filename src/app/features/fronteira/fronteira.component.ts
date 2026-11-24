@@ -7,6 +7,8 @@ import { ToastrService } from 'ngx-toastr';
 import { map, Observable } from 'rxjs';
 import { CompanyDTO } from '../../core/models/company.model';
 import {
+  APLICA_EM_LABELS,
+  FronteiraAplicaEm,
   FRONTEIRA_FLAG_HINTS,
   FRONTEIRA_FLAG_LABELS,
   FronteiraFlag,
@@ -51,7 +53,7 @@ interface CalcView {
 
 const STANDARD_FORMULAS: Record<string, string> = {
   ST: 'partida * (1 + mva_ajustada) * interna - icms_origem',
-  SIMPLES: 'partida * percentual',
+  CARGA_LIQUIDA: 'partida * percentual',
   SEM_ENCERRAMENTO: '(partida - icms_origem) / (1 - interna) * interna - icms_origem',
   USO_CONSUMO: '(partida - icms_origem) / (1 - interna) * interna - icms_origem',
 };
@@ -117,6 +119,8 @@ export class FronteiraComponent implements OnInit {
   readonly resultHints = RESULTADO_HINTS;
   readonly kindLabels = RULE_KIND_LABELS;
   readonly kinds: FronteiraRuleKind[] = ['ALIQUOTA_INTERNA', 'ST_MVA', 'SIMPLES_PERCENTUAL', 'FORMULA'];
+  readonly aplicaEmOptions: FronteiraAplicaEm[] = ['SEM_ENCERRAMENTO', 'ST', 'CARGA_LIQUIDA', 'USO_CONSUMO'];
+  readonly aplicaEmLabels = APLICA_EM_LABELS;
   readonly quickResults: FronteiraResultado[] = ['COBROU_A_MAIS', 'COBROU_A_MENOS', 'NAO_CALCULOU', 'SEM_REGRA', 'PENDENTE', 'CONFERE'];
   readonly quickFlags: FronteiraFlag[] = ['SEM_XML', 'SO_RESUMO', 'NOTA_CANCELADA', 'VALOR_DIFERENTE', 'DIVERGENCIA_FISCAL', 'FORA_DA_TAXA'];
   readonly tableConfig: TableConfig = { headerVisible: true, actions: [] };
@@ -364,6 +368,7 @@ export class FronteiraComponent implements OnInit {
       ncm: null,
       descricao: item.descricao ? `Fórmula para ${item.descricao}`.slice(0, 255) : null,
       formula: STANDARD_FORMULAS[item.tratamento] ?? 'partida * interna',
+      aplicaEm: (this.aplicaEmOptions as string[]).includes(item.tratamento) ? (item.tratamento as FronteiraAplicaEm) : null,
     });
   }
 
@@ -383,6 +388,7 @@ export class FronteiraComponent implements OnInit {
       mva: form.mva ?? null,
       percentual: form.percentual ?? null,
       formula: form.formula ?? null,
+      aplicaEm: form.aplicaEm ?? null,
       fundamento: form.fundamento ?? null,
       link: form.link ?? null,
       validFrom: form.validFrom ?? null,
@@ -472,6 +478,10 @@ export class FronteiraComponent implements OnInit {
     if (rule.ncm) parts.push(`NCM ${rule.ncm}`);
     if (!parts.length) parts.push(rule.kind === 'ALIQUOTA_INTERNA' ? 'todos os NCM (modal)' : 'todos os itens');
     return parts.join(' · ');
+  }
+
+  aplicaEmLabel(value?: string | null): string {
+    return value ? APLICA_EM_LABELS[value as FronteiraAplicaEm] ?? value : 'qualquer cálculo';
   }
 
   objectKeys(record: Record<string, string>): string[] {
