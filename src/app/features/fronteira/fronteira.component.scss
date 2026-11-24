@@ -109,17 +109,131 @@
   margin-bottom: 12px;
 }
 
+// ---------------------------------------------------------------- memória de cálculo (modal)
+
+.calc-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.calc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid #dde1ea;
+  border-radius: 8px;
+  background: #fff;
+
+  strong {
+    font-size: 18px;
+  }
+}
+
+.calc-card-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.calc-card-ok {
+  border-color: #b7e4c7;
+  background: #f0fbf4;
+}
+
+.calc-card-warn {
+  border-color: #f5c98b;
+  background: #fff7ec;
+}
+
+.calc-section {
+  margin-bottom: 16px;
+
+  h6 {
+    margin: 0;
+    font-weight: 600;
+  }
+}
+
+.calc-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eef0f4;
+}
+
+.efisco-group {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 1px solid #dde1ea;
+  border-radius: 8px;
+}
+
+.efisco-group-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .calc-item {
   border: 1px solid #dde1ea;
   border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 10px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+
+  &[open] {
+    padding-bottom: 10px;
+  }
 }
 
 .calc-item-head {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::before {
+    content: '▸';
+    color: #9aa3b2;
+    transition: transform 0.15s;
+  }
+}
+
+.calc-item[open] > .calc-item-head::before {
+  transform: rotate(90deg);
+}
+
+.calc-item-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.calc-item-side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.calc-item-value {
+  min-width: 90px;
+  text-align: right;
 }
 
 .memoria {

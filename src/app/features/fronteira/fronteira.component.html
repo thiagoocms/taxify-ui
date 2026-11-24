@@ -336,88 +336,133 @@
   </div>
 </ng-template>
 
-<app-modal [open]="!!calcView()" [title]="'Memória de cálculo · ' + (calcView()?.title ?? '')" (closed)="calcView.set(null)">
+<app-modal [open]="!!calcView()" [title]="'Memória de cálculo · ' + (calcView()?.title ?? '')" size="xl" (closed)="calcView.set(null)">
   @if (calcView(); as v) {
-    <div class="calc-head">
-      <div>Cálculo do Taxify: <strong>{{ v.calc.semRegra ? '—' : formatCurrency(v.calc.valor) }}</strong>
+    @let s = calcSummary(v);
+    <div class="calc-summary">
+      <div class="calc-card">
+        <span class="calc-card-label">Cálculo do Taxify</span>
+        <strong>{{ s.taxify == null ? '—' : formatCurrency(s.taxify) }}</strong>
         @if (!v.calc.semRegra && v.calc.minimo !== v.calc.maximo) {
-          <span class="cell-sub">(faixa {{ formatCurrency(v.calc.minimo) }} a {{ formatCurrency(v.calc.maximo) }})</span>
-        }
-      </div>
-      @if (v.charged != null) { <div>Cobrado no e-Fisco: <strong>{{ formatCurrency(v.charged) }}</strong></div> }
-    </div>
-    @if (v.registro && companyId()) {
-      <div class="efisco-compare-head">
-        @if (efiscoMemory(); as m) {
-          <span>Cálculo do e-Fisco: <strong>{{ formatCurrency(m.icmsTotal) }}</strong>
-            <span class="cell-sub">· buscado em {{ m.buscadaEm | date: 'dd/MM/yyyy HH:mm' }}
-              @if (m.regras) { · regras de {{ m.regras }} }</span></span>
+          <span class="cell-sub">faixa {{ formatCurrency(v.calc.minimo) }} a {{ formatCurrency(v.calc.maximo) }}</span>
         } @else {
-          <span class="cell-sub">Veja como o e-Fisco calculou esta nota, etapa por etapa, lado a lado com o Taxify.</span>
-        }
-        @if (efiscoCertificate()?.present && canImport) {
-          <app-button [label]="efiscoMemoryLoading() ? 'Buscando no e-Fisco...' : (efiscoMemory() ? 'Atualizar do e-Fisco' : 'Buscar cálculo do e-Fisco')"
-            icon="cloud-arrow-down" variant="outlined" [disabled]="efiscoMemoryLoading()" (onClick)="fetchEfiscoMemory()"></app-button>
+          <span class="cell-sub">{{ v.calc.itens.length }} item(ns)</span>
         }
       </div>
-      @if (efiscoMemory(); as m) {
-        @if (m.tipos.length) {
-          <div class="cell-sub efisco-types">Tipos de cálculo no e-Fisco:
-            @for (t of m.tipos; track $index) {
-              <span class="state-badge" [class.ok]="t.interrompe">{{ t.tipo }} {{ t.codigo }} · {{ t.descricao }} · prioridade {{ t.prioridade }}{{ t.interrompe ? ' · interrompe' : '' }}</span>
-            }
-          </div>
-        }
-      }
-    }
-    @for (item of v.calc.itens; track item.numeroItem; let idx = $index) {
-      <div class="calc-item">
-        <div class="calc-item-head">
+      <div class="calc-card">
+        <span class="calc-card-label">Cobrado no extrato</span>
+        <strong>{{ s.charged == null ? '—' : formatCurrency(s.charged) }}</strong>
+        <span class="cell-sub">o que o e-Fisco cobra</span>
+      </div>
+      <div class="calc-card">
+        <span class="calc-card-label">Cálculo do e-Fisco</span>
+        <strong>{{ s.efisco == null ? '—' : formatCurrency(s.efisco) }}</strong>
+        <span class="cell-sub">{{ efiscoMemory() ? 'buscado em ' + (efiscoMemory()!.buscadaEm | date: 'dd/MM/yyyy HH:mm') : 'ainda não buscado' }}</span>
+      </div>
+      <div class="calc-card" [class.calc-card-ok]="s.bate === true" [class.calc-card-warn]="s.bate === false">
+        <span class="calc-card-label">Taxify − e-Fisco</span>
+        <strong>{{ s.diff == null ? '—' : formatCurrency(s.diff) }}</strong>
+        <span class="cell-sub">{{ s.bate == null ? 'busque o cálculo do e-Fisco' : s.bate ? 'os dois cálculos batem' : 'os cálculos divergem' }}</span>
+      </div>
+    </div>
+
+    @if (v.registro && companyId()) {
+      <section class="calc-section">
+        <div class="calc-section-head">
           <div>
-            <strong>Item {{ item.numeroItem }}</strong> · {{ item.descricao }}
-            <div class="cell-sub">código {{ item.codigo || '—' }} · NCM {{ item.ncm || '—' }} · CFOP {{ item.cfop || '—' }}</div>
-          </div>
-          <div class="text-end">
-            <span [class]="'state-badge ' + (item.tratamento === 'SEM_REGRA' ? 'info' : '')">{{ item.tratamentoLabel }}</span>
-            @if (!item.conferido && item.tratamento !== 'SEM_REGRA') { <span class="state-badge warn">a conferir</span> }
-            <div><strong>{{ item.tratamento === 'SEM_REGRA' ? '—' : formatCurrency(item.valor) }}</strong></div>
-          </div>
-        </div>
-        @if (efiscoItem(idx); as ef) {
-          <table class="compare-table">
-            <thead><tr><th>Etapa</th><th>e-Fisco</th><th>Taxify</th></tr></thead>
-            <tbody>
-              @for (row of compareRows(ef, item); track row.etapa) {
-                <tr [class.differs]="row.difere"><td>{{ row.etapa }}</td><td>{{ row.efisco }}</td><td>{{ row.taxify }}</td></tr>
+            <h6>Como o e-Fisco calculou</h6>
+            <span class="cell-sub">
+              @if (efiscoMemory(); as m) {
+                registro {{ m.registro }}@if (m.regras) { · regras de {{ m.regras }} }
+              } @else {
+                Busque a memória de cálculo do e-Fisco para comparar etapa por etapa com o Taxify.
               }
-            </tbody>
-          </table>
-          @if (canWriteRules) {
-            <div class="compare-actions">
-              <app-button label="Adotar o cálculo do e-Fisco" icon="check" variant="outlined" (onClick)="adoptEfisco(ef, item)"></app-button>
-              <span class="cell-sub">Abre a regra já preenchida para as próximas notas. Se o Taxify estiver certo, mantenha e use o PDF e
-                esta memória para contestar.</span>
+            </span>
+          </div>
+          @if (efiscoCertificate()?.present && canImport) {
+            <app-button [label]="efiscoMemoryLoading() ? 'Buscando no e-Fisco...' : (efiscoMemory() ? 'Atualizar do e-Fisco' : 'Buscar cálculo do e-Fisco')"
+              icon="cloud-arrow-down" variant="outlined" [disabled]="efiscoMemoryLoading()" (onClick)="fetchEfiscoMemory()"></app-button>
+          }
+        </div>
+
+        @if (efiscoMemory(); as m) {
+          @if (m.tipos.length) {
+            <div class="efisco-types">
+              @for (t of m.tipos; track $index) {
+                <span class="state-badge" [class.ok]="t.interrompe" [title]="'prioridade ' + t.prioridade + (t.interrompe ? ' · interrompe os demais' : '')">
+                  {{ t.tipo }} {{ t.codigo }} · {{ t.descricao }}</span>
+              }
             </div>
           }
+          @if (efiscoGroups().length > 1) {
+            <p class="cell-sub mb-2">O e-Fisco agrupa os itens pela mercadoria dele ({{ efiscoGroups().length }} grupos); a nota é comparada
+              pelo total, no resumo acima.</p>
+          } @else if (v.calc.itens.length > 1) {
+            <p class="cell-sub mb-2">O e-Fisco calculou os {{ v.calc.itens.length }} itens juntos, como uma mercadoria só; a coluna Taxify
+              é a soma dos itens.</p>
+          }
+          @for (g of efiscoGroups(); track $index) {
+            <div class="efisco-group">
+              <div class="efisco-group-head">
+                <span><strong>Mercadoria {{ g.mercadoria || '—' }}</strong>
+                  @if (g.calculo) { <span class="cell-sub"> · {{ g.calculo }}</span> }</span>
+                <strong>{{ g.icms == null ? '—' : formatCurrency(g.icms) }}</strong>
+              </div>
+              <table class="compare-table">
+                <thead><tr><th>Etapa</th><th>e-Fisco</th><th>Taxify</th></tr></thead>
+                <tbody>
+                  @for (row of groupRows(g, v.calc.itens); track row.etapa) {
+                    <tr [class.differs]="row.difere"><td>{{ row.etapa }}</td><td>{{ row.efisco }}</td><td>{{ row.taxify }}</td></tr>
+                  }
+                </tbody>
+              </table>
+              @if (canWriteRules && v.calc.itens.length) {
+                <div class="compare-actions">
+                  <app-button label="Adotar o cálculo do e-Fisco" icon="check" variant="outlined" (onClick)="adoptEfisco(g, v.calc.itens[0])"></app-button>
+                  <span class="cell-sub">Abre a regra já preenchida para as próximas notas. Se o Taxify estiver certo, mantenha e use o PDF
+                    e esta memória para contestar.</span>
+                </div>
+              }
+            </div>
+          }
+          <details class="memoria-details">
+            <summary class="cell-sub">Ver a memória completa do e-Fisco</summary>
+            <pre class="efisco-text">{{ m.texto }}</pre>
+          </details>
         }
-        <details class="memoria-details" [open]="!efiscoItem(idx)">
-          <summary class="cell-sub">Memória de cálculo do Taxify</summary>
+      </section>
+    }
+
+    <section class="calc-section">
+      <div class="calc-section-head">
+        <div>
+          <h6>Como o Taxify calculou</h6>
+          <span class="cell-sub">{{ v.calc.itens.length }} item(ns) da nota — clique num item para ver a memória dele.</span>
+        </div>
+      </div>
+      @for (item of v.calc.itens; track item.numeroItem) {
+        <details class="calc-item" [open]="v.calc.itens.length <= 2">
+          <summary class="calc-item-head">
+            <span class="calc-item-title">
+              <strong>Item {{ item.numeroItem }}</strong> · {{ item.descricao }}
+              <span class="cell-sub d-block">código {{ item.codigo || '—' }} · NCM {{ item.ncm || '—' }} · CFOP {{ item.cfop || '—' }}</span>
+            </span>
+            <span class="calc-item-side">
+              <span [class]="'state-badge ' + (item.tratamento === 'SEM_REGRA' ? 'info' : '')">{{ item.tratamentoLabel }}</span>
+              @if (!item.conferido && item.tratamento !== 'SEM_REGRA') { <span class="state-badge warn">a conferir</span> }
+              <strong class="calc-item-value">{{ item.tratamento === 'SEM_REGRA' ? '—' : formatCurrency(item.valor) }}</strong>
+            </span>
+          </summary>
           <ul class="memoria">
             @for (line of item.memoria; track $index) { <li>{{ line }}</li> }
           </ul>
+          @if (canWriteRules) {
+            <app-button [label]="item.tratamento === 'FORMULA' ? 'Usar outra fórmula' : 'Usar fórmula própria'" variant="text" icon="pen"
+              (onClick)="formulaFromItem(item)"></app-button>
+          }
         </details>
-        @if (canWriteRules) {
-          <app-button [label]="item.tratamento === 'FORMULA' ? 'Usar outra fórmula' : 'Usar fórmula própria'" variant="text" icon="pen"
-            (onClick)="formulaFromItem(item)"></app-button>
-        }
-      </div>
-    }
-    @if (efiscoMemory(); as m) {
-      <details class="memoria-details">
-        <summary class="cell-sub">Memória completa do e-Fisco (registro {{ m.registro }})</summary>
-        <pre class="efisco-text">{{ m.texto }}</pre>
-      </details>
-    }
+      }
+    </section>
   }
 </app-modal>
 

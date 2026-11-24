@@ -503,9 +503,51 @@ export class FronteiraComponent implements OnInit {
     });
   }
 
-  /** O item do e-Fisco que corresponde ao do Taxify: pela ordem (a mesma da nota). */
-  efiscoItem(index: number): EfiscoMemoryItemDTO | null {
-    return this.efiscoMemory()?.itens[index] ?? null;
+  /**
+   * O e-Fisco não calcula item a item da nota: agrupa os itens pela mercadoria dele ("Cálculo Mercadoria: 258 - ...").
+   * Com um grupo só, ele equivale à nota inteira do Taxify (a soma dos itens); com vários, cada grupo aparece com os
+   * números do e-Fisco e a nota é comparada pelo total.
+   */
+  efiscoGroups(): EfiscoMemoryItemDTO[] {
+    return this.efiscoMemory()?.itens ?? [];
+  }
+
+  /** Os itens do Taxify somados, para comparar com o grupo do e-Fisco que cobre a nota toda. */
+  taxifyAsOne(items: FronteiraItemCalcDTO[]): FronteiraItemCalcDTO {
+    const first = items[0];
+    const sum = (pick: (i: FronteiraItemCalcDTO) => number | null | undefined) =>
+      items.reduce((total, i) => total + (pick(i) ?? 0), 0);
+    const labels = [...new Set(items.map((i) => i.tratamentoLabel ?? i.tratamento))];
+    const variaveis: Record<string, number> = { ...(first?.variaveis ?? {}) };
+    variaveis['credito'] = sum((i) => i.variaveis?.['credito']);
+    return {
+      ...first,
+      tratamento: labels.length === 1 ? first.tratamento : 'MISTO',
+      tratamentoLabel: labels.join(' + '),
+      partida: sum((i) => i.partida),
+      valor: sum((i) => (i.tratamento === 'SEM_REGRA' ? 0 : i.valor)),
+      variaveis,
+    };
+  }
+
+  /**
+   * As etapas de um grupo do e-Fisco: com um grupo só, lado a lado com a nota do Taxify; com vários, só os números do
+   * e-Fisco (o Taxify não sabe a mercadoria do e-Fisco de cada item) - a nota se compara pelo total, no resumo.
+   */
+  groupRows(group: EfiscoMemoryItemDTO, items: FronteiraItemCalcDTO[]): CompareRow[] {
+    const rows = this.compareRows(group, this.taxifyAsOne(items));
+    return this.efiscoGroups().length === 1 ? rows : rows.map((row) => ({ ...row, taxify: '—', difere: false }));
+  }
+
+  /** O resumo do topo do modal: Taxify, o cobrado no extrato, o cálculo do e-Fisco e a diferença entre os dois cálculos. */
+  calcSummary(view: CalcView): {
+    taxify: number | null; charged: number | null; efisco: number | null; diff: number | null; bate: boolean | null;
+  } {
+    const taxify = view.calc.semRegra ? null : view.calc.valor;
+    const efisco = this.efiscoMemory()?.icmsTotal ?? null;
+    const diff = taxify != null && efisco != null ? Math.round((taxify - efisco) * 100) / 100 : null;
+    // centavos de arredondamento não são divergência
+    return { taxify, charged: view.charged ?? null, efisco, diff, bate: diff == null ? null : Math.abs(diff) <= 0.05 };
   }
 
   /** A comparação etapa por etapa - o que difere fica marcado; é por onde o contador decide. */
