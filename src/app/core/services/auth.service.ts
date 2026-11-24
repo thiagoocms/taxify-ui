@@ -74,6 +74,12 @@ export class AuthService {
   /** Perfis de acesso do colaborador (Fiscal, Financeiro...). */
   readonly accessProfiles = computed<AccessProfile[]>(() => this.claim<AccessProfile[]>('accessProfiles') ?? []);
 
+  /**
+   * Administrador da plataforma (CS Hub): o único que altera as regras que valem para todos os escritórios
+   * (tabela de ICMS geral do Fronteira e regras da auditoria). O ADMIN de um escritório não é - ver PlatformAdminService.
+   */
+  readonly isPlatformAdmin = computed<boolean>(() => this.claim<boolean>('platformAdmin') === true);
+
   /** Pode fazer isto? ADMIN sempre pode. Use nas telas em vez de checar o perfil pelo nome. */
   can(permission: Permission): boolean {
     return this.isAdmin || this.permissions().has(permission);

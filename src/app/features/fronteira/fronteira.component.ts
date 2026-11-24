@@ -118,6 +118,8 @@ export class FronteiraComponent implements OnInit {
   readonly canImport = this.auth.can('INVOICES_AUDIT');
   readonly canWriteRules = this.auth.can('INVOICES_AUDIT');
   readonly canManageRules = this.auth.can('FISCAL_RULES_MANAGE');
+  /** A tabela geral vale para todos os escritórios: só a CS Hub altera (o backend recusa os demais). */
+  readonly canManageGlobalRules = this.canManageRules && this.auth.isPlatformAdmin();
   readonly form = this.fb.group({ company: this.fb.control<CompanyDTO | null>(null) });
   readonly companyId = signal<string | null>(null);
   readonly report = signal<FronteiraReportDTO | null>(null);
@@ -229,7 +231,7 @@ export class FronteiraComponent implements OnInit {
       label: 'Nova regra',
       icon: 'plus',
       variant: 'outlined',
-      isShow: this.view() === 'regras' && (this.canWriteRules || this.canManageRules),
+      isShow: this.view() === 'regras' && (this.companyId() ? this.canWriteRules || this.canManageRules : this.canManageGlobalRules),
       handler: () => this.newRule(),
     },
     {
@@ -515,7 +517,7 @@ export class FronteiraComponent implements OnInit {
   }
 
   newRule(kind: FronteiraRuleKind = 'ALIQUOTA_INTERNA'): void {
-    this.openRuleForm({ kind, companyId: this.companyId(), global: !this.companyId() }, false);
+    this.openRuleForm({ kind, companyId: this.companyId(), global: !this.companyId() && this.canManageGlobalRules }, false);
   }
 
   editRule(rule: FronteiraRuleDTO): void {
@@ -785,7 +787,12 @@ export class FronteiraComponent implements OnInit {
   }
 
   canEdit(rule: FronteiraRuleDTO): boolean {
-    return rule.companyId ? this.canWriteRules : this.canManageRules;
+    return rule.companyId ? this.canWriteRules : this.canManageGlobalRules;
+  }
+
+  /** Conferir/ativar: a da empresa com FISCAL_RULES_MANAGE; a geral, só a CS Hub. */
+  canReview(rule: FronteiraRuleDTO): boolean {
+    return rule.companyId ? this.canManageRules : this.canManageGlobalRules;
   }
 
   kindLabel(kind: string): string {

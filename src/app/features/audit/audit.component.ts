@@ -57,7 +57,8 @@ export class AuditComponent implements OnInit {
   readonly groups: AuditGroup[] = ['INTEGRIDADE', 'COERENCIA', 'ANOMALIA'];
   readonly canRun = this.auth.can('INVOICES_AUDIT');
   readonly canClose = this.auth.can('INVOICES_AUDIT');
-  readonly canManageRules = this.auth.can('FISCAL_RULES_MANAGE');
+  /** As regras da auditoria valem para todos os escritórios: conferir/ativar é só da CS Hub (o backend recusa os demais). */
+  readonly canManageRules = this.auth.can('FISCAL_RULES_MANAGE') && this.auth.isPlatformAdmin();
   readonly form = this.fb.group({ company: this.fb.control<CompanyDTO | null>(null) });
   readonly month = signal(previousMonth());
   readonly companyId = signal<string | null>(null);
