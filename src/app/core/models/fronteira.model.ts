@@ -110,6 +110,32 @@ export interface FormulaCheckDTO {
   exemplo: boolean;
 }
 
+/** Nome legível de cada campo da fórmula; rate = alíquota (entra como fração). */
+export interface FormulaField {
+  label: string;
+  rate: boolean;
+  hint?: string;
+}
+
+export const FORMULA_FIELDS: Record<string, FormulaField> = {
+  partida: { label: 'Base de partida', rate: false },
+  valor_produto: { label: 'Valor do produto', rate: false },
+  ipi: { label: 'IPI', rate: false },
+  frete: { label: 'Frete', rate: false },
+  despesas: { label: 'Seguro e outras despesas', rate: false },
+  icms_origem: { label: 'ICMS destacado', rate: false },
+  credito: { label: 'Crédito', rate: false },
+  credito_sn: { label: 'Crédito do Simples (XML)', rate: false },
+  st_retido: { label: 'ST retido', rate: false },
+  interna: { label: 'Interna de PE', rate: true },
+  inter: { label: 'Interestadual', rate: true },
+  aliquota_origem: { label: 'Alíquota da nota', rate: true },
+  mva: { label: 'MVA original', rate: true },
+  mva_ajustada: { label: 'MVA ajustada', rate: true },
+  agregacao: { label: 'Agregação', rate: true },
+  percentual: { label: 'Carga líquida', rate: true },
+};
+
 /** Operadores e funções aceitos na fórmula — para o painel de ajuda. */
 export const FORMULA_OPERATORS: { token: string; insert: string; label: string }[] = [
   { token: '+', insert: ' + ', label: 'soma' },
@@ -134,7 +160,6 @@ export const FORMULA_EXAMPLES: { label: string; formula: string }[] = [
   { label: 'Carga líquida fixa de 5,5%', formula: 'partida * 5,5%' },
   { label: 'Carga líquida da regra', formula: 'partida * percentual' },
   { label: 'ST com MVA ajustada', formula: 'partida * (1 + mva_ajustada) * interna - credito' },
-  { label: 'Base dupla (por dentro)', formula: '(partida - icms_origem) / (1 - interna) * interna - credito' },
   { label: 'Diferencial menos o crédito do Simples, nunca negativo', formula: 'max(partida * (interna - inter) - credito_sn; 0)' },
 ];
 

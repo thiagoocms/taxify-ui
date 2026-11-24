@@ -1,0 +1,90 @@
+<div class="editor">
+  <div class="bar">
+    <select class="form-select example-select" (change)="useExample($any($event.target).value); $any($event.target).value = ''">
+      <option value="">Começar de um exemplo…</option>
+      @for (ex of examples; track ex.formula) { <option [value]="ex.formula">{{ ex.label }}</option> }
+    </select>
+    <div class="ops">
+      @for (op of operators; track op.token) {
+        <button type="button" class="op" [title]="op.label" (click)="insert(op.insert)">{{ op.token }}</button>
+      }
+      <span class="sep"></span>
+      @for (fn of functions; track fn.token) {
+        <button type="button" class="op fn" [title]="fn.label" (click)="insert(fn.insert)">{{ fn.token.split('(')[0] }}</button>
+      }
+    </div>
+  </div>
+
+  <div class="box-wrap">
+    <textarea #box class="form-control box" [class.invalid]="issues().length && formula()" rows="2" maxlength="500"
+      spellcheck="false" autocomplete="off" [value]="formula() ?? ''" placeholder="Digite um campo — ex.: par… e escolha partida"
+      (input)="onInput($any($event.target).value)" (keydown)="onKeydown($event)" (click)="refreshSuggestions()"
+      (blur)="closeSuggestionsSoon()"></textarea>
+
+    @if (suggestions().length) {
+      <ul class="suggestions" role="listbox">
+        @for (s of suggestions(); track s.name; let i = $index) {
+          <li role="option" [class.active]="i === active()" (mousedown)="$event.preventDefault(); accept(s)" (mouseenter)="active.set(i)">
+            <code>{{ s.fn ? s.label : s.name }}</code>
+            <span class="s-label">{{ s.fn ? s.hint : s.label }}</span>
+            @if (s.value) { <span class="s-value">{{ s.value }}</span> }
+          </li>
+        }
+        <li class="s-help">↑ ↓ escolhe · Enter insere · Esc fecha</li>
+      </ul>
+    }
+  </div>
+
+  @if (formula() && preview().length) {
+    <div class="preview">
+      @for (t of preview(); track $index) {
+        @switch (t.kind) {
+          @case ('field') { <span class="p-field">{{ t.text }}</span> }
+          @case ('fn') { <span class="p-fn">{{ t.text }}</span> }
+          @case ('unknown') { <span class="p-unknown" title="não existe">{{ t.text }}</span> }
+          @default { <span class="p-text">{{ t.text }}</span> }
+        }
+      }
+    </div>
+  }
+
+  <div class="status">
+    @if (issues().length) {
+      @for (issue of issues(); track issue.text) {
+        <div class="issue">
+          <span class="state-badge danger">{{ issue.text }}</span>
+          @if (issue.fix) {
+            <button type="button" class="link" (click)="fix(issue)">trocar por {{ issue.fix.to }}</button>
+          }
+        </div>
+      }
+    } @else if (result()) {
+      @let r = result()!;
+      <span [class]="'state-badge ' + (r.ok ? 'ok' : 'danger')">{{ r.text }}</span>
+      <span class="cell-sub">{{ contextLabel() ? 'com os valores de ' + contextLabel() : 'com valores de exemplo (item de R$ 1.000,00)' }}</span>
+    } @else {
+      <span class="cell-sub">Calculando…</span>
+    }
+  </div>
+
+  <div class="fields">
+    <div class="group">
+      <span class="g-title">Valores</span>
+      @for (f of money(); track f.name) {
+        <button type="button" class="pill" [title]="f.name + ' — ' + f.hint" (click)="insert(f.name)">
+          {{ f.label }} @if (f.value) { <small>{{ f.value }}</small> }
+        </button>
+      }
+    </div>
+    <div class="group">
+      <span class="g-title">Alíquotas</span>
+      @for (f of rates(); track f.name) {
+        <button type="button" class="pill rate" [title]="f.name + ' — ' + f.hint" (click)="insert(f.name)">
+          {{ f.label }} @if (f.value) { <small>{{ f.value }}</small> }
+        </button>
+      }
+    </div>
+    <div class="cell-sub">Clique num campo para inserir, ou digite e escolha na lista. Percentual pode ser 5,5% ou 0,055; nas
+      funções, separe com ";".</div>
+  </div>
+</div>

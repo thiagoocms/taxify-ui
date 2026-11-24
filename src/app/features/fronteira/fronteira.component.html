@@ -428,72 +428,12 @@
               @for (option of aplicaEmOptions; track option) { <option [value]="option">{{ aplicaEmLabels[option] }}</option> }
             </select>
           </label>
-          <div class="cell-sub">
-            Para deixar uma conta como padrão, crie a fórmula para todas as empresas, sem NCM, produto ou fornecedor, e escolha
-            aqui o cálculo que ela substitui. Devolução, remessa e ST já retido nunca são substituídos.
-          </div>
-          <label class="form-label">Fórmula
-            <textarea #formulaInput class="form-control formula-input" rows="3" maxlength="500" [ngModel]="f.formula"
-              (ngModelChange)="updateForm({ formula: $event })" placeholder="partida * (interna - inter)"></textarea>
-          </label>
-          <div class="formula-tools">
-            <app-button label="Testar fórmula" variant="outlined" (onClick)="testFormula()"></app-button>
-            @if (formulaMessage(); as m) {
-              <span [class]="'state-badge ' + (m.ok ? 'ok' : 'danger')">{{ m.text }}</span>
-            }
-            <span class="cell-sub">
-              @if (formulaContext(); as ctx) { testa com os valores de {{ ctx.label }} }
-              @else { testa com valores de exemplo (item de R$ 1.000,00) }
-            </span>
-          </div>
-
-          <div class="formula-help">
-            <div class="help-block">
-              <div class="help-title">Campos da nota <span class="cell-sub">(clique para inserir)</span></div>
-              <table class="help-table">
-                <tbody>
-                  @for (name of objectKeys(variables()); track name) {
-                    <tr>
-                      <td><button type="button" class="chip variable-chip" (click)="insertInFormula(formulaInput, name)">{{ name }}</button></td>
-                      <td class="help-desc">{{ variables()[name] }}</td>
-                      @if (formulaContext() || formulaCheck()) {
-                        <td class="help-value">{{ formatVariable(name, variableValue(name)) }}</td>
-                      }
-                    </tr>
-                  }
-                </tbody>
-              </table>
-              <div class="cell-sub">Alíquotas entram como fração: 20,5% vale 0,205. Escreva 20,5% ou 0,205 — dá no mesmo.</div>
-            </div>
-
-            <div class="help-block">
-              <div class="help-title">Operadores</div>
-              <div class="help-ops">
-                @for (op of formulaOperators; track op.token) {
-                  <button type="button" class="chip op-chip" [title]="op.label" (click)="insertInFormula(formulaInput, op.insert)">{{ op.token }}</button>
-                  <span class="help-desc">{{ op.label }}</span>
-                }
-              </div>
-              <div class="help-title">Funções</div>
-              <div class="help-ops">
-                @for (fn of formulaFunctions; track fn.token) {
-                  <button type="button" class="chip op-chip" [title]="fn.label" (click)="insertInFormula(formulaInput, fn.insert)">{{ fn.token }}</button>
-                  <span class="help-desc">{{ fn.label }}</span>
-                }
-              </div>
-              <div class="cell-sub">Nas funções, separe os valores com ";" — a vírgula é a casa decimal (5,5).</div>
-
-              <div class="help-title">Exemplos <span class="cell-sub">(clique para usar)</span></div>
-              <div class="help-examples">
-                @for (ex of formulaExamples; track ex.formula) {
-                  <button type="button" class="example" (click)="useExample(ex.formula)">
-                    <span>{{ ex.label }}</span>
-                    <code class="formula">{{ ex.formula }}</code>
-                  </button>
-                }
-              </div>
-            </div>
-          </div>
+          <div class="cell-sub">Para virar padrão: todas as empresas, sem NCM, produto ou fornecedor. Devolução, remessa e ST
+            já retido nunca são substituídos.</div>
+          <div class="form-label">Fórmula</div>
+          <app-formula-editor [formula]="f.formula" (formulaChange)="onFormulaChange($event)" [variables]="variables()"
+            [values]="formulaContext()?.values ?? formulaCheck()?.valores" [result]="formulaMessage()"
+            [contextLabel]="formulaContext()?.label" (test)="testFormula()"></app-formula-editor>
         }
       }
 
@@ -531,7 +471,7 @@
 
       <div class="d-flex justify-content-end gap-2 mt-3">
         <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="ruleForm.set(null)"></app-button>
-        <app-button [label]="savingRule() ? 'Salvando...' : 'Salvar regra'" [disabled]="savingRule()" (onClick)="saveRule()"></app-button>
+        <app-button [label]="savingRule() ? 'Salvando...' : 'Salvar regra'" [disabled]="savingRule() || !formulaOk()" (onClick)="saveRule()"></app-button>
       </div>
     </div>
   }
