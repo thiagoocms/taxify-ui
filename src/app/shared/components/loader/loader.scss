@@ -138,8 +138,7 @@ $cycle: 2.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(15, 23, 42, 0.38);
-  backdrop-filter: blur(2px);
+  background: rgba(15, 23, 42, 0.42);
   animation: loader-appear 0.25s ease-out 0.15s both;
 
   &.leaving {
@@ -159,7 +158,7 @@ $cycle: 2.2s;
   .mark {
     width: 104px;
     height: 104px;
-    filter: drop-shadow(0 12px 28px rgba(15, 23, 42, 0.3));
+    // sem filter/backdrop-filter: juntos, o Chrome "fura" o véu num quadrado em volta do SVG
   }
 
   // o azul da logo levemente translúcido sobre o véu
