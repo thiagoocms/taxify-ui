@@ -28,6 +28,13 @@
     </div>
   </div>
 
+  @if (view() === 'conferencia' && efiscoCertificate()?.present && efiscoCertificate()?.lastSyncAt && companyId()) {
+    <div class="efisco-sync cell-sub" [title]="efiscoCertificate()?.lastSyncDetail ?? ''">
+      e-Fisco: última sincronização em {{ efiscoCertificate()?.lastSyncAt | date: 'dd/MM/yyyy HH:mm' }} ·
+      {{ efiscoStatusLabel(efiscoCertificate()?.lastSyncStatus) }} — busca sozinho às 7h, 13h e 19h
+    </div>
+  }
+
   @if (view() === 'regras') {
     <p class="cell-sub">
       O cálculo padrão usa esta tabela: a alíquota interna de PE (a modal e as exceções por NCM), os produtos com ST e a
@@ -51,7 +58,8 @@
       <div class="notice">
         <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
         <div>
-          Nenhum extrato do e-Fisco importado para {{ monthLabel(r.periodo) }}. Abaixo está a <strong>prévia</strong>: o
+          Nenhum extrato do e-Fisco importado para {{ monthLabel(r.periodo) }}@if (efiscoCertificate()?.present) { (use
+          "Sincronizar com e-Fisco" para buscar agora)}. Abaixo está a <strong>prévia</strong>: o
           ICMS que o Taxify calcula para as entradas interestaduais do mês.
           @if (canImport) { Para conferir a cobrança, use "Importar extrato do e-Fisco". }
         </div>

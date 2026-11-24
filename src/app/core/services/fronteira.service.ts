@@ -20,6 +20,15 @@ export class FronteiraService {
   }
 
   /** O PDF do extrato baixado no e-Fisco; o período sai do próprio arquivo (reimportar substitui). */
+  /** Busca agora no e-Fisco o extrato da empresa no período (com o certificado do contador) e importa. */
+  syncWithEfisco(companyId: string, periodo: string | null): Observable<EfiscoSyncResponseDTO> {
+    const params: Record<string, string> = { companyId };
+    if (periodo) {
+      params['periodo'] = periodo;
+    }
+    return this.http.post<EfiscoSyncResponseDTO>(`${this.baseUrl}/sincronizar`, null, { params });
+  }
+
   importExtract(companyId: string, file: File): Observable<FronteiraReportDTO> {
     const formData = new FormData();
     formData.append('file', file);
@@ -57,4 +66,19 @@ export class FronteiraService {
   enableRule(id: string, ativa: boolean): Observable<FronteiraRuleDTO> {
     return this.http.post<FronteiraRuleDTO>(`${this.baseUrl}/regras/${id}/ativa`, {}, { params: new HttpParams().set('ativa', ativa) });
   }
+}
+
+/** Uma empresa na sincronização: IMPORTADO, SEM_EXTRATO, SEM_IE, ERRO. */
+export interface EfiscoCompanyResultDTO {
+  companyId: string;
+  companyName: string;
+  period: string;
+  status: 'IMPORTADO' | 'SEM_EXTRATO' | 'SEM_IE' | 'ERRO';
+  detail?: string | null;
+}
+
+/** OK, PARCIAL, ERRO, BLOQUEADO, SEM_CERTIFICADO, EM_ANDAMENTO. */
+export interface EfiscoSyncResponseDTO {
+  sync: { status: string; detail?: string | null; companies: EfiscoCompanyResultDTO[] };
+  report: FronteiraReportDTO;
 }

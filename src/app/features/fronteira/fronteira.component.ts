@@ -68,6 +68,7 @@ const STANDARD_FORMULAS: Record<string, string> = {
  * fórmula própria que a contadora registrar, que passa a valer para as próximas notas.
  */
 import { MonthNavComponent } from '../../shared/components/month-nav/month-nav.component';
+import { EfiscoService, FirmCertificateDTO } from '../../core/services/efisco.service';
 @Component({
   selector: 'app-fronteira',
   standalone: true,
@@ -81,6 +82,7 @@ export class FronteiraComponent implements OnInit {
   private readonly currentCompany = inject(CurrentCompanyService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly fronteiraService = inject(FronteiraService);
+  private readonly efisco = inject(EfiscoService);
   private readonly toastr = inject(ToastrService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
@@ -124,6 +126,9 @@ export class FronteiraComponent implements OnInit {
   /** Quando a regra vem de um item ("Usar fórmula própria"): os valores dele, para testar a fórmula na nota de verdade. */
   readonly formulaContext = signal<{ label: string; values: Record<string, number> } | null>(null);
   readonly calcView = signal<CalcView | null>(null);
+  /** O certificado do contador (Integrações): sem ele, nada de "Sincronizar com e-Fisco". */
+  readonly efiscoCertificate = signal<FirmCertificateDTO | null>(null);
+  readonly syncing = signal(false);
   /** Uma fórmula com nome que não existe (ou parêntese aberto, ou que o servidor recusou) não é salva. */
   readonly formulaOk = computed(() => {
     const form = this.ruleForm();
@@ -191,6 +196,15 @@ export class FronteiraComponent implements OnInit {
       handler: () => this.newRule(),
     },
     {
+      id: 'fronteira-efisco-sync',
+      label: this.syncing() ? 'Buscando no e-Fisco...' : 'Sincronizar com e-Fisco',
+      icon: 'cloud-arrow-down',
+      variant: 'outlined',
+      isDisabled: this.syncing(),
+      isShow: this.view() === 'conferencia' && !!this.companyId() && this.canImport && !!this.efiscoCertificate()?.present,
+      handler: () => this.syncWithEfisco(),
+    },
+    {
       id: 'fronteira-import',
       label: 'Importar extrato do e-Fisco',
       icon: 'upload',
@@ -206,6 +220,7 @@ export class FronteiraComponent implements OnInit {
     company.documentNumber ? `${company.name} - ${formatDocument(company.documentNumber)}` : company.name;
 
   ngOnInit(): void {
+    this.efisco.certificate().subscribe({ next: (c) => this.efiscoCertificate.set(c), error: () => this.efiscoCertificate.set(null) });
     this.form.controls.company.valueChanges.subscribe((company) => {
       const id = company && typeof company === 'object' && company.id ? company.id : null;
       if (id && id !== this.companyId()) {
@@ -237,6 +252,45 @@ export class FronteiraComponent implements OnInit {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  /** O botão "Sincronizar com e-Fisco": a empresa e o mês da tela, agora - a rotina agendada faz o mesmo sozinha. */
+  syncWithEfisco(): void {
+    const companyId = this.companyId();
+    if (!companyId || this.syncing()) {
+      return;
+    }
+    const periodo = this.report()?.periodo ?? null;
+    this.syncing.set(true);
+    this.fronteiraService.syncWithEfisco(companyId, periodo).subscribe({
+      next: ({ sync, report }) => {
+        this.syncing.set(false);
+        this.report.set(report);
+        this.efisco.certificate().subscribe((c) => this.efiscoCertificate.set(c));
+        const company = sync.companies[0];
+        if (company?.status === 'IMPORTADO') {
+          this.toastr.success(`${company.detail} (${monthLabel(company.period)})`, 'e-Fisco');
+        } else if (company?.status === 'SEM_EXTRATO') {
+          this.toastr.info(company.detail ?? 'O e-Fisco não tem extrato para o período.', 'e-Fisco');
+        } else if (sync.status === 'OK') {
+          this.toastr.success(sync.detail ?? 'Sincronizado.', 'e-Fisco');
+        } else {
+          this.toastr.warning(company?.detail ?? sync.detail ?? 'Não foi possível sincronizar.', 'e-Fisco');
+        }
+      },
+      error: () => this.syncing.set(false),
+    });
+  }
+
+  /** "OK" → "tudo importado"... - a linha da última sincronização. */
+  efiscoStatusLabel(status?: string | null): string {
+    switch (status) {
+      case 'OK': return 'tudo certo';
+      case 'PARCIAL': return 'parte das empresas com problema';
+      case 'BLOQUEADO': return 'o e-Fisco recusou o acesso';
+      case 'ERRO': return 'falhou';
+      default: return status ?? '';
+    }
   }
 
   selectPeriod(periodo: string): void {
