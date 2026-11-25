@@ -35,6 +35,16 @@ export class FronteiraService {
     return this.http.get(`${this.baseUrl}/relatorio.${kind}`, { params: { companyId, periodo }, responseType: 'blob' });
   }
 
+  /** Rascunho do pedido de revisão (PDF) das notas que o e-Fisco cobrou acima do cálculo do Taxify. */
+  revisionRequestPdf(companyId: string, periodo: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/pedido-revisao.pdf`, { params: { companyId, periodo }, responseType: 'blob' });
+  }
+
+  /** O mesmo rascunho em texto puro, para colar no formulário do e-Fisco. */
+  revisionRequestText(companyId: string, periodo: string): Observable<string> {
+    return this.http.get(`${this.baseUrl}/pedido-revisao.txt`, { params: { companyId, periodo }, responseType: 'text' });
+  }
+
   /** O PDF guardado do extrato do período. */
   extractPdf(companyId: string, periodo: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/extrato/pdf`, { params: { companyId, periodo }, responseType: 'blob' });

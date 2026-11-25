@@ -6,7 +6,7 @@
       </div>
     </div>
 
-    <app-table [columns]="columns" [data]="companies()" [config]="tableConfig"></app-table>
+    <app-table [columns]="columns()" [data]="companies()" [config]="tableConfig"></app-table>
 
     @if (loading()) {
       <app-loader></app-loader>
@@ -64,3 +64,21 @@
     }
   }
 </app-modal>
+
+<ng-template #certidaoCell let-row="row">
+  @if (certidaoOf(row.id); as c) {
+    <div class="certidao-cell">
+      <span [class]="'state-badge ' + certidaoBadge(c).cls" [title]="c.situacaoLabel || ''">{{ certidaoBadge(c).label }}</span>
+      @if (c.validaAte) {
+        <div class="cell-sub">
+          até {{ c.validaAte | date: 'dd/MM/yyyy' }}
+          @if (c.hasPdf) {
+            · <app-button label="PDF" variant="text" styleClass="p-0" (onClick)="openCertidao(c)"></app-button>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <span class="cell-sub">—</span>
+  }
+</ng-template>

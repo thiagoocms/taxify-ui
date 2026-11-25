@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
@@ -22,13 +22,16 @@ import { CompanyFormComponent } from '../company-form/company-form.component';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { formatDocument } from '../../../shared/utils/document-mask';
 import { LoaderComponent } from '../../../shared/components/loader/loader';
+import { Button } from '../../../shared/components/button/button';
+import { certidaoBadge, CertidaoSummaryDTO } from '../../../core/models/certidao.model';
+import { CertidaoService, openPdf } from '../../../core/services/certidao.service';
 
 type ViewMode = 'list' | 'form';
 
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [LoaderComponent, CommonModule, ReactiveFormsModule, InputComponent, Modal, Page, Pagination, Table, CompanyFormComponent],
+  imports: [LoaderComponent, Button, CommonModule, ReactiveFormsModule, InputComponent, Modal, Page, Pagination, Table, CompanyFormComponent],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
@@ -36,14 +39,21 @@ export class CompanyListComponent implements OnInit {
   private readonly confirmDialog = inject(ConfirmDialogService);
   protected readonly auth = inject(AuthService);
 
-  readonly columns: TableColumn[] = [
+  private readonly certidaoCell = viewChild.required<TemplateRef<unknown>>('certidaoCell');
+
+  readonly columns = computed<TableColumn[]>(() => [
     { name: 'Nome', property: 'name' },
     { name: 'Tipo doc.', property: 'documentType' },
     { name: 'Documento', property: 'documentNumber', format: formatDocument },
     { name: 'UF', property: 'uf' },
     { name: 'Regime', property: 'taxRegime' },
     { name: 'Situação', property: 'situacao' },
-  ];
+    { name: 'Certidão PE', cellTemplate: this.certidaoCell(), width: '190px' },
+  ]);
+
+  private readonly certidaoService = inject(CertidaoService);
+  /** Certidão SEFAZ-PE da carteira, por empresa (só as de PE com CNPJ aparecem). */
+  readonly certidoes = signal<Record<string, CertidaoSummaryDTO>>({});
 
   readonly tableConfig: TableConfig = {
     headerVisible: true,
@@ -115,6 +125,7 @@ export class CompanyListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCompanies();
+    this.loadCertidoes();
     this.accountingFirmService.loadCurrent();
 
     // Opened from another screen (Pendências → "Abrir"): goes straight to that company.
@@ -146,6 +157,28 @@ export class CompanyListComponent implements OnInit {
         },
         error: () => this.loading.set(false),
       });
+  }
+
+  private loadCertidoes(): void {
+    this.certidaoService.carteira().subscribe({
+      next: (list) => this.certidoes.set(Object.fromEntries(list.map((item) => [item.companyId, item]))),
+      error: () => this.certidoes.set({}),
+    });
+  }
+
+  certidaoOf(companyId?: string | null): CertidaoSummaryDTO | undefined {
+    return companyId ? this.certidoes()[companyId] : undefined;
+  }
+
+  certidaoBadge(item: CertidaoSummaryDTO): { label: string; cls: string } {
+    return certidaoBadge(item.status, item.situacao);
+  }
+
+  openCertidao(item: CertidaoSummaryDTO, event?: Event): void {
+    event?.stopPropagation();
+    if (item.certidaoId) {
+      this.certidaoService.pdf(item.certidaoId).subscribe((blob) => openPdf(blob));
+    }
   }
 
   private situacao(company: CompanyDTO): string {

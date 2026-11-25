@@ -535,3 +535,18 @@
   font-size: 11px;
   white-space: pre-wrap;
 }
+
+.revision-warning {
+  padding: 8px 10px;
+  border: 1px solid #f5c98b;
+  border-radius: var(--radius-control);
+  background: #fff7ec;
+  color: #92400e;
+}
+
+.revision-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  white-space: pre;
+  resize: vertical;
+}

@@ -265,6 +265,8 @@ export interface FronteiraNoteRefDTO {
   cfops: string[];
   cancelada: boolean;
   divergencias?: FiscalXmlDivergenceSummaryDTO | null;
+  /** Chave de acesso da NF-e (44 dígitos). */
+  chaveAcesso?: string | null;
 }
 
 export interface FronteiraLineDTO {

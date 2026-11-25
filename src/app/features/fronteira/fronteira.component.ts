@@ -131,6 +131,16 @@ export class FronteiraComponent implements OnInit {
   readonly importing = signal(false);
   readonly importFile = signal<File | null>(null);
 
+  /** "Pedido de revisão": o rascunho em texto (para colar no e-Fisco) e o PDF. */
+  readonly revisionOpen = signal(false);
+  readonly revisionText = signal<string | null>(null);
+  readonly revisionLoading = signal(false);
+  /** Notas cobradas acima do cálculo do Taxify: o que entra no pedido de revisão. */
+  readonly revisionLines = computed(() =>
+    (this.report()?.lines ?? []).filter((line) => line.resultado === 'COBROU_A_MAIS' && (line.diferenca ?? 0) > 0));
+  readonly revisionTotal = computed(() => this.revisionLines().reduce((sum, line) => sum + (line.diferenca ?? 0), 0));
+  readonly revisionUnchecked = computed(() => this.revisionLines().filter((line) => !line.conferido).length);
+
   readonly rules = signal<FronteiraRuleDTO[]>([]);
   readonly ruleForm = signal<RuleForm | null>(null);
   readonly savingRule = signal(false);
@@ -251,6 +261,14 @@ export class FronteiraComponent implements OnInit {
       handler: () => this.downloadReport('csv'),
     },
     {
+      id: 'fronteira-revision-request',
+      label: 'Pedido de revisão',
+      icon: 'file-signature',
+      variant: 'outlined',
+      isShow: this.view() === 'conferencia' && !!this.report()?.extract && this.revisionLines().length > 0,
+      handler: () => this.openRevision(),
+    },
+    {
       id: 'fronteira-efisco-sync',
       label: this.syncing() ? 'Buscando no e-Fisco...' : 'Sincronizar com e-Fisco',
       icon: 'cloud-arrow-down',
@@ -319,6 +337,49 @@ export class FronteiraComponent implements OnInit {
     }
     this.fronteiraService.reportFile(companyId, periodo, kind)
       .subscribe((blob) => downloadBlob(blob, `fronteira-${periodo}.${kind}`));
+  }
+
+  /** "Pedido de revisão": abre o rascunho (texto para colar no e-Fisco) com as notas cobradas a mais. */
+  openRevision(): void {
+    const companyId = this.companyId();
+    const periodo = this.report()?.periodo;
+    if (!companyId || !periodo) {
+      return;
+    }
+    this.revisionOpen.set(true);
+    this.revisionText.set(null);
+    this.revisionLoading.set(true);
+    this.fronteiraService.revisionRequestText(companyId, periodo).subscribe({
+      next: (text) => {
+        this.revisionText.set(text);
+        this.revisionLoading.set(false);
+      },
+      error: () => {
+        this.revisionLoading.set(false);
+        this.revisionOpen.set(false);
+      },
+    });
+  }
+
+  downloadRevisionPdf(): void {
+    const companyId = this.companyId();
+    const periodo = this.report()?.periodo;
+    if (!companyId || !periodo) {
+      return;
+    }
+    this.fronteiraService.revisionRequestPdf(companyId, periodo)
+      .subscribe((blob) => downloadBlob(blob, `pedido-revisao-fronteira-${periodo}.pdf`));
+  }
+
+  copyRevisionText(): void {
+    const text = this.revisionText();
+    if (!text) {
+      return;
+    }
+    navigator.clipboard.writeText(text).then(
+      () => this.toastr.success('Texto do pedido copiado - cole no formulário do e-Fisco.', 'Pedido de revisão'),
+      () => this.toastr.warning('Não foi possível copiar. Selecione o texto e copie com Ctrl+C.', 'Pedido de revisão'),
+    );
   }
 
   /** "Ver PDF": o extrato guardado, numa aba nova. */

@@ -18,12 +18,13 @@ import { CompanyFiscalConferenceComponent } from '../company-fiscal-conference/c
 import { CompanyBillingComponent } from '../company-billing/company-billing.component';
 import { CompanySubscriptionsComponent } from '../company-subscriptions/company-subscriptions.component';
 import { CompanyTaxRegimesComponent } from '../company-tax-regimes/company-tax-regimes.component';
+import { CompanyCertidaoComponent } from '../company-certidao/company-certidao.component';
 import { CompanyCertificateComponent } from '../company-certificate/company-certificate.component';
 
 @Component({
   selector: 'app-company-form',
   standalone: true,
-  imports: [ReactiveFormsModule, InputComponent, Button, CompanySubscriptionsComponent, CompanyTaxRegimesComponent, CompanyCertificateComponent, CompanyBillingComponent, CompanyProductFiscalRulesComponent, CompanyFiscalConferenceComponent],
+  imports: [ReactiveFormsModule, InputComponent, Button, CompanySubscriptionsComponent, CompanyTaxRegimesComponent, CompanyCertificateComponent, CompanyCertidaoComponent, CompanyBillingComponent, CompanyProductFiscalRulesComponent, CompanyFiscalConferenceComponent],
   templateUrl: './company-form.component.html',
   styles: `
     .form-container { max-width: 900px; }

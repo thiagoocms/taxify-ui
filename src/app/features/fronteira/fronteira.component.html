@@ -608,3 +608,31 @@
     </div>
   }
 </app-modal>
+
+<app-modal [open]="revisionOpen()" title="Pedido de revisão · rascunho" size="lg" (closed)="revisionOpen.set(false)">
+  @if (revisionOpen()) {
+    <p class="small">
+      {{ revisionLines().length }} nota(s) cobrada(s) acima do cálculo do Taxify · {{ formatCurrency(revisionTotal()) }} contestado(s).
+      Leve para a SEFAZ-PE pelo e-Fisco: baixe o PDF ou copie o texto para colar no formulário. Confira no e-Fisco o
+      serviço de revisão do extrato de antecipação, os valores e o enquadramento antes de protocolar.
+    </p>
+    @if (revisionUnchecked() > 0) {
+      <p class="small revision-warning">
+        <fa-icon [icon]="['fas', 'triangle-exclamation']"></fa-icon>
+        {{ revisionUnchecked() }} nota(s) usam regra ainda "a conferir" pelo time fiscal - estão marcadas no rascunho.
+      </p>
+    }
+    @if (revisionLoading()) {
+      <app-loader></app-loader>
+    } @else {
+      <textarea class="form-control revision-text" readonly rows="14" [value]="revisionText() ?? ''"
+        aria-label="Texto do pedido de revisão"></textarea>
+    }
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <app-button label="Fechar" variant="text" severity="secondary" (onClick)="revisionOpen.set(false)"></app-button>
+      <app-button label="Copiar texto" icon="copy" variant="outlined" [disabled]="!revisionText()"
+        (onClick)="copyRevisionText()"></app-button>
+      <app-button label="Baixar PDF" icon="file-pdf" (onClick)="downloadRevisionPdf()"></app-button>
+    </div>
+  }
+</app-modal>

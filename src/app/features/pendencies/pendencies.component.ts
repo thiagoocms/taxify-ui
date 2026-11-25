@@ -298,6 +298,9 @@ export class PendenciesComponent implements OnInit {
   }
 
   healthLabel(h: IntegrationHealthDTO): string {
+    if (h.service === 'Certidão SEFAZ-PE') {
+      return h.lastStatus === 'OK' ? 'Emitida' : h.lastStatus === 'ERRO' ? 'Não emitida' : '—';
+    }
     return h.lastStatus === 'OK' ? 'Notas recebidas' : h.lastStatus === 'SEM_MOVIMENTO' ? 'Sem movimento' : h.lastStatus === 'ERRO' ? 'Erro' : '—';
   }
 }

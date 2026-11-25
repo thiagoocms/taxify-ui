@@ -1,0 +1,13 @@
+@use '../../../shared/styles/page-patterns' as *;
+
+.section-title { font-weight: 600; margin-bottom: 0.25rem; }
+.section-hint { font-size: 0.85rem; opacity: 0.75; margin-bottom: 0.5rem; max-width: 900px; }
+.muted { opacity: 0.7; font-size: 0.9rem; }
+.cert-card { max-width: 900px; border: 1px solid var(--bs-border-color, #dee2e6); border-left: 4px solid var(--color-primary); border-radius: 6px; padding: 8px 12px; }
+.cert-card.danger { border-left-color: var(--bs-danger, #dc3545); }
+.cert-card.warn { border-left-color: var(--bs-warning, #ffc107); }
+.attempt, .history { max-width: 900px; }
+.history { margin: 4px 0 0; padding-left: 18px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.add-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 900px; }
+.add-row input[type='file'] { max-width: 320px; }

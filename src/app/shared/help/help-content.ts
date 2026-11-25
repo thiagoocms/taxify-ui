@@ -206,16 +206,49 @@ export const HELP_ARTICLES: HelpArticle[] = [
           'Provável retenção indevida (média) e ISS retido sem valor (baixa).',
           'Nota só no SIEG ou só na SEFAZ há mais de 48h (baixa).',
           'Achados da Auditoria tipo malha (a severidade vem da regra).',
+          'Certidão SEFAZ-PE positiva (alta; positiva com efeito de negativa, baixa), vencida (alta) ou vencendo em até 15 dias (média).',
         ],
       },
       {
         title: 'Saúde das integrações',
         paragraphs: [
-          'Embaixo, as coletas de cada empresa (SEFAZ e NFS-e Nacional): a última execução, a situação e quantas execuções houve (e quantas falharam) nos últimos 7 dias.',
+          'Embaixo, as coletas de cada empresa (SEFAZ, NFS-e Nacional e a emissão da Certidão SEFAZ-PE): a última execução, a situação e quantas execuções houve (e quantas falharam) nos últimos 7 dias.',
         ],
       },
     ],
-    related: ['retencoes', 'manifestacao', 'empresas'],
+    related: ['retencoes', 'manifestacao', 'empresas', 'certidao-pe'],
+  },
+  {
+    id: 'certidao-pe',
+    title: 'Certidão SEFAZ-PE',
+    group: 'Obrigações e controles',
+    summary: 'A certidão estadual (CRF/CND) de cada empresa de Pernambuco, com validade, situação e PDF, renovada antes de vencer.',
+    sections: [
+      {
+        title: 'O que é',
+        paragraphs: [
+          'A certidão de regularidade fiscal da SEFAZ-PE é emitida pelo CNPJ no e-Fisco e vale 90 dias. Ela diz se a empresa tem débitos estaduais: negativa (sem débitos), positiva (com débitos) ou positiva com efeito de negativa (débitos suspensos, por exemplo parcelados). Só aparece para empresas com UF = PE e CNPJ no cadastro.',
+        ],
+      },
+      {
+        title: 'Onde ver',
+        items: [
+          'Empresas: a coluna "Certidão PE" mostra o selo (negativa, a vencer, positiva, vencida ou sem certidão), a validade e o link do PDF.',
+          'Ficha da empresa, seção "Certidão SEFAZ-PE": a certidão atual, as anteriores e a última tentativa de emissão.',
+          'Pendências: positiva (alta), vencida (alta) ou vencendo em até 15 dias (média). A pendência fecha sozinha quando chega uma certidão nova.',
+        ],
+      },
+      {
+        title: 'Como emitir',
+        items: [
+          'Toda segunda-feira o Taxify confere as empresas sem certidão ou com 15 dias ou menos de validade e tenta a emissão no e-Fisco.',
+          'Hoje a emissão pública do e-Fisco pede a verificação "confirme que você é humano". O Taxify não resolve captcha: a tentativa fica registrada como "Não emitida" e a pendência avisa.',
+          'Para emitir: na ficha da empresa, "Abrir a emissão no e-Fisco", informe o CNPJ, confirme a verificação e baixe o PDF. Depois, "Enviar PDF da certidão": o Taxify lê número, emissão, validade e situação, confere se o CNPJ é o da empresa e guarda o arquivo.',
+          'Quem tem a permissão de sincronizar notas pode emitir e enviar o PDF; quem vê empresas vê a certidão.',
+        ],
+      },
+    ],
+    related: ['pendencias', 'empresas', 'fronteira'],
   },
   {
     id: 'fronteira',
@@ -271,6 +304,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
           '"Valor da guia ajustada" = o cobrado no extrato menos o que foi cobrado a mais (o que vai para pedido de revisão). As notas cobradas a menos, sem regra ou pendentes ficam pelo valor cobrado.',
           '"Relatório PDF" gera o relatório do mês para guardar ou mandar ao cliente: o resumo com a guia ajustada, as notas para pedir revisão, todas as notas com o cálculo usado e as regras e fórmulas aplicadas, com o fundamento.',
           '"Exportar CSV" traz as mesmas notas numa planilha (abre no Excel em português).',
+          '"Pedido de revisão" (aparece quando há notas cobradas a mais) gera o rascunho para levar à SEFAZ-PE pelo e-Fisco: contribuinte e extrato, o valor contestado e o que entende devido, as notas cobradas a mais com o cálculo, a regra e o fundamento dela, e espaço para a assinatura. Baixe o PDF ou use "Copiar texto" para colar no formulário. Notas com regra "a conferir" vêm marcadas; confira o serviço no e-Fisco, os valores e o enquadramento antes de protocolar.',
         ],
       },
     ],
