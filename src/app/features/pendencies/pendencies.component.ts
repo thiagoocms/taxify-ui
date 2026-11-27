@@ -1,8 +1,9 @@
 import { HelpTipComponent } from '../../shared/help/help-tip.component';
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, TemplateRef, viewChild } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { ToastrService } from 'ngx-toastr';
 import { map, Observable } from 'rxjs';
@@ -49,6 +50,8 @@ export class PendenciesComponent implements OnInit {
   private readonly pendencyService = inject(PendencyService);
   private readonly toastr = inject(ToastrService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly auth = inject(AuthService);
 
   private readonly severityCell = viewChild.required<TemplateRef<unknown>>('severityCell');
@@ -132,6 +135,17 @@ export class PendenciesComponent implements OnInit {
     company.documentNumber ? `${company.name} - ${formatDocument(company.documentNumber)}` : company.name;
 
   ngOnInit(): void {
+    // A URL manda nos chips também com o componente reaproveitado (outro link de /pendencias, voltar do navegador).
+    // A primeira leitura só ajusta os filtros (o reloadAll abaixo busca); as seguintes buscam de novo se mudou.
+    let first = true;
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const changed = this.applyUrlFilters(params);
+      if (!first && changed) {
+        this.page.set(0);
+        this.load();
+      }
+      first = false;
+    });
     this.form.controls.company.valueChanges.subscribe((company) => {
       const id = company && typeof company === 'object' && company.id ? company.id : undefined;
       if (id !== this.companyId() && (id || !company)) {
@@ -180,15 +194,42 @@ export class PendenciesComponent implements OnInit {
     return (this.summary()?.counters ?? []).reduce((sum, counter) => sum + counter[level], 0);
   }
 
+  /**
+   * Filtros pela URL (link do resumo por e-mail: `/pendencias?severidade=ALTA&status=ABERTA`, F-AV-3). Só aceita os
+   * valores dos chips; qualquer outro valor fica com o padrão (abertas, toda severidade).
+   */
+  private applyUrlFilters(params: ParamMap): boolean {
+    const rawSeverity = params.get('severidade')?.trim().toUpperCase() ?? '';
+    const rawStatus = params.get('status')?.trim().toUpperCase() ?? '';
+    const severity = rawSeverity && this.severityChips.some((chip) => chip.key === rawSeverity) ? rawSeverity : '';
+    const status = rawStatus && this.statusChips.some((chip) => chip.key === rawStatus) ? rawStatus : 'ABERTA';
+    const changed = severity !== this.severity() || status !== this.status();
+    this.severity.set(severity);
+    this.status.set(status);
+    return changed;
+  }
+
+  /** Mantém a URL igual aos chips (recarregar ou copiar o link abre a mesma visão), sem criar histórico. */
+  private syncUrl(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { severidade: this.severity() || null, status: this.status() === 'ABERTA' ? null : this.status() },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
   setStatus(value: string): void {
     this.status.set(value);
     this.page.set(0);
+    this.syncUrl();
     this.load();
   }
 
   setSeverity(value: string): void {
     this.severity.set(value);
     this.page.set(0);
+    this.syncUrl();
     this.load();
   }
 

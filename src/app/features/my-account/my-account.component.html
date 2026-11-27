@@ -1,0 +1,129 @@
+<app-page pageTitle="Minha conta" pageDescription="Sua senha e os avisos que chegam no seu e-mail.">
+  <div class="account-grid">
+    <!-- Troca da própria senha (SN-RN-09) -->
+    <section class="account-card" aria-labelledby="password-title">
+      <h2 id="password-title">Senha</h2>
+      <p class="card-hint" id="password-rule">
+        Informe a senha atual e a nova. A nova precisa ter pelo menos {{ minLength() }} caracteres, no máximo 72 bytes
+        (acentos e símbolos contam mais de 1) e ser diferente da atual. Ao trocar, as sessões abertas em outros
+        navegadores são encerradas; esta continua.
+      </p>
+
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate [attr.aria-busy]="saving()">
+        <!-- Ajuda o gerenciador de senhas a saber de qual conta é a senha. -->
+        <input type="text" class="visually-hidden" autocomplete="username" [value]="authService.userName() ?? ''"
+               tabindex="-1" aria-hidden="true" readonly />
+        <div class="mt-2"><app-input
+          formControlName="currentPassword"
+          label="Senha atual"
+          inputId="account-current-password"
+          autocomplete="current-password"
+          [ariaRequired]="true"
+          [type]="hidePasswords() ? 'password' : 'text'"
+          [icon]="eyeIcon()"
+          [iconLabel]="hidePasswords() ? 'Mostrar senhas' : 'Ocultar senhas'"
+          [iconPressed]="!hidePasswords()"
+          [clickable]="true"
+          (onClick)="hidePasswords.set(!hidePasswords())"
+        ></app-input></div>
+        <div class="mt-2"><app-input
+          formControlName="newPassword"
+          label="Senha nova"
+          inputId="account-new-password"
+          autocomplete="new-password"
+          [ariaRequired]="true"
+          [type]="hidePasswords() ? 'password' : 'text'"
+        ></app-input></div>
+        <div class="mt-2"><app-input
+          formControlName="confirmPassword"
+          label="Confirme a senha nova"
+          inputId="account-confirm-password"
+          autocomplete="new-password"
+          [ariaRequired]="true"
+          [type]="hidePasswords() ? 'password' : 'text'"
+        ></app-input></div>
+
+        <div aria-live="polite">
+          @if (passwordError()) {
+            <div class="account-alert error" role="alert">
+              <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
+              <span>{{ passwordError() }}</span>
+            </div>
+          }
+          @if (passwordChanged()) {
+            <div class="account-alert success" role="status">
+              <fa-icon [icon]="okIcon" aria-hidden="true"></fa-icon>
+              <span>Senha alterada. As outras sessões abertas foram encerradas e enviamos um aviso para o seu e-mail.</span>
+            </div>
+          }
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <app-button
+            type="submit"
+            icon="lock"
+            [label]="saving() ? 'Trocando...' : 'Trocar a senha'"
+            [disabled]="saving()"
+          ></app-button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Avisos por e-mail (AV-RN-08) -->
+    <section class="account-card" aria-labelledby="alerts-title" [attr.aria-busy]="digestLoading()">
+      <h2 id="alerts-title">Avisos por e-mail</h2>
+
+      @if (digestLoading()) {
+        <app-loader variant="section" message="Carregando os seus avisos..."></app-loader>
+      } @else if (digestLoadError()) {
+        <div class="account-alert error" role="alert">
+          <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
+          <span>{{ digestLoadError() }}</span>
+        </div>
+        <app-button label="Tentar de novo" icon="rotate-left" variant="outlined" (onClick)="loadDigest()"></app-button>
+      } @else if (digest()) {
+        @let setting = digest()!;
+        <div class="setting-row" [class.disabled]="!setting.eligible">
+          <div class="form-check form-switch m-0">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="digest-switch"
+              [checked]="setting.enabled && setting.eligible"
+              [disabled]="!setting.eligible || digestSaving()"
+              aria-describedby="digest-description digest-state"
+              (change)="toggleDigest($any($event.target).checked)"
+            />
+          </div>
+          <div class="setting-text">
+            <label class="setting-label" for="digest-switch">Resumo diário de pendências altas</label>
+            <span class="setting-state" id="digest-state" [class.on]="setting.enabled && setting.eligible">
+              {{ !setting.eligible ? 'Indisponível' : setting.enabled ? 'Ligado' : 'Desligado' }}
+              @if (digestSaving()) { <span> (gravando...)</span> }
+            </span>
+            <p class="card-hint" id="digest-description">
+              Um e-mail por dia útil, por volta das 7h50 (horário de Recife), com as pendências de severidade
+              <strong>alta</strong> que surgiram nas empresas da sua carteira: o nome da empresa, o tipo da pendência
+              e a quantidade. Cada pendência é avisada uma vez; sem novidade, não chega e-mail.
+              @if (!setting.eligible) {
+                <span class="d-block mt-1 reason">
+                  Disponível só para quem tem acesso ao painel de pendências. Se precisar, peça ao administrador do
+                  seu escritório para incluir um perfil com acesso às notas fiscais.
+                </span>
+              }
+            </p>
+          </div>
+        </div>
+        <div aria-live="polite">
+          @if (digestError()) {
+            <div class="account-alert error" role="alert">
+              <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
+              <span>{{ digestError() }}</span>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  </div>
+</app-page>

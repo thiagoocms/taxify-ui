@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, computed, ElementRef, inject, OnInit, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, computed, ElementRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -28,8 +28,33 @@ import { AuthService } from '../../core/services/auth.service';
 import { SignupService } from '../../core/services/signup.service';
 import { SIGNUP_ERRORS, SignupConfigDTO } from '../../core/models/signup.model';
 import { apiErrorCode, apiErrorMessage, httpStatusOf } from '../../core/models/api-error.model';
-import { cnpjValidator, cpfValidator, maxBytesValidator, phoneValidator } from '../../shared/utils/validators';
-import { PASSWORD_MAX_BYTES, PASSWORD_TOO_LONG_MESSAGE, USER_ERRORS } from '../../core/models/user.model';
+import {
+  cnpjValidator,
+  cpfValidator,
+  newPasswordValidators,
+  noColonValidator,
+  phoneValidator,
+} from '../../shared/utils/validators';
+import {
+  PASSWORD_MAX_BYTES,
+  PASSWORD_RULE_CODES,
+  PASSWORD_TOO_LONG_MESSAGE,
+  LOGIN_INVALID_CHAR_MESSAGE,
+  passwordRuleMessage,
+  USER_ERRORS,
+} from '../../core/models/user.model';
+import {
+  AUTH_ERRORS,
+  LOGIN_NOTICE_PASSWORD_CHANGED,
+  PASSWORD_CHANGED_LOGIN_NOTICE,
+  PASSWORD_DEFAULT_MIN_LENGTH,
+  PASSWORD_DEFAULT_RESET_MINUTES,
+  PASSWORD_ERRORS,
+  PasswordConfigDTO,
+  SESSION_EXPIRED_MESSAGE,
+} from '../../core/models/password.model';
+import { PasswordService } from '../../core/services/password.service';
+import { safeReturnUrl } from '../../shared/utils/return-url';
 import { onlyDigits } from '../../shared/utils/document-mask';
 import { ResendEmailComponent } from './resend-email/resend-email.component';
 
@@ -80,10 +105,15 @@ const SIGNUP_FIELD_ERRORS: Record<string, { field: RegisterField; message: strin
   [SIGNUP_ERRORS.emailInvalid]: { field: 'email', message: 'E-mail inválido.' },
   [SIGNUP_ERRORS.loginInvalid]: { field: 'login', message: 'Login inválido.' },
   [USER_ERRORS.loginExists]: { field: 'login', message: 'Já existe um usuário com esse login.' },
+  [USER_ERRORS.loginInvalidChar]: { field: 'login', message: LOGIN_INVALID_CHAR_MESSAGE },
   [USER_ERRORS.documentExists]: { field: 'document', message: 'Já existe um usuário com este CPF.' },
   [USER_ERRORS.passwordInvalid]: { field: 'password', message: PASSWORD_TOO_LONG_MESSAGE },
   [SIGNUP_ERRORS.termsRequired]: { field: 'acceptTerms', message: 'Aceite os termos para criar a conta.' },
 };
+
+/** Espera entre dois pedidos de link (o backend aceita até 3 por hora; acima disso responde 202 e não envia). */
+const FORGOT_COOLDOWN_SECONDS = 60;
+
 
 const SIGNUP_CLOSED_MESSAGE = 'O cadastro está fechado no momento. Fale com a CS Hub para criar a conta do escritório.';
 
@@ -108,10 +138,11 @@ function stepOf(field: RegisterField): number {
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
 })
-export class AuthComponent implements OnInit, AfterViewInit {
+export class AuthComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly signupService = inject(SignupService);
+  private readonly passwordService = inject(PasswordService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
@@ -138,6 +169,13 @@ export class AuthComponent implements OnInit, AfterViewInit {
   /** Chegou por /auth/register com o cadastro fechado: explica no login em vez de mostrar um formulário que não envia. */
   readonly signupClosedNotice = signal(false);
 
+  // ------------------------------------------------------- Password config --
+  /** `GET /auth/password/config`; enquanto não chega (ou se falhar), "Esqueceu a senha?" mostra a quem pedir. */
+  readonly passwordConfig = signal<PasswordConfigDTO | null>(null);
+  readonly forgotAvailable = computed(() => this.passwordConfig()?.available === true);
+  readonly resetMinutes = computed(() => this.passwordConfig()?.resetMinutes || PASSWORD_DEFAULT_RESET_MINUTES);
+  readonly passwordMinLength = computed(() => this.passwordConfig()?.minLength || PASSWORD_DEFAULT_MIN_LENGTH);
+
   // ---------------------------------------------------------------- Login --
   readonly loginLoading = signal(false);
   readonly hideLoginPassword = signal(true);
@@ -147,12 +185,36 @@ export class AuthComponent implements OnInit, AfterViewInit {
   /** Login recusado porque o e-mail ainda não foi confirmado: guarda o login para o "Reenviar e-mail". */
   readonly loginNotVerified = signal<string | null>(null);
   readonly loginNotice = signal<string | null>(null);
-  /** "Esqueceu a senha?": não há troca de senha por e-mail no backend - mostra a quem pedir. */
+  /** Sessão vencida ou revogada (401): o interceptor deixa o aviso no estado da navegação. */
+  readonly sessionNotice = signal<string | null>(null);
+  /** "Esqueceu a senha?" com a recuperação por e-mail desligada: mostra a quem pedir. */
   readonly showForgotHelp = signal(false);
+  /** Tela pedida antes do login (authGuard ou sessão vencida): volta para ela depois de entrar. */
+  private returnUrl: string | null = null;
 
   readonly loginForm = this.fb.nonNullable.group({
     login: ['', [Validators.required]],
     password: ['', [Validators.required]],
+  });
+
+  // ------------------------------------------------------- Forgot password --
+  /** O slide do login mostra o formulário de entrar ou o de pedir o link de senha nova. */
+  readonly loginMode = signal<'login' | 'forgot'>('login');
+  readonly forgotSending = signal(false);
+  /** Pedido aceito (sempre 202): a mensagem fixa, que nunca diz se a conta existe. */
+  readonly forgotSent = signal(false);
+  readonly forgotError = signal<string | null>(null);
+  readonly forgotCooldown = signal(0);
+  private forgotTimer: ReturnType<typeof setInterval> | null = null;
+
+  readonly forgotForm = this.fb.nonNullable.group({
+    identifier: ['', [Validators.required, Validators.maxLength(300)]],
+  });
+
+  readonly forgotButtonLabel = computed(() => {
+    if (this.forgotSending()) return 'Enviando...';
+    if (this.forgotCooldown() > 0) return `Enviar de novo (${this.forgotCooldown()}s)`;
+    return this.forgotSent() ? 'Enviar de novo' : 'Enviar link';
   });
 
   // ------------------------------------------------------------- Register --
@@ -185,8 +247,8 @@ export class AuthComponent implements OnInit, AfterViewInit {
       name: ['', [Validators.required]],
       document: ['', [Validators.required, cpfValidator]],
       email: ['', [Validators.required, Validators.email]],
-      login: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(6), maxBytesValidator(PASSWORD_MAX_BYTES)]],
+      login: ['', [Validators.required, noColonValidator]],
+      password: ['', newPasswordValidators(PASSWORD_DEFAULT_MIN_LENGTH, PASSWORD_MAX_BYTES)],
       confirmPassword: ['', [Validators.required]],
       acceptTerms: [false, [Validators.requiredTrue]],
     },
@@ -194,10 +256,15 @@ export class AuthComponent implements OnInit, AfterViewInit {
   );
 
   ngOnInit(): void {
-    const wantsRegister = this.route.snapshot.routeConfig?.path === 'register';
+    const path = this.route.snapshot.routeConfig?.path;
+    const wantsRegister = path === 'register';
+    const wantsForgot = path === 'esqueci-a-senha';
     if (wantsRegister) {
       this.activeIndex.set(1);
     }
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    this.readNavigationNotice();
+
     this.signupService.getConfig().subscribe({
       next: (config) => {
         this.signupConfig.set(config);
@@ -207,6 +274,137 @@ export class AuthComponent implements OnInit, AfterViewInit {
       },
       error: () => this.closeRegisterSlide(wantsRegister),
     });
+
+    if (wantsForgot) {
+      // Já abre o formulário; se a recuperação estiver desligada, volta para o "peça ao administrador".
+      this.loginMode.set('forgot');
+    }
+    this.passwordService.getConfig().subscribe({
+      next: (config) => {
+        this.passwordConfig.set(config);
+        this.applyPasswordMinLength(config.minLength || PASSWORD_DEFAULT_MIN_LENGTH);
+        if (!config.available) {
+          this.closeForgot(wantsForgot);
+        }
+      },
+      error: () => this.closeForgot(wantsForgot),
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.clearForgotTimer();
+  }
+
+  /** Aviso deixado por outra tela no estado da navegação: senha redefinida ou sessão vencida. */
+  private readNavigationNotice(): void {
+    const state = this.location.getState() as { notice?: string } | null;
+    if (state?.notice === LOGIN_NOTICE_PASSWORD_CHANGED) {
+      this.loginNotice.set(PASSWORD_CHANGED_LOGIN_NOTICE);
+    } else if (state?.notice === AUTH_ERRORS.sessionExpired) {
+      this.sessionNotice.set(SESSION_EXPIRED_MESSAGE);
+    }
+  }
+
+  /** O mínimo da senha vem da config (TAXIFY_PASSWORD_MIN_LENGTH); o cadastro passa a usar o mesmo. */
+  private applyPasswordMinLength(minLength: number): void {
+    const control = this.registerForm.controls.password;
+    control.setValidators(newPasswordValidators(minLength, PASSWORD_MAX_BYTES));
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  /** Recuperação desligada (ou a config não veio): volta para o login com o "peça ao administrador". */
+  private closeForgot(wantsForgot: boolean): void {
+    this.passwordConfig.update((config) => (config ? { ...config, available: false } : config));
+    if (this.loginMode() === 'forgot') {
+      this.loginMode.set('login');
+      this.showForgotHelp.set(wantsForgot || this.showForgotHelp());
+      if (wantsForgot) {
+        this.location.replaceState('/auth/login');
+      }
+      this.focusFirstField();
+    }
+  }
+
+  /** "Esqueceu a senha?": abre o pedido do link (ou, desligado, mostra a quem pedir). */
+  forgotClick(): void {
+    if (!this.forgotAvailable()) {
+      this.showForgotHelp.set(!this.showForgotHelp());
+      return;
+    }
+    const login = this.loginForm.controls.login.value.trim();
+    if (login && !this.forgotForm.controls.identifier.value) {
+      this.forgotForm.patchValue({ identifier: login });
+    }
+    this.loginError.set(null);
+    this.loginNotVerified.set(null);
+    this.loginMode.set('forgot');
+    this.location.replaceState('/auth/esqueci-a-senha');
+    this.focusFirstField();
+  }
+
+  backToLoginFromForgot(): void {
+    this.loginMode.set('login');
+    this.forgotError.set(null);
+    this.location.replaceState('/auth/login');
+    this.focusFirstField();
+  }
+
+  /** `POST /auth/password/forgot`: sempre 202; a mensagem é a mesma, exista ou não a conta (SN-RN-01). */
+  forgotSubmit(): void {
+    if (this.forgotSending() || this.forgotCooldown() > 0) {
+      return;
+    }
+    if (this.forgotForm.invalid) {
+      this.forgotForm.markAllAsTouched();
+      return;
+    }
+    const identifier = this.forgotForm.controls.identifier.value.trim();
+    if (!identifier) {
+      this.forgotForm.controls.identifier.setValue('');
+      this.forgotForm.markAllAsTouched();
+      return;
+    }
+    this.forgotSending.set(true);
+    this.forgotError.set(null);
+    this.passwordService.forgot(identifier).subscribe({
+      next: () => {
+        this.forgotSending.set(false);
+        this.forgotSent.set(true);
+        this.startForgotCooldown();
+      },
+      error: (error: unknown) => {
+        this.forgotSending.set(false);
+        const status = httpStatusOf(error);
+        if (apiErrorCode(error) === PASSWORD_ERRORS.resetUnavailable || status === 503) {
+          this.forgotSent.set(false);
+          this.closeForgot(true);
+          return;
+        }
+        this.forgotError.set(
+          status === 0
+            ? 'Não foi possível falar com o Taxify. Verifique sua internet e tente de novo em instantes.'
+            : 'Não foi possível enviar o pedido agora. Tente de novo em alguns minutos.',
+        );
+      },
+    });
+  }
+
+  private startForgotCooldown(): void {
+    this.forgotCooldown.set(FORGOT_COOLDOWN_SECONDS);
+    this.clearForgotTimer();
+    this.forgotTimer = setInterval(() => {
+      this.forgotCooldown.update((value) => value - 1);
+      if (this.forgotCooldown() <= 0) {
+        this.clearForgotTimer();
+      }
+    }, 1000);
+  }
+
+  private clearForgotTimer(): void {
+    if (this.forgotTimer) {
+      clearInterval(this.forgotTimer);
+      this.forgotTimer = null;
+    }
   }
 
   ngAfterViewInit(): void {
@@ -280,12 +478,14 @@ export class AuthComponent implements OnInit, AfterViewInit {
     this.loginError.set(null);
     this.loginNotVerified.set(null);
     this.loginNotice.set(null);
+    this.sessionNotice.set(null);
     this.signupClosedNotice.set(false);
 
     this.authService.login(login, password).subscribe({
       next: () => {
         this.loginLoading.set(false);
-        this.router.navigate(['/home']);
+        // Volta para a tela pedida antes do login (link do e-mail, sessão vencida); só caminho interno.
+        this.router.navigateByUrl(safeReturnUrl(this.returnUrl));
       },
       error: (error: unknown) => {
         this.loginLoading.set(false);
@@ -407,6 +607,10 @@ export class AuthComponent implements OnInit, AfterViewInit {
       this.registerError.set(
         'Já foram feitos muitos cadastros a partir desta rede hoje. Tente de novo amanhã ou fale com a CS Hub.',
       );
+      return;
+    }
+    if (code && PASSWORD_RULE_CODES.has(code)) {
+      this.markServerError('password', apiMessage ?? passwordRuleMessage(code, this.passwordMinLength()) ?? 'Senha inválida.');
       return;
     }
     const mapped = code ? SIGNUP_FIELD_ERRORS[code] : undefined;

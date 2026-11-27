@@ -1,7 +1,7 @@
 import {HttpClient} from '@angular/common/http';
 import {computed, Injectable, signal} from '@angular/core';
 import {jwtDecode} from 'jwt-decode';
-import {Observable, tap} from 'rxjs';
+import {Observable, Subject, tap} from 'rxjs';
 import {environment} from '../../../environments/environment';
 import {AccessProfile, Permission} from '../models/access.model';
 import {AuthenticatedDTO, AuthLoginDTO} from '../models/auth.model';
@@ -23,11 +23,43 @@ export class AuthService {
   readonly userId = computed(() => this.userIdSignal());
   readonly userName = computed(() => this.userNameSignal());
 
+  /** Trocas da própria senha no ar (`PUT /users/me/password`): o token pode mudar quando ela terminar. */
+  private passwordChanges = 0;
+  private readonly passwordChangeSettledSubject = new Subject<void>();
+  /** Emite quando a última troca de senha no ar termina (com sucesso ou erro). */
+  readonly passwordChangeSettled$ = this.passwordChangeSettledSubject.asObservable();
+  /** A sessão já foi encerrada por um 401: os 401 seguintes não repetem toast nem navegação até o próximo login. */
+  private sessionEnded = false;
+
   constructor(private readonly http: HttpClient) {
   }
 
   get token(): string | null {
     return this.tokenSignal();
+  }
+
+  get passwordChangeInFlight(): boolean {
+    return this.passwordChanges > 0;
+  }
+
+  beginPasswordChange(): void {
+    this.passwordChanges++;
+  }
+
+  endPasswordChange(): void {
+    this.passwordChanges = Math.max(0, this.passwordChanges - 1);
+    if (this.passwordChanges === 0) {
+      this.passwordChangeSettledSubject.next();
+    }
+  }
+
+  /** O primeiro 401 da sessão ganha (true) e encerra a sessão; os outros até o próximo login recebem false. */
+  claimSessionEnd(): boolean {
+    if (this.sessionEnded) {
+      return false;
+    }
+    this.sessionEnded = true;
+    return true;
   }
 
   /**
@@ -94,7 +126,20 @@ export class AuthService {
     }
   }
 
+  /**
+   * Troca só o token da sessão atual (troca da própria senha: `PUT /users/me/password` devolve um JWT novo com a
+   * versão de sessão nova). Mesmo armazenamento do login; userId e userName não mudam.
+   */
+  replaceToken(token: string): void {
+    if (!token) {
+      return;
+    }
+    localStorage.setItem(TOKEN_KEY, token);
+    this.tokenSignal.set(token);
+  }
+
   private setSession(result: AuthenticatedDTO): void {
+    this.sessionEnded = false;
     localStorage.setItem(TOKEN_KEY, result.token);
     localStorage.setItem(USER_ID_KEY, result.userId);
     localStorage.setItem(USER_NAME_KEY, result.userName);

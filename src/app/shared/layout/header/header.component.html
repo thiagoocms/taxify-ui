@@ -10,14 +10,38 @@
   </div>
 
   <div class="user-area">
-    <button
-      type="button"
-      class="user-avatar"
-      title="Editar dados do escritório"
-      (click)="openFirmDialog()"
-    >
-      {{ userInitial }}
-    </button>
+    <!-- Menu do avatar: Minha conta e Dados do escritório (abre e fecha pelo teclado; Esc fecha). -->
+    <div class="user-menu" (keydown.escape)="closeUserMenu(true)">
+      <button
+        #avatarButton
+        type="button"
+        class="user-avatar"
+        title="Minha conta e dados do escritório"
+        aria-label="Menu da conta"
+        [attr.aria-controls]="userMenuOpen() ? 'user-menu-panel' : null"
+        [attr.aria-expanded]="userMenuOpen()"
+        (click)="toggleUserMenu()"
+      >
+        {{ userInitial }}
+      </button>
+      @if (userMenuOpen()) {
+        <div class="user-menu-panel" id="user-menu-panel">
+          <p class="user-menu-name">{{ authService.userName() }}</p>
+          <ul>
+            <li>
+              <a routerLink="/minha-conta" (click)="closeUserMenu()">
+                <fa-icon [icon]="accountIcon" aria-hidden="true"></fa-icon> Minha conta
+              </a>
+            </li>
+            <li>
+              <button type="button" (click)="openFirmDialog()">
+                <fa-icon [icon]="firmIcon" aria-hidden="true"></fa-icon> Dados do escritório
+              </button>
+            </li>
+          </ul>
+        </div>
+      }
+    </div>
     <span class="user-name">{{ authService.userName() }}</span>
     <app-button
       label="Sair"

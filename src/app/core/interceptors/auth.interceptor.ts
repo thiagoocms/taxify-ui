@@ -2,7 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { catchError, throwError } from 'rxjs';
+import { catchError, Observable, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { FirmAccessService } from '../services/firm-access.service';
 import {
@@ -14,11 +14,23 @@ import {
   PlanLimitBody,
   planLimitMessage,
 } from '../models/api-error.model';
+import { AUTH_ERRORS, SESSION_EXPIRED_MESSAGE } from '../models/password.model';
 import { SIGNUP_ERRORS } from '../models/signup.model';
 import { USER_ERRORS } from '../models/user.model';
+import { returnUrlToKeep } from '../../shared/utils/return-url';
 
 /** Telas que mostram o erro perto do formulário: o toast seria repetido. */
-const INLINE_ERROR_URLS = [/\/signup(\/|$)/, /\/platform\/firms\/[^/]+\/(access\/|contact$)/];
+const INLINE_ERROR_URLS = [
+  /\/signup(\/|$)/,
+  /\/platform\/firms\/[^/]+\/(access\/|contact$)/,
+  // "Esqueci a senha", redefinição pelo link e Minha conta (troca de senha e avisos por e-mail).
+  /\/auth\/password\//,
+  /\/users\/me\/(password|notification-settings)$/,
+];
+/** Troca da própria senha: o PUT que devolve o token novo. */
+const PASSWORD_CHANGE_URL = /\/users\/me\/password$/;
+/** Rotas anônimas de senha: vão sem o token (um token velho no navegador não pode derrubar o pedido com 401). */
+const ANONYMOUS_URLS = [/\/auth\/password\//];
 /** Erros de campo do formulário de usuário (POST/PUT /users): a tela marca o campo. */
 const USERS_URL = /\/users(\/[^/]+)?$/;
 const USER_FIELD_ERROR_CODES = new Set<string>(Object.values(USER_ERRORS));
@@ -61,10 +73,44 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const toastr = inject(ToastrService);
   const firmAccess = inject(FirmAccessService);
 
-  const token = authService.token;
+  const anonymous = ANONYMOUS_URLS.some((pattern) => pattern.test(req.url.split('?')[0]));
+  const token = anonymous ? null : authService.token;
   const authorizedReq = token
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : req;
+
+  const isPasswordChange = PASSWORD_CHANGE_URL.test(req.url.split('?')[0]);
+
+  /**
+   * 401 fora do login: a sessão venceu ou foi revogada (senha trocada em outro navegador, usuário excluído:
+   * `error.auth.session.expired`). Desloga e volta ao login, que mostra o aviso e depois traz de volta para a tela.
+   * - Token trocado enquanto esta chamada estava no ar (troca da própria senha): o 401 é do token antigo e a sessão
+   *   atual continua.
+   * - Troca da própria senha ainda no ar: espera ela terminar e decide de novo (deu certo = token novo, ignora).
+   * - Só o primeiro 401 age até o próximo login: sem toasts e navegações repetidos quando várias chamadas caem juntas.
+   */
+  const endSession = (error: HttpErrorResponse): Observable<never> => {
+    if (token && authService.token && authService.token !== token) {
+      return throwError(() => error);
+    }
+    if (authService.passwordChangeInFlight && !isPasswordChange) {
+      return authService.passwordChangeSettled$.pipe(
+        take(1),
+        switchMap(() => endSession(error)),
+      );
+    }
+    if (!authService.claimSessionEnd()) {
+      return throwError(() => error);
+    }
+    toastr.warning(SESSION_EXPIRED_MESSAGE, 'Sessão expirada');
+    const returnUrl = returnUrlToKeep(router.url);
+    authService.logout();
+    router.navigate(['/auth/login'], {
+      queryParams: returnUrl ? { returnUrl } : undefined,
+      state: { notice: AUTH_ERRORS.sessionExpired },
+    });
+    return throwError(() => error);
+  };
 
   return next(authorizedReq).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -79,10 +125,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         INLINE_ERROR_URLS.some((pattern) => pattern.test(path)) ||
         (USERS_URL.test(path) && !!code && USER_FIELD_ERROR_CODES.has(code));
       if ((silent || inline) && error.status === 401 && token && !isLoginAttempt) {
-        toastr.warning('Sua sessão expirou. Faça login novamente.', 'Sessão expirada');
-        authService.logout();
-        router.navigate(['/auth/login']);
-        return throwError(() => error);
+        return endSession(error);
       }
       if (silent || inline) {
         return throwError(() => error);
@@ -122,10 +165,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       if (error.status === 401) {
-        toastr.warning('Sua sessão expirou. Faça login novamente.', 'Sessão expirada');
-        authService.logout();
-        router.navigate(['/auth/login']);
-        return throwError(() => error);
+        return endSession(error);
       }
 
       if (error.status === 0) {

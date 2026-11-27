@@ -79,7 +79,7 @@ describe('authInterceptor', () => {
     http.put('/api/platform/firms/f1/contact', {}).subscribe({ error: () => undefined });
     controller.expectOne('/api/platform/firms/f1/contact').flush({}, { status: 401, statusText: 'Unauthorized' });
     expect(logout).toHaveBeenCalled();
-    expect(navigate).toHaveBeenCalledWith(['/auth/login']);
+    expect(navigate).toHaveBeenCalledWith(['/auth/login'], jasmine.objectContaining({ state: { notice: 'error.auth.session.expired' } }));
   });
 
   it('login/CPF duplicado no /users fica com o formulário (sem toast); outros 409 continuam com toast', () => {
@@ -185,5 +185,160 @@ describe('authInterceptor', () => {
       { status: 409, statusText: 'Conflict' },
     );
     expect(toastr.warning).toHaveBeenCalledWith('Já existe um plano com esse nome.', 'Conflito');
+  });
+
+  // Senha e sessão (spec 2026-11-27: SN-RN-09, SN-RN-11, F-SN-4).
+
+  it('401 error.auth.session.expired desloga com "Sua sessão expirou. Entre de novo." e guarda a tela para voltar', () => {
+    const auth = TestBed.inject(AuthService);
+    spyOnProperty(auth, 'token', 'get').and.returnValue('token-ficticio');
+    const logout = spyOn(auth, 'logout');
+    const router = TestBed.inject(Router);
+    spyOnProperty(router, 'url', 'get').and.returnValue('/pendencias?severidade=ALTA');
+    const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+    http.get('/api/companies').subscribe({ error: () => undefined });
+    controller
+      .expectOne('/api/companies')
+      .flush({ status: 401, code: 'error.auth.session.expired' }, { status: 401, statusText: 'Unauthorized' });
+    expect(toastr.warning).toHaveBeenCalledWith('Sua sessão expirou. Entre de novo.', 'Sessão expirada');
+    expect(logout).toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(['/auth/login'], {
+      queryParams: { returnUrl: '/pendencias?severidade=ALTA' },
+      state: { notice: 'error.auth.session.expired' },
+    });
+  });
+
+  it('401 de uma chamada que saiu com o token antigo, depois da troca da senha, não derruba a sessão nova', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.replaceToken('token-antigo');
+    const logout = spyOn(auth, 'logout');
+    http.get('/api/companies').subscribe({ error: () => undefined });
+    const pending = controller.expectOne('/api/companies');
+    expect(pending.request.headers.get('Authorization')).toBe('Bearer token-antigo');
+    auth.replaceToken('token-novo');
+    pending.flush({ status: 401, code: 'error.auth.session.expired' }, { status: 401, statusText: 'Unauthorized' });
+    expect(logout).not.toHaveBeenCalled();
+    expect(toastr.warning).not.toHaveBeenCalled();
+    localStorage.clear();
+  });
+
+  it('rotas anônimas de senha vão sem o token e sem toast (a tela mostra o erro)', () => {
+    const auth = TestBed.inject(AuthService);
+    spyOnProperty(auth, 'token', 'get').and.returnValue('token-velho');
+    http.post('/api/auth/password/forgot', { identifier: 'x' }).subscribe({ error: () => undefined });
+    const forgot = controller.expectOne('/api/auth/password/forgot');
+    expect(forgot.request.headers.has('Authorization')).toBeFalse();
+    forgot.flush({ status: 503, code: 'error.password.reset.unavailable' }, { status: 503, statusText: 'Unavailable' });
+    http.post('/api/auth/password/reset', {}).subscribe({ error: () => undefined });
+    controller
+      .expectOne('/api/auth/password/reset')
+      .flush({ status: 400, code: 'error.password.reset.token.invalid' }, { status: 400, statusText: 'Bad Request' });
+    expect(toastr.warning).not.toHaveBeenCalled();
+    expect(toastr.error).not.toHaveBeenCalled();
+  });
+
+  it('troca da própria senha: 400 da senha atual e 429 ficam com a tela, sem toast e sem deslogar', () => {
+    const auth = TestBed.inject(AuthService);
+    spyOnProperty(auth, 'token', 'get').and.returnValue('token-ficticio');
+    const logout = spyOn(auth, 'logout');
+    http.put('/api/users/me/password', {}).subscribe({ error: () => undefined });
+    controller
+      .expectOne('/api/users/me/password')
+      .flush({ status: 400, code: 'error.user.password.current.invalid' }, { status: 400, statusText: 'Bad Request' });
+    http.put('/api/users/me/password', {}).subscribe({ error: () => undefined });
+    controller
+      .expectOne('/api/users/me/password')
+      .flush({ status: 429, code: 'error.user.password.change.rate.limited' }, { status: 429, statusText: 'Too Many' });
+    expect(toastr.warning).not.toHaveBeenCalled();
+    expect(logout).not.toHaveBeenCalled();
+  });
+
+  it('formulário de usuário: error.user.password.use.self.change e error.user.login.invalid.char ficam com o formulário', () => {
+    http.put('/api/users/u1', {}).subscribe({ error: () => undefined });
+    controller
+      .expectOne('/api/users/u1')
+      .flush({ status: 400, code: 'error.user.password.use.self.change' }, { status: 400, statusText: 'Bad Request' });
+    http.post('/api/users', {}).subscribe({ error: () => undefined });
+    controller
+      .expectOne('/api/users')
+      .flush({ status: 400, code: 'error.user.login.invalid.char' }, { status: 400, statusText: 'Bad Request' });
+    http.put('/api/users/u1', {}).subscribe({ error: () => undefined });
+    controller
+      .expectOne('/api/users/u1')
+      .flush({ status: 400, code: 'error.user.login.self.change' }, { status: 400, statusText: 'Bad Request' });
+    expect(toastr.warning).not.toHaveBeenCalled();
+  });
+
+  it('várias chamadas com 401 ao mesmo tempo: só a primeira mostra o toast e navega, até o próximo login', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.replaceToken('token-ficticio');
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    ['/api/companies', '/api/plans', '/api/firm-access'].forEach((url) => http.get(url).subscribe({ error: () => undefined }));
+    ['/api/companies', '/api/plans', '/api/firm-access'].forEach((url) =>
+      controller.expectOne(url).flush({ status: 401, code: 'error.auth.session.expired' }, { status: 401, statusText: 'Unauthorized' }),
+    );
+    expect(toastr.warning).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledTimes(1);
+    localStorage.clear();
+  });
+
+  it('401 de outra chamada durante a troca da senha espera o PUT: com sucesso (token novo) é ignorado', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.replaceToken('token-antigo');
+    const logout = spyOn(auth, 'logout').and.callThrough();
+    auth.beginPasswordChange();
+    http.get('/api/companies').subscribe({ error: () => undefined });
+    controller.expectOne('/api/companies').flush({ status: 401 }, { status: 401, statusText: 'Unauthorized' });
+    expect(toastr.warning).not.toHaveBeenCalled();
+    // O PUT termina com sucesso: token novo e fim da troca.
+    auth.replaceToken('token-novo');
+    auth.endPasswordChange();
+    expect(logout).not.toHaveBeenCalled();
+    expect(toastr.warning).not.toHaveBeenCalled();
+    localStorage.clear();
+  });
+
+  it('401 de outra chamada durante a troca da senha: se o PUT falhar (token não mudou), a sessão acaba', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.replaceToken('token-antigo');
+    const logout = spyOn(auth, 'logout').and.callThrough();
+    spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    auth.beginPasswordChange();
+    http.get('/api/companies').subscribe({ error: () => undefined });
+    controller.expectOne('/api/companies').flush({ status: 401 }, { status: 401, statusText: 'Unauthorized' });
+    expect(logout).not.toHaveBeenCalled();
+    auth.endPasswordChange();
+    expect(logout).toHaveBeenCalledTimes(1);
+    expect(toastr.warning).toHaveBeenCalledWith('Sua sessão expirou. Entre de novo.', 'Sessão expirada');
+  });
+
+  it('401 vindo do callback da Conta Azul não guarda o returnUrl com o code do OAuth', () => {
+    const auth = TestBed.inject(AuthService);
+    spyOnProperty(auth, 'token', 'get').and.returnValue('token-ficticio');
+    spyOn(auth, 'logout');
+    const router = TestBed.inject(Router);
+    spyOnProperty(router, 'url', 'get').and.returnValue('/integracoes/conta-azul/callback?code=abc&state=x');
+    const navigate = spyOn(router, 'navigate').and.resolveTo(true);
+    http.get('/api/companies').subscribe({ error: () => undefined });
+    controller.expectOne('/api/companies').flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(navigate).toHaveBeenCalledWith(['/auth/login'], jasmine.objectContaining({ queryParams: undefined }));
+  });
+
+  it('chamada cancelada enquanto espera o fim da troca de senha: a assinatura é desfeita e nada acontece depois', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.replaceToken('token-antigo');
+    const logout = spyOn(auth, 'logout').and.callThrough();
+    const settled = (auth as unknown as { passwordChangeSettledSubject: { observed: boolean } }).passwordChangeSettledSubject;
+    auth.beginPasswordChange();
+    const subscription = http.get('/api/companies').subscribe({ error: () => undefined });
+    controller.expectOne('/api/companies').flush({ status: 401 }, { status: 401, statusText: 'Unauthorized' });
+    expect(settled.observed).toBeTrue();
+    subscription.unsubscribe();
+    expect(settled.observed).toBeFalse();
+    // A troca termina sem token novo: como a chamada foi cancelada, ela não encerra a sessão.
+    auth.endPasswordChange();
+    expect(logout).not.toHaveBeenCalled();
+    expect(toastr.warning).not.toHaveBeenCalled();
+    localStorage.clear();
   });
 });

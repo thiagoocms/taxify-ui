@@ -283,6 +283,12 @@ export class InputComponent implements ControlValueAccessor, OnInit {
     if (errors['mismatch']) {
       messages.push('Senhas diferentes');
     }
+    if (errors['samePassword']) {
+      messages.push('A senha nova precisa ser diferente da atual');
+    }
+    if (errors['colon']) {
+      messages.push('O login não pode ter ":"');
+    }
     if (errors['documentInvalid']) {
       messages.push('CPF/CNPJ inválido');
     }

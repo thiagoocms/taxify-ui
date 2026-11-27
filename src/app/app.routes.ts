@@ -59,6 +59,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/service-invoices/service-invoices.component').then((m) => m.ServiceInvoicesComponent),
       },
+      // Minha conta: qualquer usuário logado (troca da própria senha e avisos por e-mail); link do rodapé do resumo.
+      {
+        path: 'minha-conta',
+        loadComponent: () => import('./features/my-account/my-account.component').then((m) => m.MyAccountComponent),
+      },
       {
         path: 'ajuda',
         loadComponent: () => import('./features/help/help-center.component').then((m) => m.HelpCenterComponent),

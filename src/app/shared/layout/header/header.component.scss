@@ -112,3 +112,80 @@
     font-size: 17px;
   }
 }
+
+// ------------------------------------------------------------------ Menu do avatar --
+.user-menu {
+  position: relative;
+}
+
+.user-avatar:focus-visible,
+.user-menu-panel a:focus-visible,
+.user-menu-panel button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.user-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1050;
+  min-width: 220px;
+  background: #fff;
+  border-radius: var(--radius-control);
+  box-shadow: 0 6px 24px rgba(16, 24, 40, 0.16);
+  border: 1px solid #e5e7eb;
+  padding: 6px;
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  a,
+  button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-title);
+    font-size: 14px;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--app-bg);
+    }
+
+    fa-icon {
+      width: 16px;
+      color: var(--color-primary);
+    }
+  }
+}
+
+.user-menu-name {
+  margin: 0;
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid #eef0f4;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// No desktop o nome já aparece ao lado do avatar.
+@media (min-width: 576px) {
+  .user-menu-name {
+    display: none;
+  }
+}

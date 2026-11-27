@@ -18,10 +18,19 @@
 
   <div class="row mt-3">
     <div class="col-md-6 col-sm-12">
-      <app-input formControlName="login" label="Login"></app-input>
+      <app-input formControlName="login" label="Login" inputId="user-form-login"></app-input>
+      @if (isSelf) {
+        <small class="text-muted d-block field-help">
+          O seu próprio login não muda por aqui. Se precisar, peça a outro administrador do escritório.
+        </small>
+      }
     </div>
     <div class="col-md-6 col-sm-12">
-      <app-input formControlName="email" type="email" label="E-mail"></app-input>
+      <app-input formControlName="email" type="email" label="E-mail" inputId="user-form-email"></app-input>
+      <small class="text-muted d-block field-help" id="user-form-email-help">
+        É para este e-mail que vai o link de "Esqueci a senha" e o aviso de senha alterada. Confira se está certo e se
+        é da própria pessoa.
+      </small>
     </div>
   </div>
 
@@ -29,12 +38,25 @@
     <div class="col-md-6 col-sm-12">
       <app-input
         formControlName="password"
-        [label]="isEdit ? 'Nova senha (opcional)' : 'Senha'"
+        inputId="user-form-password"
+        autocomplete="new-password"
+        [label]="isSelf ? 'Senha (troque em Minha conta)' : isEdit ? 'Nova senha (opcional)' : 'Senha'"
+        [ariaRequired]="!isEdit"
         [type]="hidePassword() ? 'password' : 'text'"
         [icon]="eyeIcon()"
+        [iconLabel]="hidePassword() ? 'Mostrar senha' : 'Ocultar senha'"
+        [iconPressed]="!hidePassword()"
         [clickable]="true"
         (onClick)="hidePassword.set(!hidePassword())"
       ></app-input>
+      <small class="text-muted d-block field-help">
+        @if (isSelf) {
+          Para trocar a sua própria senha, use <a routerLink="/minha-conta">Minha conta</a> (ela pede a senha atual).
+        } @else {
+          Pelo menos {{ minLength() }} caracteres, no máximo 72 bytes.
+          @if (isEdit) { Em branco, a senha atual continua. Ao trocar, as sessões abertas da pessoa são encerradas e ela recebe um aviso por e-mail. }
+        }
+      </small>
     </div>
   </div>
 

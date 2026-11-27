@@ -16,6 +16,65 @@
       <div class="form-track" [class.show-register]="activeIndex() === 1">
         <!-- Login -->
         <section class="form-slide" aria-labelledby="login-title" [attr.inert]="activeIndex() !== 0 ? '' : null">
+          @if (loginMode() === 'forgot') {
+            <!-- Esqueci a senha: pede o link por login ou e-mail. A resposta nunca diz se a conta existe. -->
+            <div class="auth-header">
+              <h1 id="login-title">Recuperar a senha</h1>
+              <p>Informe o seu login ou o e-mail cadastrado. Enviamos um link para você definir uma senha nova.</p>
+            </div>
+
+            <form [formGroup]="forgotForm" (ngSubmit)="forgotSubmit()" novalidate [attr.aria-busy]="forgotSending()">
+              <div class="mt-1">
+                <app-input
+                  formControlName="identifier"
+                  label="Login ou e-mail"
+                  inputId="forgot-identifier"
+                  autocomplete="username"
+                  [ariaRequired]="true"
+                  [maxLength]="300"
+                ></app-input>
+              </div>
+
+              <div aria-live="polite">
+                @if (forgotSent()) {
+                  <div class="form-alert success" role="status">
+                    <fa-icon [icon]="mailIcon" aria-hidden="true"></fa-icon>
+                    <span>
+                      Se existir uma conta com esses dados, enviamos um link para o e-mail cadastrado.
+                      Ele vale por {{ resetMinutes() }} minutos. Confira também a caixa de spam.
+                    </span>
+                  </div>
+                }
+                @if (forgotError()) {
+                  <div class="form-alert error" role="alert">
+                    <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
+                    <span>{{ forgotError() }}</span>
+                  </div>
+                }
+              </div>
+
+              <div class="d-grid mt-2">
+                <app-button
+                  type="submit"
+                  size="large"
+                  [label]="forgotButtonLabel()"
+                  [disabled]="forgotSending() || forgotCooldown() > 0"
+                  styleClass="w-100 auth-submit"
+                ></app-button>
+              </div>
+            </form>
+
+            <p class="forgot-help mt-3">
+              Não tem mais acesso ao e-mail cadastrado? Peça ao administrador do seu escritório para definir uma senha
+              nova em <strong>Cadastro &rsaquo; Usuários</strong>.
+            </p>
+
+            <p class="switch-link">
+              <button type="button" class="link-btn" (click)="backToLoginFromForgot()">
+                <fa-icon [icon]="arrowLeft" aria-hidden="true"></fa-icon> Voltar para o login
+              </button>
+            </p>
+          } @else {
           <div class="auth-header">
             <h1 id="login-title">Entrar no Taxify</h1>
             <p>Acesse a conferência fiscal do seu escritório.</p>
@@ -28,6 +87,13 @@
                 O cadastro de novos escritórios está fechado no momento.
                 <a [href]="whatsappUrl" target="_blank" rel="noopener">Fale com a CS Hub</a> para criar a sua conta.
               </span>
+            </div>
+          }
+
+          @if (sessionNotice()) {
+            <div class="form-alert warning" role="status">
+              <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
+              <span>{{ sessionNotice() }}</span>
             </div>
           }
 
@@ -61,20 +127,21 @@
               <button
                 type="button"
                 class="link-btn small"
-                aria-controls="forgot-help"
-                [attr.aria-expanded]="showForgotHelp()"
-                (click)="showForgotHelp.set(!showForgotHelp())"
+                [attr.aria-controls]="forgotAvailable() ? null : 'forgot-help'"
+                [attr.aria-expanded]="forgotAvailable() ? null : showForgotHelp()"
+                (click)="forgotClick()"
               >
                 Esqueceu a senha?
               </button>
             </div>
-            @if (showForgotHelp()) {
+            @if (showForgotHelp() && !forgotAvailable()) {
               <p id="forgot-help" class="forgot-help">
                 Peça ao administrador do seu escritório para definir uma nova senha em
                 <strong>Cadastro &rsaquo; Usuários</strong>. Se você é o administrador,
                 <a [href]="whatsappUrl" target="_blank" rel="noopener">fale com a CS Hub</a>.
               </p>
             }
+
 
             <div aria-live="assertive">
               @if (loginNotVerified(); as pendingLogin) {
@@ -122,6 +189,7 @@
               </p>
             }
           </div>
+          }
         </section>
 
         <!-- Cadastro: cria um escritório novo, com quem se cadastra como administrador. -->
@@ -218,7 +286,7 @@
                     <div class="mt-1">
                       <app-input
                         formControlName="password"
-                        label="Senha (mínimo de 6 caracteres)"
+                        [label]="'Senha (mínimo de ' + passwordMinLength() + ' caracteres)'"
                         inputId="register-password"
                         autocomplete="new-password"
                         [type]="hidePassword() ? 'password' : 'text'"
