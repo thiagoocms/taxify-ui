@@ -1,0 +1,23 @@
+<div class="backdrop" (click)="closed.emit()"></div>
+<aside #panel class="panel" role="dialog" aria-modal="true" [attr.aria-labelledby]="titleId" tabindex="-1">
+  <header>
+    <div class="min-w-0">
+      @if (eyebrow()) {
+        <span class="eyebrow">{{ eyebrow() }}</span>
+      }
+      <h5 [id]="titleId">{{ title() }}</h5>
+      @if (subtitle()) {
+        <div class="subtitle">{{ subtitle() }}</div>
+      }
+    </div>
+    <button type="button" class="close" aria-label="Fechar painel" title="Fechar (Esc)" (click)="closed.emit()">
+      <fa-icon [icon]="closeIcon" aria-hidden="true"></fa-icon>
+    </button>
+  </header>
+
+  <div class="body" [attr.aria-busy]="busy()">
+    <ng-content></ng-content>
+  </div>
+
+  <ng-content select="[panelFooter]"></ng-content>
+</aside>

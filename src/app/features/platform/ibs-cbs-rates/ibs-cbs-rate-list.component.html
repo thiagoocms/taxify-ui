@@ -1,0 +1,124 @@
+<app-page [pageTitle]="pageTitle()" [pageDescription]="pageDescription()" [pageButtons]="pageButtons()">
+  @if (viewMode() === 'list') {
+    <!-- Avisos NO_LAW do ano corrente e do seguinte (AL-RN-05), com o texto pronto do backend. -->
+    @for (warning of warnings(); track warning.year) {
+      <div class="notice" role="note">
+        <fa-icon [icon]="warnIcon" aria-hidden="true"></fa-icon>
+        <span>{{ warning.text }}</span>
+      </div>
+    }
+
+    @if (loadError()) {
+      <div class="empty-hero" role="alert">
+        <fa-icon [icon]="warnIcon" class="empty-hero-icon" aria-hidden="true"></fa-icon>
+        <h6>Não foi possível abrir as alíquotas</h6>
+        <p>{{ loadError() }}</p>
+        <app-button class="mt-3" label="Tentar de novo" variant="outlined" (onClick)="load()"></app-button>
+      </div>
+    } @else if (loading() && !loaded()) {
+      <app-loader message="Carregando as alíquotas..."></app-loader>
+    } @else if (loaded() && !rows().length) {
+      <div class="empty-hero">
+        <fa-icon [icon]="emptyIcon" class="empty-hero-icon" aria-hidden="true"></fa-icon>
+        <h6>Nenhum ano cadastrado</h6>
+        <p>Sem alíquota com status Lei, a conferência não compara as alíquotas de IBS/CBS das notas. Use "Novo ano".</p>
+      </div>
+    } @else if (loaded()) {
+      <div class="table-wrapper" [class.is-loading]="loading()">
+        <app-table [columns]="columns()" [data]="rows()" [config]="tableConfig"></app-table>
+        @if (loading()) {
+          <app-loader variant="overlay" message="Atualizando..."></app-loader>
+        }
+      </div>
+      <!-- 390 px: cada ano em cartão (mesmos templates das células), com as três alíquotas visíveis. -->
+      <ul class="mobile-cards" aria-label="Alíquotas por ano">
+        @for (row of rows(); track row.year) {
+          <li class="mobile-card">
+            <div class="mobile-card-head">
+              <ng-container *ngTemplateOutlet="yearCell; context: { row }"></ng-container>
+              <ng-container *ngTemplateOutlet="statusCell; context: { row }"></ng-container>
+            </div>
+            <ng-container *ngTemplateOutlet="ratesCell; context: { row }"></ng-container>
+            <ng-container *ngTemplateOutlet="basisCell; context: { row }"></ng-container>
+            <div class="mobile-card-head">
+              <ng-container *ngTemplateOutlet="changedCell; context: { row }"></ng-container>
+              <ng-container *ngTemplateOutlet="actionsCell; context: { row }"></ng-container>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+
+    <!-- Legenda dos status: o texto de cada um (nunca só a cor). -->
+    <dl class="legend">
+      @for (status of statusOrder; track status) {
+        <div>
+          <dt><span [class]="'state-badge ' + statusTones[status]">{{ statusLabels[status] }}</span></dt>
+          <dd>{{ statusHints[status] }}</dd>
+        </div>
+      }
+    </dl>
+  } @else {
+    <app-ibs-cbs-rate-form
+      [rate]="editing()"
+      [suggestedYear]="suggestedYear()"
+      [notice]="formNotice()"
+      (saved)="onSaved($event)"
+      (cancelled)="closeForm()"
+      (conflict)="onConflict($event)"
+    ></app-ibs-cbs-rate-form>
+  }
+</app-page>
+
+@if (historyYear(); as year) {
+  <app-ibs-cbs-rate-history [year]="year" (closed)="closeHistory()"></app-ibs-cbs-rate-history>
+}
+
+<!-- ------------------------------------------------------------ Células -->
+<ng-template #yearCell let-row="row">
+  <strong class="year">{{ row.year }}</strong>
+</ng-template>
+
+<ng-template #statusCell let-row="row">
+  <div class="status-col">
+    <span [class]="'state-badge ' + statusTones[row.status]" [title]="statusHints[row.status]">{{ statusLabels[row.status] ?? row.status }}</span>
+    <div class="cell-sub">{{ row.generatesFindings ? 'Gera achado na conferência' : 'Só referência, sem achado' }}</div>
+  </div>
+</ng-template>
+
+<ng-template #ratesCell let-row="row">
+  <dl class="rates-col">
+    <div><dt>CBS</dt><dd>{{ formatPercent(row.cbsRate) }}</dd></div>
+    <div><dt>IBS UF</dt><dd>{{ formatPercent(row.ibsStateRate) }}</dd></div>
+    <div><dt>IBS Mun</dt><dd>{{ formatPercent(row.ibsMunicipalRate) }}</dd></div>
+  </dl>
+</ng-template>
+
+<ng-template #basisCell let-row="row">
+  <div class="basis-col">
+    @if (row.legalBasis) {
+      <span class="basis-text" [title]="row.legalBasis">{{ row.legalBasis }}</span>
+    } @else {
+      <span class="cell-sub">Sem fundamento</span>
+    }
+    @if (row.sourceUrl) {
+      <a [href]="row.sourceUrl" target="_blank" rel="noopener noreferrer" [attr.aria-label]="'Abrir o ato oficial de ' + row.year">Ato oficial</a>
+    }
+  </div>
+</ng-template>
+
+<ng-template #changedCell let-row="row">
+  <div class="changed-col">
+    <div>{{ row.changedAt ? formatDateTime(row.changedAt) : '—' }}</div>
+    @if (row.changedBy) {
+      <div class="cell-sub">{{ row.changedBy }}</div>
+    }
+  </div>
+</ng-template>
+
+<ng-template #actionsCell let-row="row">
+  <div class="row-actions">
+    <app-button icon="pen" variant="outlined" [tooltip]="'Editar ' + row.year" (onClick)="openEditForm(row)"></app-button>
+    <app-button icon="clock-rotate-left" variant="outlined" severity="secondary" [tooltip]="'Histórico de ' + row.year" (onClick)="openHistory(row)"></app-button>
+  </div>
+</ng-template>

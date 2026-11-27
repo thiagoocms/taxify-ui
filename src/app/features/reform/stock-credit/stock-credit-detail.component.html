@@ -1,0 +1,196 @@
+<app-side-panel eyebrow="Crédito de estoque {{ year }}" [title]="view().companyName" [subtitle]="subtitle()" [busy]="loading()" (closed)="closed.emit()">
+  <!-- Texto fixo (CE-RN-13) também no detalhe. -->
+  <p class="fixed-notice" role="note">
+    <fa-icon [icon]="infoIcon" aria-hidden="true"></fa-icon>
+    <span>{{ detail()?.notice || fallbackNotice }}</span>
+  </p>
+
+  @if (panelNotice()) {
+    <div class="notice" role="alert">
+      <fa-icon [icon]="warnIcon" aria-hidden="true"></fa-icon>
+      <span>{{ panelNotice() }}</span>
+    </div>
+  }
+
+  @if (loadError()) {
+    <div class="notice" role="alert">
+      <fa-icon [icon]="warnIcon" aria-hidden="true"></fa-icon>
+      <div>
+        <p class="mb-2">{{ loadError() }}</p>
+        <div class="d-flex flex-wrap gap-2">
+          @if (notCalculated() && refreshView().show) {
+            <app-button
+              icon="arrows-rotate"
+              [label]="refreshing() ? 'Atualizando...' : 'Atualizar agora'"
+              [disabled]="refreshView().disabled"
+              [write]="true"
+              [tooltip]="refreshView().reason ?? 'Calcula o levantamento desta empresa agora'"
+              (onClick)="refresh()"
+            ></app-button>
+          }
+          <app-button label="Tentar de novo" variant="outlined" (onClick)="load()"></app-button>
+        </div>
+      </div>
+    </div>
+  } @else if (loading() && !detail()) {
+    <app-loader variant="inline" message="Carregando o detalhe..."></app-loader>
+  } @else {
+  @if (detail(); as d) {
+    <!-- Classificação, motivo e regime -->
+    <section class="block" aria-labelledby="sc-class">
+      <h6 id="sc-class">Classificação</h6>
+      <div class="status-line">
+        <span [class]="'state-badge ' + classificationTones[d.classification]">{{ classificationLabels[d.classification] ?? d.classification }}</span>
+        <span [class]="'state-badge ' + statusTones[d.status]">{{ statusLabels[d.status] ?? d.status }}</span>
+      </div>
+      <p class="reason">{{ d.classificationReason }}</p>
+      <dl class="facts">
+        <div class="wide"><dt>Regime em dez/{{ year }}</dt><dd>{{ referenceRegimeText(d) }}</dd></div>
+        <div><dt>Regime a partir de jan/{{ year + 1 }}</dt><dd>{{ d.nextYearRegime ? regimeLabel(d.nextYearRegime) : 'Sem cadastro para ' + (year + 1) }}</dd></div>
+        <div><dt>Calculado em</dt><dd>{{ calculatedText(d.calculatedAt) }}</dd></div>
+      </dl>
+
+      @if (refreshView().show) {
+        <div class="action-row">
+          <app-button
+            icon="arrows-rotate"
+            variant="outlined"
+            [label]="refreshing() ? 'Atualizando...' : 'Atualizar agora'"
+            [disabled]="refreshView().disabled"
+            [write]="true"
+            [tooltip]="refreshView().reason ?? 'Recalcula as compras e a classificação desta empresa agora'"
+            (onClick)="refresh()"
+          ></app-button>
+          @if (refreshView().reason && !refreshing()) {
+            <span class="cell-sub">{{ refreshView().reason }}</span>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- Compras e cobertura -->
+    <section class="block" aria-labelledby="sc-purchases">
+      <h6 id="sc-purchases">Compras de {{ year }}</h6>
+      <div class="counts">
+        <div><span class="count-value">{{ formatCurrency(d.yearPurchases) }}</span><span class="count-label">em itens com CFOP de compra</span></div>
+        <div><span class="count-value">{{ d.purchaseItems }}</span><span class="count-label">item(ns)</span></div>
+        <div><span class="count-value">{{ d.inboundInvoices }}</span><span class="count-label">nota(s) de entrada</span></div>
+      </div>
+      <div class="coverage-line">
+        <span [class]="'state-badge ' + coverageTones[d.coverage]">Cobertura: {{ coverageLabels[d.coverage] ?? d.coverage }}</span>
+        <span>{{ coverageText(d) }}</span>
+        @if (d.firstInbound) {
+          <span class="cell-sub">· de {{ formatDate(d.firstInbound) }} a {{ formatDate(d.lastInbound) }}</span>
+        }
+      </div>
+      <p class="cell-sub mb-0">{{ coverageHints[d.coverage] }}</p>
+
+      <table class="table table-sm mini-table" aria-label="Compras por mês">
+        <thead><tr><th scope="col">Mês</th><th scope="col" class="num">Compras</th><th scope="col" class="num">Notas</th></tr></thead>
+        <tbody>
+          @for (month of d.purchasesByMonth; track month.month) {
+            <tr [class.zero]="!month.invoices">
+              <td>{{ monthLabel(month.month) }}</td>
+              <td class="num">{{ formatCurrency(month.amount) }}</td>
+              <td class="num">{{ month.invoices }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Quebras (fato, sem classificar) -->
+    <section class="block" aria-labelledby="sc-breakdown">
+      <h6 id="sc-breakdown">Quebras das compras</h6>
+      <p class="cell-sub">Só mostram de onde vem o total. Nenhuma diz o que entra ou não no crédito.</p>
+      <div class="breakdowns">
+        <table class="table table-sm mini-table" aria-label="Compras por CST de PIS">
+          <thead><tr><th scope="col">CST de PIS</th><th scope="col" class="num">Compras</th><th scope="col" class="num">Itens</th></tr></thead>
+          <tbody>
+            @for (line of d.purchasesByPisCst; track line.cst) {
+              <tr><td>{{ line.cst === 'NO_CST' ? 'Sem CST' : line.cst }}</td><td class="num">{{ formatCurrency(line.amount) }}</td><td class="num">{{ line.items }}</td></tr>
+            } @empty {
+              <tr><td colspan="3" class="cell-sub">Sem compras no ano.</td></tr>
+            }
+          </tbody>
+        </table>
+        <table class="table table-sm mini-table" aria-label="10 NCM de maior valor">
+          <thead><tr><th scope="col">NCM (10 maiores)</th><th scope="col" class="num">Compras</th><th scope="col" class="num">Itens</th></tr></thead>
+          <tbody>
+            @for (line of d.topNcm; track line.ncm) {
+              <tr><td class="mono-cell">{{ line.ncm === 'NO_NCM' ? 'Sem NCM' : formatNcm(line.ncm) }}</td><td class="num">{{ formatCurrency(line.amount) }}</td><td class="num">{{ line.items }}</td></tr>
+            } @empty {
+              <tr><td colspan="3" class="cell-sub">Sem compras no ano.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Memória de cálculo (CE-RN-14), pronta do backend -->
+    <section class="block" aria-labelledby="sc-memory">
+      <details class="memory" open>
+        <summary id="sc-memory">Memória do levantamento</summary>
+        <ul>
+          @for (line of d.memory; track $index) {
+            <li>{{ line }}</li>
+          }
+        </ul>
+      </details>
+    </section>
+
+    <!-- Situação do contato -->
+    <section class="block" aria-labelledby="sc-status">
+      <h6 id="sc-status">Situação do contato</h6>
+      @if (d.statusChangedAt) {
+        <p class="cell-sub">Última mudança em {{ formatDateTime(d.statusChangedAt) }}{{ d.statusChangedBy ? ' por ' + d.statusChangedBy : '' }}.</p>
+      }
+      @if (statusView().show) {
+        <div class="status-form">
+          <app-input label="Situação" type="select" inputId="sc-status-select" [options]="statusOptions" [formControl]="statusControl"></app-input>
+          <app-input label="Observação (opcional)" type="textarea" inputId="sc-note" [maxLength]="noteMax" [formControl]="noteControl"></app-input>
+          <div class="action-row">
+            <app-button
+              [label]="savingStatus() ? 'Salvando...' : 'Salvar situação'"
+              [disabled]="statusView().disabled || statusUnchanged()"
+              [write]="true"
+              [tooltip]="statusView().reason ?? (statusUnchanged() ? 'Nada mudou' : '')"
+              (onClick)="saveStatus()"
+            ></app-button>
+            <span class="cell-sub">{{ noteControl.value.length }}/{{ noteMax }}</span>
+            @if (statusView().reason && !savingStatus()) {
+              <span class="cell-sub">{{ statusView().reason }}</span>
+            }
+          </div>
+          @if (statusError()) {
+            <p class="form-error" role="alert">{{ statusError() }}</p>
+          }
+        </div>
+      } @else if (d.note) {
+        <p class="note">{{ d.note }}</p>
+      }
+
+      <h6 class="mt-3">Histórico</h6>
+      @if (historyError()) {
+        <p class="cell-sub">{{ historyError() }} <button type="button" class="link-button" (click)="loadHistory()">Tentar de novo</button></p>
+      } @else if (!history().length) {
+        <p class="cell-sub">Nenhuma mudança de situação registrada.</p>
+      } @else {
+        <ol class="history">
+          @for (event of history(); track $index) {
+            <li>
+              <div>
+                <strong>{{ event.from ? (statusLabels[event.from] ?? event.from) + ' → ' : '' }}{{ statusLabels[event.to] ?? event.to }}</strong>
+              </div>
+              <div class="cell-sub">{{ formatDateTime(event.changedAt) }} · {{ event.changedBy }}</div>
+              @if (event.note) {
+                <p class="note">{{ event.note }}</p>
+              }
+            </li>
+          }
+        </ol>
+      }
+    </section>
+  }
+  }
+</app-side-panel>

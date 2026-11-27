@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 import { platformAdminGuard } from './core/guards/platform-admin.guard';
+import { stockCreditGuard } from './core/guards/reform-feature.guard';
 
 export const routes: Routes = [
   // ------------------------------------------------------------------------
@@ -133,6 +134,14 @@ export const routes: Routes = [
             (m) => m.TaxAssessmentDetailComponent,
           ),
       },
+      // Reforma Tributária: levantamento do crédito presumido de CBS sobre o estoque (F5a). Só com o recurso ligado.
+      { path: 'reforma', pathMatch: 'full', redirectTo: 'reforma/credito-estoque' },
+      {
+        path: 'reforma/credito-estoque',
+        canActivate: [permissionGuard('TAX_ASSESSMENT_VIEW'), stockCreditGuard],
+        loadComponent: () =>
+          import('./features/reform/stock-credit/stock-credit.component').then((m) => m.StockCreditComponent),
+      },
       // Console da plataforma (CS Hub): escritórios, situação de acesso e revisão.
       { path: 'plataforma', pathMatch: 'full', redirectTo: 'plataforma/escritorios' },
       {
@@ -148,6 +157,13 @@ export const routes: Routes = [
         data: { scope: 'platform' },
         loadComponent: () =>
           import('./features/capture-panel/capture-panel.component').then((m) => m.CapturePanelComponent),
+      },
+      // Alíquotas de referência de IBS/CBS por ano, com status (F1a-0): dado global, mantido pela CS Hub.
+      {
+        path: 'plataforma/aliquotas-ibs-cbs',
+        canActivate: [platformAdminGuard],
+        loadComponent: () =>
+          import('./features/platform/ibs-cbs-rates/ibs-cbs-rate-list.component').then((m) => m.IbsCbsRateListComponent),
       },
       // Compatibilidade com links antigos.
       { path: 'companies', redirectTo: 'cadastro/empresas' },

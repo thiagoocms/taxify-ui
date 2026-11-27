@@ -18,6 +18,9 @@
       </div>
 
       @if (loaded()) {
+        @if (checkedPeriod(); as period) {
+          <app-ibs-cbs-reference [from]="period.from" [to]="period.to"></app-ibs-cbs-reference>
+        }
         <div class="summary">
           <span class="chip error">{{ errorCount() }} erro(s)</span>
           <span class="chip warning">{{ warningCount() }} alerta(s)</span>

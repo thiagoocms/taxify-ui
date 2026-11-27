@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Output, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import {
@@ -21,9 +21,13 @@ import {
   faUsers,
   faBuildingShield,
   faSatelliteDish,
+  faScaleBalanced,
+  faBoxesStacked,
+  faLandmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../core/services/auth.service';
 import { FirmAccessService } from '../../../core/services/firm-access.service';
+import { ReformFeaturesService } from '../../../core/services/reform-features.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -35,6 +39,7 @@ import { FirmAccessService } from '../../../core/services/firm-access.service';
 export class SidebarComponent {
   private readonly authService = inject(AuthService);
   private readonly firmAccess = inject(FirmAccessService);
+  private readonly reformFeatures = inject(ReformFeaturesService);
 
   @Output() linkClicked = new EventEmitter<void>();
 
@@ -55,6 +60,11 @@ export class SidebarComponent {
   readonly usersIcon = faUsers;
   readonly platformIcon = faBuildingShield;
   readonly captureIcon = faSatelliteDish;
+  readonly ratesIcon = faScaleBalanced;
+  readonly reformIcon = faLandmark;
+  readonly stockIcon = faBoxesStacked;
+  /** "Reforma Tributária > Crédito de estoque": recurso ligado (`GET /reform/features`) e leitura da apuração. */
+  readonly showStockCredit = computed(() => this.reformFeatures.stockCreditEnabled() && this.authService.can('TAX_ASSESSMENT_VIEW'));
   /** Menu "Plataforma" (console dos escritórios): só o admin da plataforma, pelo `platformAdmin` do /firm-access. */
   readonly isPlatformAdmin = this.firmAccess.platformAdmin;
   readonly chevronIcon = faChevronDown;

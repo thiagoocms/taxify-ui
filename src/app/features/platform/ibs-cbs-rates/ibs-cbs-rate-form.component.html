@@ -1,0 +1,64 @@
+<form class="form-container" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  @if (notice) {
+    <div class="notice" role="alert">
+      <fa-icon [icon]="warnIcon" aria-hidden="true"></fa-icon>
+      <span>{{ notice }}</span>
+    </div>
+  }
+
+  <div class="row">
+    <div class="col-md-3 col-sm-6">
+      <app-input formControlName="year" label="Ano" type="number" inputId="rate-year" [ariaRequired]="true"
+        [min]="limits.minYear" step="1"></app-input>
+    </div>
+    <div class="col-md-4 col-sm-6">
+      <app-input formControlName="status" label="Status" type="select" inputId="rate-status" [options]="statusOptions"
+        [ariaRequired]="true"></app-input>
+    </div>
+    <div class="col-md-5 col-sm-12 status-hint" aria-live="polite">
+      @if (form.controls.status.value; as status) {
+        <fa-icon [icon]="infoIcon" aria-hidden="true"></fa-icon>
+        <span>{{ statusHints[status] }}</span>
+      }
+    </div>
+  </div>
+
+  <fieldset>
+    <legend>Alíquotas de referência (%){{ rules().ratesRequired ? '' : ' - opcionais com Pendente' }}</legend>
+    <div class="row">
+      <div class="col-md-4 col-sm-12">
+        <app-input formControlName="cbsRate" label="CBS (%)" inputId="rate-cbs" [ariaRequired]="rules().ratesRequired" [maxLength]="8"></app-input>
+      </div>
+      <div class="col-md-4 col-sm-12">
+        <app-input formControlName="ibsStateRate" label="IBS estadual (%)" inputId="rate-ibs-uf" [ariaRequired]="rules().ratesRequired" [maxLength]="8"></app-input>
+      </div>
+      <div class="col-md-4 col-sm-12">
+        <app-input formControlName="ibsMunicipalRate" label="IBS municipal (%)" inputId="rate-ibs-mun" [ariaRequired]="rules().ratesRequired" [maxLength]="8"></app-input>
+      </div>
+    </div>
+    <p class="field-help">Em %, de 0 a 100, com até 4 casas decimais (ex.: 0,9 = 0,9%). Valor com mais casas é recusado, nunca arredondado.</p>
+  </fieldset>
+
+  <div class="row">
+    <div class="col-12">
+      <app-input formControlName="legalBasis" label="Fundamento (ato oficial, artigo)" type="textarea" inputId="rate-basis"
+        [ariaRequired]="rules().basisRequired" [maxLength]="limits.legalBasisMax"></app-input>
+    </div>
+    <div class="col-12">
+      <app-input formControlName="sourceUrl" label="Link do ato oficial (https://)" inputId="rate-url" autocomplete="url"
+        [ariaRequired]="rules().basisRequired" [maxLength]="limits.sourceUrlMax"></app-input>
+    </div>
+  </div>
+  @if (rules().basisRequired) {
+    <p class="field-help">Com status Lei, a conferência passa a apontar erro nas notas do ano com alíquota diferente: fundamento e link são obrigatórios.</p>
+  }
+
+  @if (formError()) {
+    <p class="form-error" role="alert">{{ formError() }}</p>
+  }
+
+  <div class="d-flex justify-content-end gap-2 mt-3">
+    <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
+    <app-button type="submit" [label]="saving() ? 'Salvando...' : 'Salvar'" [disabled]="saving()"></app-button>
+  </div>
+</form>

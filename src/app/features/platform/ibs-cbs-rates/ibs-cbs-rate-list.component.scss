@@ -1,0 +1,127 @@
+@use '../../../shared/styles/list-patterns' as *;
+@use '../../../shared/styles/page-patterns' as *;
+
+.year {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-col {
+  min-width: 140px;
+
+  .cell-sub {
+    margin-top: 2px;
+  }
+}
+
+.rates-col {
+  margin: 0;
+  min-width: 150px;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  dt {
+    font-weight: 400;
+    font-size: 12px;
+    color: #6c757d;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.basis-col {
+  max-width: 380px;
+  min-width: 180px;
+  white-space: normal;
+
+  .basis-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  a {
+    font-size: 12px;
+    color: var(--color-primary);
+  }
+}
+
+.changed-col {
+  min-width: 120px;
+  font-size: 13px;
+}
+
+.row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px 16px;
+  margin: 20px 0 0;
+  font-size: 13px;
+
+  > div {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+// ------------------------------------------------- 390 px: cartões --
+.mobile-cards {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 576px) {
+  .table-wrapper {
+    display: none;
+  }
+
+  .mobile-cards {
+    display: grid;
+    gap: 10px;
+  }
+}
+
+.mobile-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #dde1ea;
+  border-radius: 8px;
+  background: #fff;
+
+  .rates-col,
+  .basis-col {
+    max-width: none;
+    min-width: 0;
+  }
+}
+
+.mobile-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}

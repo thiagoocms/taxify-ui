@@ -1,0 +1,38 @@
+@use '../../../shared/styles/page-patterns' as *;
+
+.form-container {
+  max-width: 900px;
+}
+
+fieldset {
+  margin: 4px 0 8px;
+}
+
+legend {
+  font-size: 0.85rem;
+  color: #495057;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.status-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding-top: 6px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.field-help {
+  margin: 4px 0 12px;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.form-error {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #b42318;
+  font-weight: 500;
+}

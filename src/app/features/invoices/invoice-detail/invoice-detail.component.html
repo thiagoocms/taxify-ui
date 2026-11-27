@@ -398,6 +398,9 @@
           }
 
           <h6 class="findings-title">Conferência tributária</h6>
+          @if (issueDay(); as day) {
+            <app-ibs-cbs-reference [from]="day" [to]="day" [showReference]="true"></app-ibs-cbs-reference>
+          }
           @if (findingsLoading()) {
             <app-loader message="Conferindo impostos..."></app-loader>
           } @else if (findings().length) {

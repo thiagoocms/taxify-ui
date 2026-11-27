@@ -8,6 +8,7 @@ import { DivergenceSeverity, FiscalCheckFindingDTO } from '../../../core/models/
 import { ProductFiscalRuleService } from '../../../core/services/product-fiscal-rule.service';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent, SelectOption } from '../../../shared/components/input/input';
+import { IbsCbsReferenceComponent } from '../../reform/ibs-cbs-reference/ibs-cbs-reference.component';
 import { findingGroup, FINDING_GROUPS } from './finding-groups';
 
 /** Primeiro e último dia do mês anterior, AAAA-MM-DD. */
@@ -28,7 +29,7 @@ function previousMonthRange(): { from: string; to: string } {
 @Component({
   selector: 'app-company-fiscal-conference',
   standalone: true,
-  imports: [ReactiveFormsModule, DatePipe, FaIconComponent, Button, InputComponent],
+  imports: [ReactiveFormsModule, DatePipe, FaIconComponent, Button, InputComponent, IbsCbsReferenceComponent],
   templateUrl: './company-fiscal-conference.component.html',
   styleUrl: './company-fiscal-conference.component.scss',
 })
@@ -50,6 +51,8 @@ export class CompanyFiscalConferenceComponent {
   readonly severityControl = new FormControl('', { nonNullable: true });
   readonly groupControl = new FormControl('', { nonNullable: true });
   readonly severityFilter = signal('');
+  /** Período da última conferência (o aviso de IBS/CBS sem lei vale para o que foi conferido, não para o que foi digitado). */
+  readonly checkedPeriod = signal<{ from: string; to: string } | null>(null);
   readonly groupFilter = signal('');
 
   readonly severityOptions: SelectOption[] = [
@@ -87,9 +90,11 @@ export class CompanyFiscalConferenceComponent {
       return;
     }
     this.loading.set(true);
-    this.service.conferencia(this.companyId, this.fromControl.value || undefined, this.toControl.value || undefined).subscribe({
+    const period = { from: this.fromControl.value, to: this.toControl.value };
+    this.service.conferencia(this.companyId, period.from || undefined, period.to || undefined).subscribe({
       next: (findings) => {
         this.findings.set(findings);
+        this.checkedPeriod.set(period);
         this.loading.set(false);
         this.loaded.set(true);
       },

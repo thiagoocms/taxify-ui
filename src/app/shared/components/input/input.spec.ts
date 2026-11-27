@@ -1,4 +1,6 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 import { InputComponent } from './input';
 
@@ -35,5 +37,31 @@ describe('InputComponent', () => {
         .withContext(type)
         .toBe('true');
     }
+  });
+
+  it('control.disable()/enable() de fora aparece no DOM (OnPush): input, select e textarea', () => {
+    @Component({
+      standalone: true,
+      imports: [InputComponent, ReactiveFormsModule],
+      template: `
+        <app-input label="Texto" [formControl]="control"></app-input>
+        <app-input label="Lista" type="select" [options]="[{ value: 'A', label: 'A' }]" [formControl]="control"></app-input>
+        <app-input label="Obs" type="textarea" [formControl]="control"></app-input>
+      `,
+    })
+    class HostComponent {
+      readonly control = new FormControl('A');
+    }
+    const host = TestBed.createComponent(HostComponent);
+    host.detectChanges();
+    const fields = () => [...(host.nativeElement as HTMLElement).querySelectorAll('input, select, textarea')] as HTMLInputElement[];
+    expect(fields().length).toBe(3);
+    expect(fields().every((field) => !field.disabled)).toBeTrue();
+    host.componentInstance.control.disable();
+    host.detectChanges();
+    expect(fields().every((field) => field.disabled)).toBeTrue();
+    host.componentInstance.control.enable();
+    host.detectChanges();
+    expect(fields().every((field) => !field.disabled)).toBeTrue();
   });
 });

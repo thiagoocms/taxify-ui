@@ -1,0 +1,204 @@
+@use '../../../shared/styles/list-patterns' as *;
+@use '../../../shared/styles/page-patterns' as *;
+@use '../../../shared/styles/summary-cards' as *;
+
+// Texto fixo da CE-RN-13: informativo (azul), sempre visível.
+.fixed-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border: 1px solid #cfe0f5;
+  border-left: 4px solid #1f5fa8;
+  border-radius: 8px;
+  background: #f2f7fd;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-title);
+
+  fa-icon {
+    color: #1f5fa8;
+    margin-top: 1px;
+  }
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+
+  @media (max-width: 576px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.facts-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border: 1px solid #eef1f6;
+  border-radius: 8px;
+  background: #fafbfd;
+  font-size: 13px;
+}
+
+.fact {
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+  font-weight: 600;
+  color: var(--text-title);
+  font-variant-numeric: tabular-nums;
+
+  &.warn {
+    color: #8a6100;
+  }
+}
+
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 12px;
+}
+
+.field-search {
+  flex: 1 1 260px;
+  max-width: 360px;
+}
+
+.field-select {
+  flex: 0 1 190px;
+  min-width: 160px;
+}
+
+.field-sort {
+  flex-basis: 320px;
+}
+
+@media (max-width: 576px) {
+  .field-search,
+  .field-select {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}
+
+.search-hint {
+  margin: -8px 0 8px;
+}
+
+// ---------------------------------------------------------- Células --
+.company-cell {
+  min-width: 170px;
+  max-width: 260px;
+  white-space: normal;
+}
+
+.class-cell,
+.coverage-cell,
+.status-cell-col {
+  min-width: 130px;
+
+  .cell-sub {
+    margin-top: 2px;
+  }
+}
+
+.class-cell {
+  max-width: 220px;
+  white-space: normal;
+}
+
+.purchases-cell {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------- Legenda --
+.legend {
+  margin-top: 20px;
+  font-size: 13px;
+
+  summary {
+    cursor: pointer;
+    color: var(--color-primary);
+    font-weight: 500;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 8px 16px;
+    margin: 10px 0;
+  }
+
+  dl > div {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+// ------------------------------------------------- 390 px: cartões --
+.mobile-cards {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 576px) {
+  .table-wrapper {
+    display: none;
+  }
+
+  .mobile-cards {
+    display: grid;
+    gap: 10px;
+  }
+}
+
+.mobile-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #dde1ea;
+  border-radius: 8px;
+  background: #fff;
+
+  .company-cell,
+  .class-cell {
+    max-width: none;
+    min-width: 0;
+  }
+
+  .purchases-cell {
+    text-align: left;
+    white-space: normal;
+  }
+}
+
+.mobile-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+
+  > * {
+    min-width: 0;
+  }
+}

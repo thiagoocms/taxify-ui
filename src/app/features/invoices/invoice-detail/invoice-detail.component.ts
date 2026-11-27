@@ -56,6 +56,7 @@ import {
 } from '../invoice-format';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { LoaderComponent } from '../../../shared/components/loader/loader';
+import { IbsCbsReferenceComponent } from '../../reform/ibs-cbs-reference/ibs-cbs-reference.component';
 
 type DetailTab = 'resumo' | 'produtos' | 'totais' | 'divergencias' | 'auditoria' | 'eventos' | 'xml' | 'pdf';
 
@@ -110,7 +111,7 @@ const BACK_TARGETS: [string, string][] = [
 @Component({
   selector: 'app-invoice-detail',
   standalone: true,
-  imports: [LoaderComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table],
+  imports: [LoaderComponent, CommonModule, FormsModule, ReactiveFormsModule, FaIconComponent, Button, InputComponent, Modal, Page, Table, IbsCbsReferenceComponent],
   templateUrl: './invoice-detail.component.html',
   styleUrl: './invoice-detail.component.scss',
 })
@@ -137,6 +138,11 @@ export class InvoiceDetailComponent implements OnInit, OnDestroy {
   readonly accessKey = computed(() => this.xml()?.accessKey ?? '');
   readonly companyId = computed(() => this.xml()?.companyId ?? null);
   readonly documentId = computed(() => this.xml()?.id ?? null);
+  /** Dia da emissão ("aaaa-mm-dd"): ano da referência de IBS/CBS e do aviso de ano sem alíquota oficial (F-AL-2). */
+  readonly issueDay = computed(() => {
+    const xml = this.xml();
+    return xml ? (issueDateOf(xml)?.slice(0, 10) ?? null) : null;
+  });
   readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly tab = signal<DetailTab>('resumo');

@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { FirmAccessService } from '../../core/services/firm-access.service';
+import { ReformFeaturesService } from '../../core/services/reform-features.service';
 import { AccessBannerComponent } from './access-banner/access-banner.component';
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
@@ -19,6 +20,7 @@ const ACCESS_MAX_AGE_MS = 5 * 60 * 1000;
 })
 export class ShellComponent implements OnInit, OnDestroy {
   private readonly firmAccess = inject(FirmAccessService);
+  private readonly reformFeatures = inject(ReformFeaturesService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -27,6 +29,8 @@ export class ShellComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Situação do escritório (faixas, somente leitura, limite do teste, menu "Plataforma").
     this.firmAccess.reload();
+    // Recursos da Reforma ligados no ambiente (menu "Reforma Tributária").
+    this.reformFeatures.reload();
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
@@ -38,6 +42,7 @@ export class ShellComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Saiu da área logada (logout/sessão vencida): o próximo usuário não vê a situação deste.
     this.firmAccess.clear();
+    this.reformFeatures.clear();
   }
 
   toggleSidebar(): void {

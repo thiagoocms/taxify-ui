@@ -164,8 +164,10 @@ export class InputComponent implements ControlValueAccessor, OnInit {
     this.onTouched = fn;
   }
 
+  /** control.disable()/enable() de fora: com OnPush, sem o markForCheck o campo continuaria habilitado na tela. */
   setDisabledState?(isDisabled: boolean): void {
     this.disabled = isDisabled;
+    this.cdr.markForCheck();
   }
 
   onInput(event: any) {

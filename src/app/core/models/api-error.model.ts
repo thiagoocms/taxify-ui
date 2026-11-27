@@ -89,3 +89,26 @@ export function planLimitMessage(body: Partial<PlanLimitBody>): string {
   const kind = body.kind === 'USER' || body.code === PLAN_LIMIT_USERS ? 'USER' : 'COMPANY';
   return planLimitSentence(kind, body.planName, body.limit ?? '?', body.inUse ?? '?');
 }
+
+/**
+ * Pedido com `responseType: 'blob'` (CSV, PDF): o corpo do erro chega como Blob e o `code` fica escondido. Lê o Blob
+ * como texto e, se for o JSON de erro da API, devolve o mesmo erro com o corpo já lido; senão devolve o erro como veio.
+ */
+export async function withJsonErrorBody(error: unknown): Promise<unknown> {
+  if (!(error instanceof HttpErrorResponse) || !(error.error instanceof Blob)) {
+    return error;
+  }
+  try {
+    const body: unknown = JSON.parse(await error.error.text());
+    if (!body || typeof body !== 'object') return error;
+    return new HttpErrorResponse({
+      error: body,
+      headers: error.headers,
+      status: error.status,
+      statusText: error.statusText,
+      url: error.url ?? undefined,
+    });
+  } catch {
+    return error;
+  }
+}

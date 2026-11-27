@@ -42,3 +42,10 @@ export function formatPhone(value?: string | null): string {
   const digits = onlyDigits(value);
   return digits.length === 10 || digits.length === 11 ? maskPhone(digits) : value || '—';
 }
+
+const percent = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 });
+
+/** Percentual com vírgula, até 4 casas e sem zeros à direita: 0.9 → "0,9%", 11.3468 → "11,3468%"; nulo vira "—". */
+export function formatPercent(value?: number | null): string {
+  return value == null ? '—' : `${percent.format(value)}%`;
+}

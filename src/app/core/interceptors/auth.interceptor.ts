@@ -29,6 +29,10 @@ const INLINE_ERROR_URLS = [
   // Painel de captura (escritório e plataforma): a tela explica cada erro (404 da plataforma = visão desligada;
   // recusas do "Sincronizar agora" com o limite e a hora para tentar de novo).
   /\/capture-panel(\/|$)/,
+  // Alíquotas de IBS/CBS (console): o formulário marca o campo e o 409 recarrega o ano com aviso.
+  /\/platform\/ibs-cbs-rates(\/|$)/,
+  // Crédito de estoque: a tela explica cada recusa (cooldown com a hora, conflito, encerrado, desligado, bloqueio).
+  /\/reform\/stock-credit(\/|$)/,
 ];
 /** Troca da própria senha: o PUT que devolve o token novo. */
 const PASSWORD_CHANGE_URL = /\/users\/me\/password$/;
@@ -38,7 +42,12 @@ const ANONYMOUS_URLS = [/\/auth\/password\//];
 const USERS_URL = /\/users(\/[^/]+)?$/;
 const USER_FIELD_ERROR_CODES = new Set<string>(Object.values(USER_ERRORS));
 /** Consulta de fundo (faixas da tela): falhar não deve encher a tela de toasts. */
-const SILENT_URLS = [/\/firm-access$/];
+const SILENT_URLS = [
+  /\/firm-access$/,
+  // Recursos da Reforma (menu) e referência de alíquotas (aviso da conferência): sem eles a tela só não mostra o item.
+  /\/reform\/features$/,
+  /\/reform\/ibs-cbs-rates$/,
+];
 
 const BLOCKED_DEFAULT_MESSAGE =
   'O escritório está em somente leitura: dá para ver e exportar, mas não cadastrar nem editar. Fale com a CS Hub.';

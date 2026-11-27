@@ -1,0 +1,229 @@
+<app-page
+  pageTitle="Reforma Tributária: crédito de estoque"
+  [pageDescription]="'Quem pode ter direito ao crédito presumido de CBS sobre o estoque de 31/12/' + year + ', pelo regime cadastrado, com as compras do ano.'"
+  [pageButtons]="pageButtons()"
+>
+  @if (featureDisabled()) {
+    <div class="empty-hero" role="status">
+      <fa-icon [icon]="lockIcon" class="empty-hero-icon" aria-hidden="true"></fa-icon>
+      <h6>Levantamento não disponível neste ambiente</h6>
+      <p>O recurso ainda não foi ligado pela CS Hub. O item some do menu enquanto estiver desligado.</p>
+    </div>
+  } @else {
+    <!-- Texto fixo (CE-RN-13): não é cálculo de crédito. -->
+    <div class="fixed-notice" role="note">
+      <fa-icon [icon]="infoIcon" aria-hidden="true"></fa-icon>
+      <span>{{ notice() }}</span>
+    </div>
+
+    @if (closed()) {
+      <div class="notice" role="note">
+        <fa-icon [icon]="lockIcon" aria-hidden="true"></fa-icon>
+        <span>O levantamento foi encerrado em 30/06/2027. Os dados continuam disponíveis para consulta e exportação.</span>
+      </div>
+    } @else if (canWrite && readOnly()) {
+      <div class="notice" role="note">
+        <fa-icon [icon]="lockIcon" aria-hidden="true"></fa-icon>
+        <span>Escritório em somente leitura: a lista mostra o último cálculo; atualizar e mudar a situação ficam desabilitados.</span>
+      </div>
+    }
+
+    <!-- Resumo: considera todas as empresas que passam nos filtros, não só a página. -->
+    @if (summary(); as s) {
+      <div class="summary-cards" role="group" aria-label="Empresas por classificação (clique para filtrar)">
+        @for (card of classificationCards(); track card.key) {
+          <button
+            type="button"
+            [class]="'summary-card ' + classificationTones[card.key]"
+            [class.active]="card.active"
+            [attr.aria-pressed]="card.active"
+            [title]="classificationHints[card.key]"
+            (click)="toggleClassification(card.key)"
+          >
+            <span class="card-value">{{ card.count }}</span>
+            <span class="card-label">{{ classificationLabels[card.key] }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="facts-strip">
+        <span class="fact"><span class="cell-sub">Empresas</span> {{ s.companies }}</span>
+        <span class="fact"><span class="cell-sub">Compras {{ year }} (soma)</span> {{ formatCurrency(s.yearPurchasesTotal) }}</span>
+        @if (s.notCalculated > 0) {
+          <span class="fact warn" title="Empresas da sua visão que ainda não têm levantamento calculado (não aparecem na tabela)">
+            <span class="cell-sub">Sem cálculo</span> {{ s.notCalculated }}
+          </span>
+        }
+        <span class="fact"><span class="cell-sub">Cálculo mais antigo</span> {{ calculatedText(s.oldestCalculatedAt) }}</span>
+      </div>
+
+      <div class="quick-filters" role="group" aria-label="Situação do contato (clique para filtrar)">
+        @for (chip of statusChips(); track chip.key) {
+          <button
+            type="button"
+            [class]="'quick-card ' + statusTones[chip.key]"
+            [class.active]="chip.active"
+            [attr.aria-pressed]="chip.active"
+            (click)="toggleStatus(chip.key)"
+          >
+            <span class="quick-value">{{ chip.count }}</span>
+            {{ statusLabels[chip.key] }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Filtros (refletidos na URL) -->
+    <div class="toolbar-row" role="search">
+      <div class="field-search">
+        <app-input label="Buscar por razão social ou CNPJ" inputId="stock-search" [formControl]="searchControl"></app-input>
+      </div>
+      <div class="field-select">
+        <app-input label="Cobertura" inputId="stock-coverage" type="select" [options]="coverageOptions" [formControl]="coverageControl"></app-input>
+      </div>
+      <div class="field-select field-sort">
+        <app-input label="Ordem" inputId="stock-sort" type="select" [options]="sortOptions" [formControl]="sortControl"></app-input>
+      </div>
+    </div>
+    @if (searchTooShort()) {
+      <p class="cell-sub search-hint" role="status">Digite pelo menos {{ searchMin }} caracteres para buscar. A lista abaixo está sem a busca.</p>
+    }
+
+    @if (loadError()) {
+      <div class="empty-hero" role="alert">
+        <fa-icon [icon]="warnIcon" class="empty-hero-icon" aria-hidden="true"></fa-icon>
+        <h6>Não foi possível abrir o levantamento</h6>
+        <p>{{ loadError() }}</p>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+          <app-button label="Tentar de novo" variant="outlined" (onClick)="load()"></app-button>
+          @if (hasFilter()) {
+            <app-button label="Limpar filtros" variant="text" (onClick)="clearFilters()"></app-button>
+          }
+        </div>
+      </div>
+    } @else if (loading() && !loaded()) {
+      <app-loader message="Carregando o levantamento..."></app-loader>
+    } @else if (loaded() && !rows().length) {
+      <div class="empty-hero">
+        <fa-icon [icon]="emptyIcon" class="empty-hero-icon" aria-hidden="true"></fa-icon>
+        @if (hasFilter()) {
+          <h6>Nenhuma empresa com esses filtros</h6>
+          <app-button class="mt-2" label="Limpar filtros" variant="text" (onClick)="clearFilters()"></app-button>
+        } @else if ((summary()?.notCalculated ?? 0) > 0) {
+          <h6>Levantamento ainda não calculado</h6>
+          <p>{{ summary()!.notCalculated }} empresa(s) aguardam o primeiro cálculo, que roda todo dia de manhã.</p>
+        } @else {
+          <h6>Nenhuma empresa para mostrar</h6>
+          <p>{{ isAdmin ? 'O escritório ainda não tem empresas ativas.' : 'Sua carteira ainda não tem empresas ativas. Peça ao administrador para vincular.' }}</p>
+        }
+      </div>
+    } @else if (loaded()) {
+      <p class="cell-sub mb-2" aria-live="polite">{{ totalElements() }} empresa(s){{ hasFilter() ? ' com esses filtros' : '' }}</p>
+      <div class="table-wrapper" [class.is-loading]="loading()">
+        <app-table [columns]="columns()" [data]="rows()" [config]="tableConfig" (rowClick)="open($event)"></app-table>
+        @if (loading()) {
+          <app-loader variant="overlay" message="Atualizando..."></app-loader>
+        }
+      </div>
+      <!-- 390 px: a mesma informação em cartões (mesmos templates das células), sem rolagem lateral. -->
+      <ul class="mobile-cards" aria-label="Empresas do levantamento">
+        @for (row of rows(); track row.companyId) {
+          <li class="mobile-card">
+            <ng-container *ngTemplateOutlet="companyCell; context: { row }"></ng-container>
+            <div class="mobile-card-grid">
+              <ng-container *ngTemplateOutlet="classificationCell; context: { row }"></ng-container>
+              <ng-container *ngTemplateOutlet="purchasesCell; context: { row }"></ng-container>
+              <ng-container *ngTemplateOutlet="coverageCell; context: { row }"></ng-container>
+              <ng-container *ngTemplateOutlet="statusCell; context: { row }"></ng-container>
+            </div>
+            <app-button label="Ver detalhe" icon="eye" variant="outlined" [tooltip]="'Ver detalhe de ' + row.companyName" (onClick)="open(row)"></app-button>
+          </li>
+        }
+      </ul>
+      <app-pagination [pageIndex]="filter().page" [totalPages]="totalPages()" (pageIndexChange)="onPageIndexChange($event)"></app-pagination>
+    }
+
+    <details class="legend">
+      <summary>O que significa cada classificação e cobertura</summary>
+      <dl>
+        @for (key of classificationOrder; track key) {
+          <div>
+            <dt><span [class]="'state-badge ' + classificationTones[key]">{{ classificationLabels[key] }}</span></dt>
+            <dd>{{ classificationHints[key] }}</dd>
+          </div>
+        }
+        @for (key of coverageOrder; track key) {
+          <div>
+            <dt><span [class]="'state-badge ' + coverageTones[key]">{{ coverageLabels[key] }}</span></dt>
+            <dd>{{ coverageHints[key] }}</dd>
+          </div>
+        }
+      </dl>
+      <p class="cell-sub mb-0">
+        Compras = itens de notas de entrada de {{ year }} com CFOP de compra, sem as canceladas. É ordem de grandeza para
+        priorizar o contato, nunca base de crédito. O motivo de cada classificação e a memória ficam no detalhe.
+      </p>
+    </details>
+  }
+</app-page>
+
+<!-- ------------------------------------------------------------ Células -->
+<ng-template #companyCell let-row="row">
+  <div class="company-cell">
+    <strong>{{ row.companyName }}</strong>
+    <div class="cell-sub">{{ row.cnpj ? formatDocument(row.cnpj) : 'CNPJ não informado' }}</div>
+  </div>
+</ng-template>
+
+<ng-template #classificationCell let-row="row">
+  <div class="class-cell">
+    <span [class]="'state-badge ' + classificationTones[row.classification]" [title]="row.classificationReason">
+      {{ classificationLabels[row.classification] ?? row.classification }}
+    </span>
+    <div class="cell-sub">
+      Dez/{{ year }}: {{ regimeLabel(row.referenceRegime) }}
+      @if (row.nextYearRegime) {
+        · jan/{{ year + 1 }}: {{ regimeLabel(row.nextYearRegime) }}
+      }
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #purchasesCell let-row="row">
+  <div class="value-cell purchases-cell">
+    <strong>{{ formatCurrency(row.yearPurchases) }}</strong>
+    <div class="cell-sub">{{ row.purchaseItems }} item(ns) · {{ row.inboundInvoices }} nota(s)</div>
+  </div>
+</ng-template>
+
+<ng-template #coverageCell let-row="row">
+  <div class="coverage-cell">
+    <span [class]="'state-badge ' + coverageTones[row.coverage]" [title]="coverageHints[row.coverage]">{{ coverageLabels[row.coverage] ?? row.coverage }}</span>
+    <div class="cell-sub">{{ coverageText(row) }}</div>
+  </div>
+</ng-template>
+
+<ng-template #statusCell let-row="row">
+  <div class="status-cell-col">
+    <span [class]="'state-badge ' + statusTones[row.status]">{{ statusLabels[row.status] ?? row.status }}</span>
+    @if (row.statusChangedAt) {
+      <div class="cell-sub">{{ formatDateTime(row.statusChangedAt) }}{{ row.statusChangedBy ? ' · ' + row.statusChangedBy : '' }}</div>
+    }
+  </div>
+</ng-template>
+
+<ng-template #actionsCell let-row="row">
+  <div class="row-actions" (click)="$event.stopPropagation()">
+    <app-button icon="eye" variant="outlined" [tooltip]="'Ver detalhe de ' + row.companyName" (onClick)="open(row)"></app-button>
+  </div>
+</ng-template>
+
+@if (selected(); as row) {
+  <app-stock-credit-detail
+    [row]="row"
+    [canWrite]="canWrite"
+    [surveyClosed]="closed()"
+    (closed)="close()"
+    (changed)="onChanged()"
+  ></app-stock-credit-detail>
+}

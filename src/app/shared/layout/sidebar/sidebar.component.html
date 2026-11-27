@@ -96,6 +96,18 @@
     <span>Relatórios</span>
   </a>
 
+  <!-- Reforma Tributária: cada item segue o que o backend diz estar ligado (GET /reform/features). -->
+  @if (showStockCredit()) {
+    <span class="nav-section-label" id="nav-reform">
+      <fa-icon [icon]="reformIcon" aria-hidden="true"></fa-icon>
+      <span>Reforma Tributária</span>
+    </span>
+    <a class="nav-link nav-sublink" routerLink="/reforma/credito-estoque" routerLinkActive="active" aria-describedby="nav-reform" (click)="linkClicked.emit()">
+      <fa-icon [icon]="stockIcon"></fa-icon>
+      <span>Crédito de estoque</span>
+    </a>
+  }
+
   @if (isPlatformAdmin()) {
     <a class="nav-link" routerLink="/plataforma/escritorios" routerLinkActive="active" (click)="linkClicked.emit()">
       <fa-icon [icon]="platformIcon"></fa-icon>
@@ -107,6 +119,10 @@
         <span>Captura (plataforma)</span>
       </a>
     }
+    <a class="nav-link nav-sublink" routerLink="/plataforma/aliquotas-ibs-cbs" routerLinkActive="active" (click)="linkClicked.emit()">
+      <fa-icon [icon]="ratesIcon"></fa-icon>
+      <span>Alíquotas IBS/CBS</span>
+    </a>
   }
 
   <a class="nav-link" routerLink="/ajuda" routerLinkActive="active" (click)="linkClicked.emit()">

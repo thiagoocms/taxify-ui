@@ -1,4 +1,5 @@
-import { planLimitMessage, planLimitSentence, planNameInSentence } from './api-error.model';
+import { HttpErrorResponse } from '@angular/common/http';
+import { apiErrorCode, httpStatusOf, planLimitMessage, planLimitSentence, planNameInSentence, withJsonErrorBody } from './api-error.model';
 
 describe('api-error.model (texto do limite do teste)', () => {
   it('nome do plano no meio da frase começa com minúscula', () => {
@@ -20,5 +21,17 @@ describe('api-error.model (texto do limite do teste)', () => {
       'O teste grátis permite 2 usuários',
     );
     expect(planLimitMessage({ message: 'Texto da API.' })).toBe('Texto da API.');
+  });
+});
+
+describe('withJsonErrorBody', () => {
+  it('lê o corpo Blob do erro (CSV) e devolve o code; corpo que não é JSON fica como veio', async () => {
+    const json = new HttpErrorResponse({ status: 403, error: new Blob([JSON.stringify({ code: 'error.firm.access.blocked', message: 'Somente leitura.' })]) });
+    const read = await withJsonErrorBody(json);
+    expect(apiErrorCode(read)).toBe('error.firm.access.blocked');
+    expect(httpStatusOf(read)).toBe(403);
+    const text = new HttpErrorResponse({ status: 500, error: new Blob(['erro']) });
+    expect(await withJsonErrorBody(text)).toBe(text);
+    expect(await withJsonErrorBody('x')).toBe('x');
   });
 });

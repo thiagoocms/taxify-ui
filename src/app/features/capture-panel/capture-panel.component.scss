@@ -1,5 +1,6 @@
 @use '../../shared/styles/list-patterns' as *;
 @use '../../shared/styles/page-patterns' as *;
+@use '../../shared/styles/summary-cards' as *;
 
 // ------------------------------------------------------------ Resumo --
 .summary-cards {
@@ -15,58 +16,6 @@
   @media (max-width: 576px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
-
-.summary-card {
-  --card-color: #4b5563;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 10px 12px;
-  border: 1px solid #dde1ea;
-  border-left: 4px solid var(--card-color);
-  border-radius: 8px;
-  background: #fff;
-  text-align: left;
-  transition: border-color 0.15s, box-shadow 0.15s;
-
-  &.ok { --card-color: #2f7d4f; }
-  &.warn { --card-color: #b58105; }
-  &.danger { --card-color: #b42318; }
-  &.info { --card-color: #1f5fa8; }
-
-  &:hover {
-    border-color: #b9c2d3;
-    border-left-color: var(--card-color);
-  }
-
-  &.active {
-    box-shadow: 0 0 0 2px var(--card-color) inset;
-    background: #f7f9fc;
-  }
-
-  &:focus-visible {
-    outline: 2px solid rgba(32, 80, 162, 0.45);
-    outline-offset: 2px;
-  }
-}
-
-.card-value {
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--text-title);
-  font-variant-numeric: tabular-nums;
-}
-
-.card-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--card-color);
 }
 
 // ------------------------------------------------------------- Fila --
