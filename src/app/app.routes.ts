@@ -92,6 +92,14 @@ export const routes: Routes = [
         canActivate: [permissionGuard('INVOICES_VIEW')],
         loadComponent: () => import('./features/pendencies/pendencies.component').then((m) => m.PendenciesComponent),
       },
+      // Painel de controle da captura de XML: ADMIN (escritório inteiro) e INVOICES_SYNC (FISCAL, só a carteira).
+      {
+        path: 'captura',
+        canActivate: [permissionGuard('INVOICES_SYNC')],
+        data: { scope: 'firm' },
+        loadComponent: () =>
+          import('./features/capture-panel/capture-panel.component').then((m) => m.CapturePanelComponent),
+      },
       {
         path: 'manifestacao',
         canActivate: [permissionGuard('INVOICES_VIEW')],
@@ -132,6 +140,14 @@ export const routes: Routes = [
         canActivate: [platformAdminGuard],
         loadComponent: () =>
           import('./features/platform/platform-firms/platform-firms.component').then((m) => m.PlatformFirmsComponent),
+      },
+      // Captura de todos os escritórios (CS Hub). Desligada no ambiente, a API responde 404 e a tela explica.
+      {
+        path: 'plataforma/captura',
+        canActivate: [platformAdminGuard],
+        data: { scope: 'platform' },
+        loadComponent: () =>
+          import('./features/capture-panel/capture-panel.component').then((m) => m.CapturePanelComponent),
       },
       // Compatibilidade com links antigos.
       { path: 'companies', redirectTo: 'cadastro/empresas' },

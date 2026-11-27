@@ -18,6 +18,7 @@ function access(partial: Partial<FirmAccessDTO>): FirmAccessDTO {
     sefazRetentionDays: 90,
     limits: { planName: 'Teste grátis', maxCompanies: 5, companiesInUse: 3, maxUsers: 2, usersInUse: 1 },
     platformAdmin: false,
+    capturePanelPlatformEnabled: false,
     ...partial,
   };
 }
@@ -90,6 +91,7 @@ function blocked(partial: Partial<FirmAccessDTO>): FirmAccessDTO {
     sefazRetentionDays: 90,
     limits: null,
     platformAdmin: false,
+    capturePanelPlatformEnabled: false,
     ...partial,
   };
 }

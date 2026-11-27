@@ -51,6 +51,11 @@
     <span>Pendências</span>
   </a>
 
+  <a *ngIf="canCapturePanel" class="nav-link" routerLink="/captura" routerLinkActive="active" (click)="linkClicked.emit()">
+    <fa-icon [icon]="captureIcon"></fa-icon>
+    <span>Captura de XML</span>
+  </a>
+
   <a *ngIf="canInvoices" class="nav-link" routerLink="/notas-fiscais" routerLinkActive="active" (click)="linkClicked.emit()">
     <fa-icon [icon]="invoiceIcon"></fa-icon>
     <span>Notas fiscais</span>
@@ -96,6 +101,12 @@
       <fa-icon [icon]="platformIcon"></fa-icon>
       <span>Plataforma</span>
     </a>
+    @if (platformCaptureEnabled() === true) {
+      <a class="nav-link nav-sublink" routerLink="/plataforma/captura" routerLinkActive="active" (click)="linkClicked.emit()">
+        <fa-icon [icon]="captureIcon"></fa-icon>
+        <span>Captura (plataforma)</span>
+      </a>
+    }
   }
 
   <a class="nav-link" routerLink="/ajuda" routerLinkActive="active" (click)="linkClicked.emit()">

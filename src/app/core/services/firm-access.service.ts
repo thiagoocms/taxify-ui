@@ -29,6 +29,8 @@ export class FirmAccessService {
   /** Somente leitura: faixa de bloqueio e botões de escrita desabilitados. */
   readonly readOnly = computed(() => this.state()?.readOnly === true);
   readonly platformAdmin = computed(() => this.state()?.platformAdmin === true);
+  /** Item "Captura (plataforma)" do menu: a flag vem sempre do backend. */
+  readonly capturePanelPlatformEnabled = computed(() => this.state()?.capturePanelPlatformEnabled === true);
   readonly limits = computed(() => this.state()?.limits ?? null);
   /** "Nova empresa" desabilitado: o teste já tem todas as empresas permitidas. */
   readonly companyLimitReached = computed(() => {

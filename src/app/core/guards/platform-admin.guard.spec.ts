@@ -20,6 +20,7 @@ function access(platformAdmin: boolean): FirmAccessDTO {
     sefazRetentionDays: 90,
     limits: null,
     platformAdmin,
+    capturePanelPlatformEnabled: false,
   };
 }
 

@@ -18,6 +18,7 @@ const ACCESS: FirmAccessDTO = {
   sefazRetentionDays: 90,
   limits: { planName: 'Teste grátis', maxCompanies: 5, companiesInUse: 5, maxUsers: 2, usersInUse: 1 },
   platformAdmin: false,
+  capturePanelPlatformEnabled: false,
 };
 
 describe('FirmAccessService', () => {
@@ -78,6 +79,7 @@ function dto(partial: Partial<FirmAccessDTO>): FirmAccessDTO {
     sefazRetentionDays: 90,
     limits: { planName: 'Teste grátis', maxCompanies: 5, companiesInUse: 4, maxUsers: 2, usersInUse: 2 },
     platformAdmin: false,
+    capturePanelPlatformEnabled: false,
     ...partial,
   };
 }

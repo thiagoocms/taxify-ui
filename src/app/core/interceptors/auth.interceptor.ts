@@ -26,6 +26,9 @@ const INLINE_ERROR_URLS = [
   // "Esqueci a senha", redefinição pelo link e Minha conta (troca de senha e avisos por e-mail).
   /\/auth\/password\//,
   /\/users\/me\/(password|notification-settings)$/,
+  // Painel de captura (escritório e plataforma): a tela explica cada erro (404 da plataforma = visão desligada;
+  // recusas do "Sincronizar agora" com o limite e a hora para tentar de novo).
+  /\/capture-panel(\/|$)/,
 ];
 /** Troca da própria senha: o PUT que devolve o token novo. */
 const PASSWORD_CHANGE_URL = /\/users\/me\/password$/;

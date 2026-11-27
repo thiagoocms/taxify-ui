@@ -38,6 +38,11 @@ export interface FirmAccessDTO {
   sefazRetentionDays: number;
   limits: FirmPlanLimitsDTO | null;
   platformAdmin: boolean;
+  /**
+   * Painel da captura da plataforma ligado no ambiente e usuário admin da plataforma
+   * (`TAXIFY_CAPTURE_PANEL_PLATFORM_ENABLED`): mostra o item "Captura (plataforma)" no menu.
+   */
+  capturePanelPlatformEnabled: boolean;
 }
 
 /** Texto dos botões de escrita desabilitados com o escritório em somente leitura (F1-RN-08). */

@@ -20,6 +20,7 @@ import {
   faTruck,
   faUsers,
   faBuildingShield,
+  faSatelliteDish,
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../core/services/auth.service';
 import { FirmAccessService } from '../../../core/services/firm-access.service';
@@ -53,6 +54,7 @@ export class SidebarComponent {
   readonly tagsIcon = faTags;
   readonly usersIcon = faUsers;
   readonly platformIcon = faBuildingShield;
+  readonly captureIcon = faSatelliteDish;
   /** Menu "Plataforma" (console dos escritórios): só o admin da plataforma, pelo `platformAdmin` do /firm-access. */
   readonly isPlatformAdmin = this.firmAccess.platformAdmin;
   readonly chevronIcon = faChevronDown;
@@ -61,6 +63,10 @@ export class SidebarComponent {
   readonly canPlans = this.authService.can('PLANS_VIEW');
   readonly canInvoices = this.authService.can('INVOICES_VIEW');
   readonly canAssessment = this.authService.can('TAX_ASSESSMENT_VIEW');
+  /** Painel de captura do escritório: ADMIN (escritório inteiro) e INVOICES_SYNC (FISCAL, só a carteira). */
+  readonly canCapturePanel = this.authService.can('INVOICES_SYNC');
+  /** Captura da plataforma: `capturePanelPlatformEnabled` do /firm-access (visão ligada e admin da plataforma). */
+  readonly platformCaptureEnabled = this.firmAccess.capturePanelPlatformEnabled;
   /** "Cadastro" aparece se o usuário puder abrir pelo menos um dos itens. */
   readonly showRegistry = this.canCompanies || this.canPlans || this.isAdmin;
 

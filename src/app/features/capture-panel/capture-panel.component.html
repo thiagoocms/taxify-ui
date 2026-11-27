@@ -1,0 +1,272 @@
+<app-page
+  [pageTitle]="isPlatform ? 'Plataforma: captura de XML' : 'Captura de XML'"
+  [pageDescription]="
+    isPlatform
+      ? 'Fila do SIEG e captura de todos os escritórios. Só nome e estabelecimento das empresas, sem CNPJ.'
+      : canSync
+        ? 'Se a captura de cada empresa está em dia: o que já foi importado, o que falta, de qual fonte e por que falhou.'
+        : 'Situação da captura das empresas da sua carteira: o que já foi importado, o que falta e por que falhou.'
+  "
+>
+  @if (platformDisabled()) {
+    <div class="empty-hero" role="status">
+      <fa-icon [icon]="['fas', 'power-off']" class="empty-hero-icon" aria-hidden="true"></fa-icon>
+      <h6>Visão da plataforma desligada neste ambiente</h6>
+      <p>
+        A lista de empresas de todos os escritórios só é ligada depois que a política de privacidade e o acordo de operador
+        citarem esse acesso, com aprovação registrada. Até lá, o suporte usa o SQL de diagnóstico.
+      </p>
+    </div>
+  } @else {
+    @if (!isPlatform && readOnly()) {
+      <div class="notice" role="note">
+        <fa-icon [icon]="['fas', 'lock']" aria-hidden="true"></fa-icon>
+        <span>
+          Escritório em somente leitura: as capturas estão paradas e o "Sincronizar agora" fica desabilitado. O painel mostra
+          a última situação gravada.
+        </span>
+      </div>
+    }
+
+    <!-- Resumo: cada cartão liga/desliga o filtro da situação (CP-RN-12). -->
+    @if (summary()) {
+      <div class="summary-cards" role="group" aria-label="Resumo por situação (clique para filtrar)">
+        @for (card of summaryCards(); track card.status) {
+          <button
+            type="button"
+            [class]="'summary-card ' + statusTones[card.status]"
+            [class.active]="card.active"
+            [attr.aria-pressed]="card.active"
+            [title]="statusHints[card.status]"
+            (click)="toggleStatusFilter(card.status)"
+          >
+            <span class="card-value">{{ card.count }}</span>
+            <span class="card-label">
+              <fa-icon [icon]="['fas', statusIcons[card.status]]" aria-hidden="true"></fa-icon>
+              {{ statusLabels[card.status] }}
+            </span>
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Saúde da fila SIEG -->
+    @if (queueView(); as q) {
+      <div class="queue-strip" aria-label="Fila SIEG">
+        <span [class]="'state-badge ' + q.health.tone" role="status">
+          <fa-icon [icon]="['fas', q.health.icon]" aria-hidden="true"></fa-icon>
+          {{ q.health.label }}
+        </span>
+        @if (summary()?.lastAttemptAt) {
+          <span class="queue-fact"><span class="cell-sub">Última empresa atendida</span> {{ formatDateTime(summary()!.lastAttemptAt) }}</span>
+        }
+        @if (q.nextTick) {
+          <span class="queue-fact"><span class="cell-sub">Próxima rodada</span> {{ q.nextTick }}</span>
+        }
+        @if (q.observed) {
+          <span class="queue-fact"><span class="cell-sub">Volta observada</span> {{ q.observed }}</span>
+        }
+        @if (q.theoretical) {
+          <span class="queue-fact">
+            <span class="cell-sub">Volta teórica mínima</span> {{ q.theoretical }}
+          </span>
+        }
+      </div>
+      @if (q.theoretical) {
+        <p class="cell-sub queue-note">Volta teórica: {{ q.theoretical!.toLowerCase() }}. {{ theoreticalNote }}</p>
+      }
+    }
+
+    <!-- Filtros (refletidos na URL) -->
+    <div class="capture-toolbar" role="search">
+      <div class="field-search">
+        <app-input label="Buscar empresa pelo nome" inputId="capture-search" [formControl]="searchControl"></app-input>
+      </div>
+      @if (isPlatform) {
+        <div class="field-select">
+          <app-input label="Escritório" inputId="capture-firm" type="select" [options]="firmOptions()" [formControl]="firmControl"></app-input>
+        </div>
+      }
+      <div class="field-select">
+        <app-input label="Canal" inputId="capture-channel" type="select" [options]="channelOptions" [formControl]="channelControl"></app-input>
+      </div>
+      <div class="field-select">
+        <app-input label="Tipo com problema" inputId="capture-type" type="select" [options]="typeOptions" [formControl]="typeControl"></app-input>
+      </div>
+      <div class="field-select field-sort">
+        <app-input label="Ordem" inputId="capture-sort" type="select" [options]="sortOptions" [formControl]="sortControl"></app-input>
+      </div>
+      <app-toggle class="toolbar-toggle" idInput="capture-inactive" label="Incluir inativas" [formControl]="inactiveControl"></app-toggle>
+    </div>
+    @if (filter().situacao.length) {
+      <p class="cell-sub active-filter">
+        Situação{{ filter().situacao.length > 1 ? 'ões' : '' }}{{ filter().canal ? ' no canal ' + filter().canal : '' }}:
+        @for (status of filter().situacao; track status; let last = $last) {
+          <strong>{{ statusLabels[status] }}</strong>{{ last ? '' : ', ' }}
+        }
+      </p>
+    }
+
+    @if (loadError()) {
+      <div class="empty-hero" role="alert">
+        <fa-icon [icon]="errorIcon" class="empty-hero-icon" aria-hidden="true"></fa-icon>
+        <h6>Não foi possível abrir o painel</h6>
+        <p>{{ loadError() }}</p>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+          <app-button label="Tentar de novo" variant="outlined" (onClick)="load()"></app-button>
+          @if (hasFilter()) {
+            <app-button label="Limpar filtros" variant="text" (onClick)="clearFilters()"></app-button>
+          }
+        </div>
+      </div>
+    } @else if (loading() && !loaded()) {
+      <app-loader message="Carregando a captura das empresas..."></app-loader>
+    } @else if (loaded() && !rows().length) {
+      <div class="empty-hero">
+        <fa-icon [icon]="emptyIcon" class="empty-hero-icon" aria-hidden="true"></fa-icon>
+        @if (hasFilter()) {
+          <h6>Nenhuma empresa com esses filtros</h6>
+          <app-button class="mt-2" label="Limpar filtros" variant="text" (onClick)="clearFilters()"></app-button>
+        } @else {
+          <h6>Nenhuma empresa para mostrar</h6>
+          <p>{{ isPlatform ? 'Nenhum escritório tem empresas cadastradas.' : canSync ? 'O escritório ainda não tem empresas cadastradas.' : 'Sua carteira ainda não tem empresas. Peça ao administrador para vincular.' }}</p>
+        }
+      </div>
+    } @else if (loaded()) {
+      <p class="cell-sub mb-2" aria-live="polite">{{ totalElements() }} empresa(s){{ hasFilter() ? ' com esses filtros' : '' }}</p>
+      <div class="table-wrapper" [class.is-loading]="loading()">
+        <app-table [columns]="columns()" [data]="rows()" [config]="tableConfig" (rowClick)="open($event)"></app-table>
+        @if (loading()) {
+          <app-loader variant="overlay" message="Atualizando..."></app-loader>
+        }
+      </div>
+      <app-pagination [pageIndex]="filter().page" [totalPages]="totalPages()" (pageIndexChange)="onPageIndexChange($event)"></app-pagination>
+    }
+
+    <!-- Legenda: o texto de cada situação (nunca só a cor). -->
+    <details class="legend">
+      <summary>O que significa cada situação</summary>
+      <dl>
+        @for (status of statusOrder; track status) {
+          <div>
+            <dt>
+              <span [class]="'state-badge ' + statusTones[status]">
+                <fa-icon [icon]="['fas', statusIcons[status]]" aria-hidden="true"></fa-icon>
+                {{ statusLabels[status] }}
+              </span>
+            </dt>
+            <dd>{{ statusHints[status] }}</dd>
+          </div>
+        }
+      </dl>
+      <p class="cell-sub mb-0">
+        A situação geral é a pior entre os canais com direito (SIEG, SEFAZ e ADN). "No Taxify" conta as notas de qualquer
+        origem (SIEG, SEFAZ ou upload). A posição na fila 1 é a próxima a ser atendida.
+      </p>
+    </details>
+  }
+</app-page>
+
+<!-- ------------------------------------------------------------ Células -->
+<ng-template #companyCell let-row="row">
+  <div class="company-cell">
+    @if (isPlatform && row.firmName) {
+      <div class="cell-sub">{{ row.firmName }}</div>
+    }
+    <strong>{{ row.companyName }}</strong>
+    @if (row.establishment) {
+      <span class="cell-sub"> /{{ row.establishment }}</span>
+    }
+    @if (!row.active) {
+      <span class="state-badge ms-1">Inativa</span>
+    }
+  </div>
+</ng-template>
+
+<ng-template #statusCell let-row="row">
+  <div class="status-col">
+    <span [class]="'state-badge ' + statusTones[row.status]">
+      <fa-icon [icon]="['fas', statusIcons[row.status]]" aria-hidden="true"></fa-icon>
+      {{ statusLabels[row.status] }}
+    </span>
+    @if (row.statusReason) {
+      <div class="cell-sub reason">{{ row.statusReason }}</div>
+    }
+    @if (failureLine(row); as failure) {
+      @if (failure !== row.statusReason) {
+        <div class="cell-sub reason failure">{{ failure }}</div>
+      }
+    }
+  </div>
+</ng-template>
+
+<ng-template #channelsCell let-row="row">
+  <ul class="channels-col">
+    @for (channel of channelKeys; track channel) {
+      @if (channelStatus(row, channel); as status) {
+        <li>
+          <span class="channel-key">{{ channel }}</span>
+          <span [class]="'mini-status ' + statusTones[status]">{{ statusLabels[status] }}</span>
+        </li>
+      }
+    }
+  </ul>
+</ng-template>
+
+<ng-template #nfeCell let-row="row">
+  <dl class="nfe-col" [title]="'No Taxify (qualquer origem) / informadas pelo SIEG'">
+    <div><dt>Rec.</dt><dd>{{ sideText(row.channels?.SIEG?.received) }}</dd></div>
+    <div><dt>Emit.</dt><dd>{{ sideText(row.channels?.SIEG?.issued) }}</dd></div>
+    @if (sideMonth(row.channels?.SIEG?.received) || sideMonth(row.channels?.SIEG?.issued); as month) {
+      <div class="cell-sub">{{ month }}</div>
+    }
+  </dl>
+</ng-template>
+
+<ng-template #queueCell let-row="row">
+  @let sync = syncView(row);
+  <div class="queue-col">
+    @if (sync.queued) {
+      <span class="state-badge info">{{ sync.queued }}</span>
+    } @else {
+      <div>{{ row.channels?.SIEG?.lastAttemptAt ? shortDateTime(row.channels.SIEG.lastAttemptAt) : 'Nunca tentada' }}</div>
+      @if (queuePosition(row) != null) {
+        <div class="cell-sub">
+          Posição {{ queuePosition(row) }}{{ row.channels.SIEG.nextAttemptEstimate ? ' · estimativa ' + shortDateTime(row.channels.SIEG.nextAttemptEstimate) : '' }}
+        </div>
+      }
+    }
+  </div>
+</ng-template>
+
+<ng-template #actionsCell let-row="row">
+  @let sync = syncView(row);
+  <div class="row-actions" (click)="$event.stopPropagation()">
+    <app-button icon="eye" variant="outlined" [tooltip]="'Ver detalhe de ' + row.companyName" (onClick)="open(row)"></app-button>
+    @if (sync.show) {
+      <!-- Só ícone na tabela (cabe em 1366 px); o nome acessível e a dica dizem a ação e, se desabilitado, o motivo. -->
+      <app-button
+        icon="arrows-rotate"
+        [disabled]="sync.disabled"
+        [write]="sync.write"
+        [tooltip]="'Sincronizar agora: ' + (sync.busy ? 'pedindo...' : (sync.reason ?? 'coloca a empresa no início da fila SIEG'))"
+        (onClick)="syncNow(row)"
+      ></app-button>
+    }
+  </div>
+</ng-template>
+
+@if (selected(); as row) {
+  <app-capture-detail-panel
+    [scope]="scope"
+    [title]="row.companyName"
+    [detail]="detail()"
+    [loading]="detailLoading()"
+    [error]="detailError()"
+    [sync]="selectedSync()"
+    [canOpenCompany]="canOpenCompany"
+    (closed)="close()"
+    (retry)="retryDetail()"
+    (syncNow)="syncNow(detail() ?? row)"
+  ></app-capture-detail-panel>
+}
