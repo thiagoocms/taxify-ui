@@ -121,7 +121,7 @@
           <div class="counts">
             <div>
               <span class="count-value">{{ side.data?.imported ?? '—' }}</span>
-              <span class="count-label">no Taxify (qualquer origem)</span>
+              <span class="count-label">vindas do SIEG</span>
             </div>
             <div>
               <span class="count-value">{{ side.data?.totalSieg ?? '—' }}</span>
@@ -130,7 +130,13 @@
             @if (missing(side.data) > 0) {
               <div class="missing">
                 <span class="count-value">{{ missing(side.data) }}</span>
-                <span class="count-label">faltam no Taxify</span>
+                <span class="count-label">faltam vir do SIEG</span>
+              </div>
+            }
+            @if (side.data?.storedAnySource != null) {
+              <div>
+                <span class="count-value">{{ side.data!.storedAnySource }}</span>
+                <span class="count-label">no Taxify (qualquer origem)</span>
               </div>
             }
           </div>

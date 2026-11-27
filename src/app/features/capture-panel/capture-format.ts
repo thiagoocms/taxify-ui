@@ -4,6 +4,7 @@ import {
   CAPTURE_FAILURE_MESSAGES,
   CaptureQueueHealth,
   CaptureScope,
+  CaptureSideDTO,
 } from '../../core/models/capture-panel.model';
 import { formatLocalDate, formatLocalDateTime } from '../../shared/utils/format';
 
@@ -258,4 +259,25 @@ export function loadErrorText(error: unknown, scope: CaptureScope, what: 'list' 
   return what === 'list'
     ? 'Não foi possível carregar o painel de captura. Tente de novo em instantes.'
     : 'Não foi possível carregar o detalhe da empresa. Tente de novo.';
+}
+
+/**
+ * Memória de um lado (recebidas/emitidas) no detalhe: a pronta do backend; montada aqui só de reserva.
+ * "{importado} notas vindas do SIEG emitidas de {início} a {fim}; o SIEG informou {total} na verificação de {data hora};
+ * {n} no Taxify (qualquer origem)."
+ */
+export function sideMemoText(side: CaptureSideDTO | null | undefined): string {
+  if (side?.memory) {
+    return side.memory;
+  }
+  if (!side || side.imported == null) {
+    return 'Ainda não verificado.';
+  }
+  const window = side.from && side.to ? ` emitidas de ${formatLocalDate(side.from)} a ${formatLocalDate(side.to)}` : '';
+  const sieg =
+    side.totalSieg == null
+      ? '; o SIEG ainda não informou o total'
+      : `; o SIEG informou ${side.totalSieg}${side.checkedAt ? ` na verificação de ${formatLocalDateTime(side.checkedAt)}` : ''}`;
+  const stored = side.storedAnySource != null ? `; ${side.storedAnySource} no Taxify (qualquer origem)` : '';
+  return `${side.imported} notas vindas do SIEG${window}${sieg}${stored}.`;
 }

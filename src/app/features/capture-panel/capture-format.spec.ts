@@ -7,6 +7,7 @@ import {
   queueHealthView,
   shortDateTime,
   shortMonth,
+  sideMemoText,
   syncNowErrorView,
   theoreticalLapText,
 } from './capture-format';
@@ -115,5 +116,23 @@ describe('capture-format', () => {
       expect(syncNowErrorView(httpError(403, { code: 'error.access.denied' }), 'firm').message).toContain('administrador do escritório');
       expect(syncNowErrorView(httpError(404, {}), 'firm').title).toBe('Empresa não encontrada');
     });
+  });
+});
+
+describe('sideMemoText (vindas do SIEG × no Taxify de qualquer origem)', () => {
+  const side = { imported: 180, totalSieg: 200, from: '2026-11-01', to: '2026-11-27', checkedAt: '2026-11-27T09:58:00-03:00', previousMonth: null };
+
+  it('usa a memória pronta do backend quando vem', () => {
+    expect(sideMemoText({ ...side, memory: 'TEXTO DO BACKEND' })).toBe('TEXTO DO BACKEND');
+  });
+
+  it('reserva: vindas do SIEG, total do SIEG e, quando houver, no Taxify de qualquer origem', () => {
+    expect(sideMemoText({ ...side, storedAnySource: 195 })).toBe(
+      '180 notas vindas do SIEG emitidas de 01/11/2026 a 27/11/2026; o SIEG informou 200 na verificação de 27/11/2026 09:58; 195 no Taxify (qualquer origem).',
+    );
+    expect(sideMemoText({ ...side, storedAnySource: null })).toBe(
+      '180 notas vindas do SIEG emitidas de 01/11/2026 a 27/11/2026; o SIEG informou 200 na verificação de 27/11/2026 09:58.',
+    );
+    expect(sideMemoText(null)).toBe('Ainda não verificado.');
   });
 });

@@ -18,7 +18,7 @@ import {
 import { Button } from '../../shared/components/button/button';
 import { LoaderComponent } from '../../shared/components/loader/loader';
 import { formatLocalDate, formatLocalDateTime } from '../../shared/utils/format';
-import { dateTimeOrNever, failureText, shortDateTime, shortMonth, timeOf } from './capture-format';
+import { dateTimeOrNever, failureText, shortDateTime, shortMonth, sideMemoText, timeOf } from './capture-format';
 import { CAPTURE_STATUS_ICONS, priorityRequestText, SyncButtonView } from './capture-view';
 
 interface DocLine {
@@ -28,7 +28,7 @@ interface DocLine {
 
 /**
  * Detalhe da empresa no painel de captura (F-CP-2, CP-RN-09): cada número com a memória de onde veio - contadores
- * com a janela e "no Taxify (qualquer origem)", o mês anterior, a última nota por origem, SEFAZ e ADN, as falhas por
+ * com a janela, "vindas do SIEG" e "no Taxify (qualquer origem)", o mês anterior, a última nota por origem, SEFAZ e ADN, as falhas por
  * etapa (resolvidas ou não) e a recuperação. Painel lateral; Esc fecha.
  */
 @Component({
@@ -157,20 +157,9 @@ export class CaptureDetailPanelComponent {
     return text === direct.reason ? null : text;
   }
 
-  /** "{importado} notas no Taxify (qualquer origem) emitidas de {início} a {fim}; o SIEG informou {total} na verificação de {data hora}" */
+  /** Memória do lado: a pronta do backend; a montada é só reserva ({@link sideMemoText}). */
   sideMemo(side: CaptureSideDTO | null | undefined): string {
-    if (side?.memory) {
-      return side.memory;
-    }
-    if (!side || side.imported == null) {
-      return 'Ainda não verificado.';
-    }
-    const window = side.from && side.to ? ` emitidas de ${formatLocalDate(side.from)} a ${formatLocalDate(side.to)}` : '';
-    const sieg =
-      side.totalSieg == null
-        ? '; o SIEG ainda não informou o total'
-        : `; o SIEG informou ${side.totalSieg}${side.checkedAt ? ` na verificação de ${formatLocalDateTime(side.checkedAt)}` : ''}`;
-    return `${side.imported} notas no Taxify (qualquer origem)${window}${sieg}.`;
+    return sideMemoText(side);
   }
 
   /** Mês dos contadores (um lado verificado no mês anterior mostra os números daquele mês - CP-RN-06). */

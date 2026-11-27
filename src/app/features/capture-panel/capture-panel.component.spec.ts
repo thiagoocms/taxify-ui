@@ -227,6 +227,28 @@ describe('CapturePanelComponent', () => {
     expect(text).not.toContain('Recuperando 2026-10');
   });
 
+  it('detalhe mostra os dois números: vindas do SIEG e, quando vier, no Taxify (qualquer origem)', () => {
+    setup('firm', true);
+    controller.expectOne((r) => r.url === firmBase).flush(response());
+    component.open(ROW);
+    const sieg = ROW.channels.SIEG;
+    controller.expectOne(`${firmBase}/companies/z`).flush({
+      ...ROW,
+      channels: {
+        ...ROW.channels,
+        SIEG: { ...sieg, received: { ...sieg.received!, imported: 58, storedAnySource: 61 }, issued: { ...sieg.received!, storedAnySource: null } },
+      },
+      stages: [], lastDocuments: null, recoveringMonths: [],
+    });
+    fixture.detectChanges();
+    const labels = [...(fixture.nativeElement as HTMLElement).querySelectorAll('.counts .count-label')].map((el) => el.textContent?.trim());
+    // Recebidas: vindas do SIEG, total do SIEG, missing e qualquer origem; emitidas: sem storedAnySource, sem o 3º número.
+    expect(labels.filter((label) => label === 'vindas do SIEG').length).toBe(2);
+    expect(labels.filter((label) => label === 'no Taxify (qualquer origem)').length).toBe(1);
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('61');
+  });
+
   it('página da URL além do total volta para a última página válida (QA B-4)', () => {
     setup('firm', true, { page: '7' });
     const body = response();

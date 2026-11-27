@@ -160,8 +160,9 @@
         }
       </dl>
       <p class="cell-sub mb-0">
-        A situação geral é a pior entre os canais com direito (SIEG, SEFAZ e ADN). "No Taxify" conta as notas de qualquer
-        origem (SIEG, SEFAZ ou upload). A posição na fila 1 é a próxima a ser atendida.
+        A situação geral é a pior entre os canais com direito (SIEG, SEFAZ e ADN). NF-e: notas vindas do SIEG / total
+        informado pelo SIEG (é o que define o que falta); o detalhe mostra também as notas no Taxify de qualquer origem
+        (SIEG, SEFAZ ou upload). A posição na fila 1 é a próxima a ser atendida.
       </p>
     </details>
   }
@@ -214,7 +215,7 @@
 </ng-template>
 
 <ng-template #nfeCell let-row="row">
-  <dl class="nfe-col" [title]="'No Taxify (qualquer origem) / informadas pelo SIEG'">
+  <dl class="nfe-col" [title]="'Vindas do SIEG / informadas pelo SIEG'">
     <div><dt>Rec.</dt><dd>{{ sideText(row.channels?.SIEG?.received) }}</dd></div>
     <div><dt>Emit.</dt><dd>{{ sideText(row.channels?.SIEG?.issued) }}</dd></div>
     @if (sideMonth(row.channels?.SIEG?.received) || sideMonth(row.channels?.SIEG?.issued); as month) {

@@ -82,9 +82,15 @@ export interface CaptureMonthCloseDTO {
   memory?: string | null;
 }
 
-/** Um lado (recebidas ou emitidas) da verificação do mês: o importado é "no Taxify (qualquer origem)". */
+/**
+ * Um lado (recebidas ou emitidas) da verificação do mês. `imported` = notas vindas do SIEG (com `totalSieg` define o
+ * `missing` e a situação); `storedAnySource` = notas no Taxify de qualquer origem (SIEG, SEFAZ ou upload), só exibido.
+ */
 export interface CaptureSideDTO {
+  /** Notas vindas do SIEG no período. */
   imported: number | null;
+  /** Notas no Taxify de qualquer origem; nulo até a primeira verificação (a tela não mostra). */
+  storedAnySource?: number | null;
   totalSieg: number | null;
   from: string | null;
   to: string | null;
@@ -94,7 +100,7 @@ export interface CaptureSideDTO {
   /** Quantas faltam no Taxify (calculado pelo backend; nulo/0 = nada falta). */
   missing?: number | null;
   previousMonth: CaptureMonthCloseDTO | null;
-  /** Memória pronta: "{importado} notas no Taxify (qualquer origem) emitidas de … a …; o SIEG informou …". */
+  /** Memória pronta do backend (vindas do SIEG, total do SIEG e no Taxify de qualquer origem). */
   memory?: string | null;
 }
 

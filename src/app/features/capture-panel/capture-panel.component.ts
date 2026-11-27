@@ -210,7 +210,7 @@ export class CapturePanelComponent implements OnInit {
     { name: 'Situação', cellTemplate: this.statusCell() },
     { name: 'Canais', cellTemplate: this.channelsCell() },
     // Recebidas e emitidas numa coluna só: a tabela cabe em 1366 px sem rolagem (QA B-2).
-    { name: 'NF-e (Taxify / SIEG)', cellTemplate: this.nfeCell(), headerClass: 'justify-content-end' },
+    { name: 'NF-e (vindas / total SIEG)', cellTemplate: this.nfeCell(), headerClass: 'justify-content-end' },
     { name: 'Fila SIEG', cellTemplate: this.queueCell() },
     { name: 'Ações', cellTemplate: this.actionsCell(), headerClass: 'justify-content-end' },
   ]);
@@ -347,7 +347,7 @@ export class CapturePanelComponent implements OnInit {
     return row.channels?.[channel]?.status ?? null;
   }
 
-  /** "180 / 200" (no Taxify / SIEG). Sem verificação, "—". */
+  /** "180 / 200" (vindas do SIEG / informadas pelo SIEG). Sem verificação, "—". */
   sideText(side: CaptureSideDTO | null | undefined): string {
     if (!side || side.imported == null) return '—';
     return `${side.imported} / ${side.totalSieg ?? '—'}`;
