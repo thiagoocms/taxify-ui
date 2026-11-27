@@ -43,7 +43,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader';
                 <td>{{ period.taxRegime === 'SIMPLES_NACIONAL' ? (period.simplesServiceAnnex ?? 'III') : '—' }}</td>
                 <td class="text-end">
                   @if (!readonly && periods().length > 1) {
-                    <app-button label="Remover" variant="text" severity="danger" (onClick)="remove(period)"></app-button>
+                    <app-button label="Remover" variant="text" severity="danger" [write]="true" (onClick)="remove(period)"></app-button>
                   }
                 </td>
               </tr>
@@ -60,7 +60,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader';
             <app-input size="sm" type="select" label="Anexo (vazio = III)" [options]="annexSelect" [(ngModel)]="newAnnex"></app-input>
           }
           <app-input size="sm" type="month" label="A partir de (vazio = sempre)" [(ngModel)]="newFrom"></app-input>
-          <app-button label="Registrar período" icon="plus" variant="outlined" [disabled]="!newRegime || saving()" (onClick)="add()"></app-button>
+          <app-button label="Registrar período" icon="plus" variant="outlined" [disabled]="!newRegime || saving()" [write]="true" (onClick)="add()"></app-button>
         </div>
       }
     </section>

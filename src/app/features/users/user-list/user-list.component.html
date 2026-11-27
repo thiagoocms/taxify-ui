@@ -6,6 +6,13 @@
       </div>
     </div>
 
+    @if (userLimitMessage()) {
+      <div class="notice" role="status">
+        <fa-icon [icon]="['fas', 'triangle-exclamation']" aria-hidden="true"></fa-icon>
+        <span><strong>Limite do teste atingido.</strong> {{ userLimitMessage() }}</span>
+      </div>
+    }
+
     <app-table [columns]="columns" [data]="users()" [config]="tableConfig"></app-table>
 
     @if (loading()) {
@@ -56,7 +63,7 @@
               @if (user.taxifyUserId) {
                 <span class="acessorias-badge">Já no Taxify</span>
               } @else if (user.email) {
-                <app-button icon="plus" tooltip="Cadastrar no Taxify" variant="text" (onClick)="registerFromAcessorias(user)"></app-button>
+                <app-button icon="plus" [tooltip]="userLimitMessage() ?? 'Cadastrar no Taxify'" variant="text" [disabled]="cannotCreate()" [write]="true" (onClick)="registerFromAcessorias(user)"></app-button>
               } @else {
                 <span class="acessorias-muted">Sem e-mail</span>
               }

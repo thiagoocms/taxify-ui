@@ -72,7 +72,7 @@
         variant="text"
         icon="wand-magic-sparkles"
         [disabled]="filling()"
-        (onClick)="fillFromNotes()"
+        [write]="true" (onClick)="fillFromNotes()"
       ></app-button>
     }
   </div>
@@ -119,7 +119,7 @@
   @if (!readonly) {
     <div class="d-flex justify-content-end gap-2 mt-3">
       <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
-      <app-button
+      <app-button [write]="true"
         type="submit"
         [label]="loading() ? 'Salvando...' : 'Salvar'"
         [disabled]="loading()"

@@ -180,7 +180,7 @@
     <div class="small text-muted mt-1">{{ justification.trim().length }}/255</div>
     <div class="d-flex justify-content-end gap-2 mt-3">
       <app-button label="Cancelar" variant="text" (onClick)="notPerformedOpen.set(false)"></app-button>
-      <app-button label="Enviar" [disabled]="justification.trim().length < 15" (onClick)="sendNotPerformed()"></app-button>
+      <app-button label="Enviar" [disabled]="justification.trim().length < 15" [write]="true" (onClick)="sendNotPerformed()"></app-button>
     </div>
   }
 </app-modal>

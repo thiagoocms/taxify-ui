@@ -49,6 +49,7 @@ import {
   faRotateLeft,
   faToggleOff,
   faToggleOn,
+  faEnvelope,
 } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -94,7 +95,7 @@ export class AppComponent {
     library.addIcons(
       faArrowRight, faChevronDown, faChevronUp, faCircleCheck, faCopy, faDownload, faEye, faFileCode,
       faFileInvoice, faFilePdf, faUpRightFromSquare, faLocationDot, faTriangleExclamation, faWandMagicSparkles,
-      faRotateLeft, faToggleOff, faToggleOn,
+      faRotateLeft, faToggleOff, faToggleOn, faEnvelope,
     );
 
     // Trocando de tela (inclusive baixando o pedaço do app da tela nova): o véu de carregando por cima.

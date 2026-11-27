@@ -59,7 +59,7 @@ export class CompanySubscriptionsComponent implements OnChanges {
     actions: this.auth.can('SUBSCRIPTIONS_MANAGE')
       ? [
           { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditDialog(row) },
-          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+          { name: 'delete', write: true, icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
         ]
       : [],
   };

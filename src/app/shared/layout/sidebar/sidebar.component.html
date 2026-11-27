@@ -91,6 +91,13 @@
     <span>Relatórios</span>
   </a>
 
+  @if (isPlatformAdmin()) {
+    <a class="nav-link" routerLink="/plataforma/escritorios" routerLinkActive="active" (click)="linkClicked.emit()">
+      <fa-icon [icon]="platformIcon"></fa-icon>
+      <span>Plataforma</span>
+    </a>
+  }
+
   <a class="nav-link" routerLink="/ajuda" routerLinkActive="active" (click)="linkClicked.emit()">
     <fa-icon [icon]="helpIcon"></fa-icon>
     <span>Ajuda</span>

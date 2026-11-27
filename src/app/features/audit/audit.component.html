@@ -125,10 +125,10 @@
   <div class="row-actions">
     @if (canClose) {
       @if (row.status === 'ABERTA') {
-        <app-button icon="check" tooltip="Resolver" variant="text" severity="success" (onClick)="askClose(row, 'resolver')"></app-button>
-        <app-button icon="ban" tooltip="Desconsiderar" variant="text" severity="secondary" (onClick)="askClose(row, 'desconsiderar')"></app-button>
+        <app-button icon="check" tooltip="Resolver" variant="text" severity="success" [write]="true" (onClick)="askClose(row, 'resolver')"></app-button>
+        <app-button icon="ban" tooltip="Desconsiderar" variant="text" severity="secondary" [write]="true" (onClick)="askClose(row, 'desconsiderar')"></app-button>
       } @else {
-        <app-button icon="rotate-left" tooltip="Reabrir" variant="text" (onClick)="reopen(row)"></app-button>
+        <app-button icon="rotate-left" tooltip="Reabrir" variant="text" [write]="true" (onClick)="reopen(row)"></app-button>
       }
     }
   </div>
@@ -167,11 +167,11 @@
 
 <ng-template #ruleActionsCell let-row="row">
   <div class="row-actions">
-    @if (canManageRules) {
+    @if (canManageRules()) {
       <app-button icon="circle-check" [tooltip]="row.reviewed ? 'Desfazer conferência' : 'Marcar como conferida'" variant="text"
-        [severity]="row.reviewed ? 'success' : 'secondary'" (onClick)="reviewRule(row)"></app-button>
+        [severity]="row.reviewed ? 'success' : 'secondary'" [write]="true" (onClick)="reviewRule(row)"></app-button>
       <app-button [icon]="row.enabled ? 'toggle-on' : 'toggle-off'" [tooltip]="row.enabled ? 'Desativar' : 'Ativar'" variant="text"
-        [severity]="row.enabled ? 'success' : 'secondary'" (onClick)="enableRule(row)"></app-button>
+        [severity]="row.enabled ? 'success' : 'secondary'" [write]="true" (onClick)="enableRule(row)"></app-button>
     }
   </div>
 </ng-template>
@@ -180,12 +180,12 @@
   (closed)="closing.set(null)">
   @if (closing(); as c) {
     <p class="small"><strong>{{ c.finding.title }}</strong></p>
-    <app-input type="textarea" [maxLength]="500" [(ngModel)]="comment"
+    <app-input type="textarea" [maxLength]="500" [ariaRequired]="true" [(ngModel)]="comment"
       [label]="c.action === 'resolver' ? 'O que foi feito' : 'Por que não se aplica'"></app-input>
     <div class="small text-muted mt-1">Comentário obrigatório.</div>
     <div class="d-flex justify-content-end gap-2 mt-3">
       <app-button label="Cancelar" variant="text" (onClick)="closing.set(null)"></app-button>
-      <app-button label="Salvar" [disabled]="comment.trim().length < 3" (onClick)="confirmClose()"></app-button>
+      <app-button label="Salvar" [disabled]="comment.trim().length < 3" [write]="true" (onClick)="confirmClose()"></app-button>
     </div>
   }
 </app-modal>

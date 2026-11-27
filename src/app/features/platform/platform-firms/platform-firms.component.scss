@@ -1,0 +1,136 @@
+@use '../../../shared/styles/list-patterns' as *;
+@use '../../../shared/styles/page-patterns' as *;
+
+// O .toolbar e o .search-field vêm dos padrões globais/de página; aqui só o que é do console.
+.status-field {
+  width: 220px;
+}
+
+// app-input reserva a linha de erro: o switch fica na altura da caixa do campo.
+.toolbar-toggle {
+  align-self: center;
+  padding-bottom: 14px;
+}
+
+// Larguras pelo conteúdo (o app-table não fixa colunas): tudo cabe em 1366px; no celular a tabela rola, como as outras.
+.firm-cell {
+  min-width: 150px;
+}
+
+// A situação traz data e motivo por extenso: o selo quebra linha (canto de controle, não de pílula).
+.situation-cell {
+  min-width: 150px;
+  max-width: 230px;
+
+  .state-badge {
+    white-space: normal;
+    border-radius: var(--radius-control);
+  }
+}
+
+.review-pending {
+  font-weight: 600;
+  color: var(--bs-warning-text-emphasis);
+}
+
+.contact-cell {
+  width: 210px;
+  max-width: 210px;
+}
+
+.contact-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ---------------------------------------------------------------- Modal --
+.firm-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 16px;
+  margin: 0 0 16px;
+  font-size: 13px;
+
+  // Item do grid encolhe até a coluna; o selo da situação quebra linha em vez de cobrir o vizinho.
+  > div {
+    min-width: 0;
+  }
+
+  .state-badge {
+    white-space: normal;
+    border-radius: var(--radius-control);
+  }
+
+  dt {
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--bs-secondary-color);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+// O .section-title do page-patterns tem margem de título de página; no modal fica mais junto.
+.section-title {
+  margin: 16px 0 8px;
+}
+
+.action-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.action-form {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--radius-control);
+  padding: 12px 14px;
+  background: var(--app-bg);
+
+  p {
+    margin: 0 0 8px;
+  }
+}
+
+.date-field {
+  max-width: 260px;
+  margin-bottom: 8px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.contact-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 12px;
+}
+
+.events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  max-height: 320px;
+  overflow-y: auto;
+
+  li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+}
+
+.event-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+}

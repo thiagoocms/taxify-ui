@@ -103,14 +103,14 @@ export class TaxAssessmentDetailComponent implements OnInit {
       variant: 'outlined',
       isShow: this.canClose && this.closed(),
       isDisabled: this.busy(),
-      handler: () => this.reopen(),
+      write: true, handler: () => this.reopen(),
     },
     {
       label: 'Fechar mês',
       icon: 'lock',
       isShow: this.canClose && !!this.assessment() && !this.closed(),
       isDisabled: this.busy(),
-      handler: () => this.close(),
+      write: true, handler: () => this.close(),
     },
   ]);
 

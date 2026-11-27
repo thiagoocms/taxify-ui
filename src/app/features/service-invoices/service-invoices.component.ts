@@ -103,7 +103,7 @@ export class ServiceInvoicesComponent implements OnInit {
       variant: 'outlined',
       isShow: this.canSync && !!this.companyId(),
       isDisabled: this.fetching(),
-      handler: () => this.fetchFromSieg(),
+      write: true, handler: () => this.fetchFromSieg(),
     },
   ]);
 

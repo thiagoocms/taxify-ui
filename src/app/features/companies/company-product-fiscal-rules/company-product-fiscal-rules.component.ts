@@ -49,7 +49,7 @@ export class CompanyProductFiscalRulesComponent implements OnChanges {
     actions: this.auth.can('FISCAL_RULES_MANAGE')
       ? [
           { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditDialog(row) },
-          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+          { name: 'delete', write: true, icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
         ]
       : [],
   };

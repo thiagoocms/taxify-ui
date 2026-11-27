@@ -4,9 +4,18 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '../../../shared/components/button/button';
 import { InputComponent, SelectOption } from '../../../shared/components/input/input';
 import { ACCESS_PROFILE_OPTIONS, AccessProfile } from '../../../core/models/access.model';
-import { UserDTO } from '../../../core/models/user.model';
+import { PASSWORD_MAX_BYTES, PASSWORD_TOO_LONG_MESSAGE, USER_ERRORS, UserDTO } from '../../../core/models/user.model';
 import { UserService } from '../../../core/services/user.service';
+import { apiErrorCode, apiErrorMessage } from '../../../core/models/api-error.model';
+import { maxBytesValidator } from '../../../shared/utils/validators';
 import { UserLinksComponent } from '../user-links/user-links.component';
+
+/** Erro de campo do POST/PUT /users: o campo marcado e o texto padrão (se a API não mandar mensagem). */
+const USER_FIELD_ERRORS: Record<string, { field: 'login' | 'documentNumber' | 'password'; message: string }> = {
+  [USER_ERRORS.loginExists]: { field: 'login', message: 'Já existe um usuário com esse login.' },
+  [USER_ERRORS.documentExists]: { field: 'documentNumber', message: 'Já existe um usuário com este documento.' },
+  [USER_ERRORS.passwordInvalid]: { field: 'password', message: PASSWORD_TOO_LONG_MESSAGE },
+};
 
 const EMPLOYEE_PROFILE = 'EMPLOYEE';
 const ADMIN_PROFILE = 'ADMIN';
@@ -29,6 +38,8 @@ export class UserFormComponent implements OnChanges {
   @Output() cancelled = new EventEmitter<void>();
 
   readonly loading = signal(false);
+  /** Erro da gravação perto do botão (o de campo também fica marcado no campo). */
+  readonly formError = signal<string | null>(null);
   readonly hidePassword = signal(true);
   readonly eyeIcon = computed(() => (this.hidePassword() ? faEye : faEyeSlash));
 
@@ -83,7 +94,12 @@ export class UserFormComponent implements OnChanges {
       this.selectedProfiles.set(new Set(this.user?.accessProfiles ?? []));
 
       const passwordControl = this.form.get('password');
-      passwordControl?.setValidators(this.isEdit ? [] : [Validators.required, Validators.minLength(6)]);
+      passwordControl?.setValidators(
+        this.isEdit
+          ? [maxBytesValidator(PASSWORD_MAX_BYTES)]
+          : [Validators.required, Validators.minLength(6), maxBytesValidator(PASSWORD_MAX_BYTES)],
+      );
+      this.formError.set(null);
       passwordControl?.updateValueAndValidity();
     }
   }
@@ -99,6 +115,7 @@ export class UserFormComponent implements OnChanges {
     }
 
     this.loading.set(true);
+    this.formError.set(null);
     const { password, profile, ...rest } = this.form.getRawValue();
 
     // Administrador acessa tudo - perfis só valem para colaborador. O backend impede que o
@@ -119,10 +136,29 @@ export class UserFormComponent implements OnChanges {
         this.loading.set(false);
         this.saved.emit(user);
       },
-      error: () => {
+      error: (error: unknown) => {
         this.loading.set(false);
+        this.showSaveError(error);
       },
     });
+  }
+
+  /**
+   * Login/CPF duplicado e senha longa: marca o campo (o interceptor não mostra toast para esses códigos).
+   * Qualquer outro erro já foi para o toast do interceptor, com a `message` da API.
+   */
+  private showSaveError(error: unknown): void {
+    const code = apiErrorCode(error);
+    const message = apiErrorMessage(error);
+    const mapped = code ? USER_FIELD_ERRORS[code] : undefined;
+    if (!mapped) {
+      return;
+    }
+    const text = message ?? mapped.message;
+    const control = this.form.controls[mapped.field];
+    control.setErrors({ ...(control.errors ?? {}), server: text });
+    control.markAsTouched();
+    this.formError.set(text);
   }
 
   cancel(): void {

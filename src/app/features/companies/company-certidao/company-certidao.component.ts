@@ -63,13 +63,13 @@ import { LoaderComponent } from '../../../shared/components/loader/loader';
           @if (canIssue) {
             <div class="actions mt-2">
               <app-button [label]="issuing() ? 'Consultando o e-Fisco...' : 'Emitir agora'" icon="file-signature" variant="outlined"
-                [disabled]="issuing() || uploading()" (onClick)="issue()"></app-button>
+                [disabled]="issuing() || uploading()" [write]="true" (onClick)="issue()"></app-button>
               <a class="small" [href]="d.paginaEmissao" target="_blank" rel="noopener">Abrir a emissão no e-Fisco</a>
             </div>
             <div class="add-row mt-2">
               <input type="file" class="form-control form-control-sm" accept=".pdf,application/pdf" (change)="pick($event)" />
               <app-button [label]="uploading() ? 'Lendo a certidão...' : 'Enviar PDF da certidão'" icon="upload" variant="outlined"
-                severity="secondary" [disabled]="!file || uploading()" (onClick)="upload()"></app-button>
+                severity="secondary" [disabled]="!file || uploading()" [write]="true" (onClick)="upload()"></app-button>
             </div>
             <p class="small muted mt-1 mb-0">
               Emitiu no e-Fisco? Envie o PDF: o Taxify lê número, emissão, validade e situação, confere o CNPJ e guarda o arquivo.

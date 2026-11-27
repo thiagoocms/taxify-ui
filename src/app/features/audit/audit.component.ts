@@ -9,6 +9,7 @@ import { AUDIT_GROUP_LABELS, AuditFindingDTO, AuditGroup, AuditReportDTO, AuditR
 import { CompanyDTO } from '../../core/models/company.model';
 import { SEVERITY_LABELS, PendencySeverity } from '../../core/models/pendency.model';
 import { AuditService } from '../../core/services/audit.service';
+import { FirmAccessService } from '../../core/services/firm-access.service';
 import { AuthService } from '../../core/services/auth.service';
 import { CompanyService } from '../../core/services/company.service';
 import { PendencyService } from '../../core/services/pendency.service';
@@ -58,7 +59,9 @@ export class AuditComponent implements OnInit {
   readonly canRun = this.auth.can('INVOICES_AUDIT');
   readonly canClose = this.auth.can('INVOICES_AUDIT');
   /** As regras da auditoria valem para todos os escritórios: conferir/ativar é só da CS Hub (o backend recusa os demais). */
-  readonly canManageRules = this.auth.can('FISCAL_RULES_MANAGE') && this.auth.isPlatformAdmin();
+  private readonly firmAccess = inject(FirmAccessService);
+  /** Regras da auditoria valem para todos os escritórios: só o admin da plataforma (fonte: GET /firm-access). */
+  readonly canManageRules = computed(() => this.auth.can('FISCAL_RULES_MANAGE') && this.firmAccess.platformAdmin());
   readonly form = this.fb.group({ company: this.fb.control<CompanyDTO | null>(null) });
   readonly month = signal(previousMonth());
   readonly companyId = signal<string | null>(null);
@@ -99,7 +102,7 @@ export class AuditComponent implements OnInit {
     const hasCompany = !!this.companyId() && this.view() === 'findings';
     return [
       { id: 'audit-run', label: this.running() ? 'Auditando...' : 'Rodar auditoria', icon: 'magnifying-glass',
-        isShow: hasCompany && this.canRun, isDisabled: this.running(), handler: () => this.run() },
+        isShow: hasCompany && this.canRun, isDisabled: this.running(), write: true, handler: () => this.run() },
       { id: 'audit-pdf', label: 'Laudo PDF', icon: 'file-pdf', variant: 'outlined', isShow: hasCompany,
         isDisabled: !this.report()?.run, handler: () => this.download('pdf') },
       { id: 'audit-csv', label: 'Exportar CSV', icon: 'download', variant: 'outlined', isShow: hasCompany,

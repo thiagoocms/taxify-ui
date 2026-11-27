@@ -16,7 +16,7 @@ const DELAY_MS = 400;
  */
 const SKIP = [
   /\/integrations\/xmls\/?$/, /\/integrations\/xmls\/totais$/, /\/notas-servico\/(buscar|totais)$/, /\/regras\/testar$/,
-  /\/invoice-audit-log/, /\/auth(\/|$)/, /\/manifestacao$/, /\/auditoria\/executar$/, /\/pendencias\/atualizar$/,
+  /\/invoice-audit-log/, /\/auth(\/|$)/, /\/signup(\/|$)/, /\/manifestacao$/, /\/auditoria\/executar$/, /\/pendencias\/atualizar$/,
 ];
 
 function messageFor(method: string, url: string): string {

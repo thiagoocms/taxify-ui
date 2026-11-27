@@ -13,6 +13,10 @@ export interface PageButton {
   variant?: 'text' | 'outlined' | undefined;
   isDisabled?: boolean;
   isShow?: boolean;
+  /** Dica (title) do botão, ex.: por que está desabilitado. O nome acessível continua sendo o label. */
+  tooltip?: string;
+  /** Ação de escrita: desabilitada com o escritório em somente leitura (ver Button.write). */
+  write?: boolean;
   handler?: () => void;
 }
 

@@ -7,9 +7,10 @@
     rounded ? 'rounded-pill' : '',
     styleClass
   ]"
-  [disabled]="disabled"
-  [attr.title]="tooltip || null"
-  [attr.aria-label]="tooltip || label || null"
+  [disabled]="isDisabled"
+  [attr.title]="titleText"
+  [attr.data-read-only]="blockedByReadOnly ? '' : null"
+  [attr.aria-label]="label || tooltip || null"
   (click)="onButtonClick($event)"
 >
   @if(icon){

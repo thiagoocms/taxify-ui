@@ -21,6 +21,16 @@
             <p>Acesse a conferência fiscal do seu escritório.</p>
           </div>
 
+          @if (signupClosedNotice()) {
+            <div class="form-alert info" role="status">
+              <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
+              <span>
+                O cadastro de novos escritórios está fechado no momento.
+                <a [href]="whatsappUrl" target="_blank" rel="noopener">Fale com a CS Hub</a> para criar a sua conta.
+              </span>
+            </div>
+          }
+
           @if (loginNotice()) {
             <div class="form-alert success" role="status">
               <fa-icon [icon]="successIcon" aria-hidden="true"></fa-icon>
@@ -67,6 +77,18 @@
             }
 
             <div aria-live="assertive">
+              @if (loginNotVerified(); as pendingLogin) {
+                <div class="form-alert warning" role="alert">
+                  <fa-icon [icon]="mailIcon" aria-hidden="true"></fa-icon>
+                  <div class="alert-body">
+                    <span>
+                      Seu e-mail ainda não foi confirmado. Abra o link que enviamos quando você criou a conta
+                      (ele vale {{ verificationHours() }} horas) e depois entre de novo.
+                    </span>
+                    <app-resend-email [login]="pendingLogin" [hours]="verificationHours()"></app-resend-email>
+                  </div>
+                </div>
+              }
               @if (loginError()) {
                 <div class="form-alert error" role="alert">
                   <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
@@ -93,144 +115,206 @@
               Fale com a CS Hub
               <span class="visually-hidden">(abre o WhatsApp em outra aba)</span>
             </a>
-            <p class="switch-link">
-              Ou <button type="button" class="link-btn" (click)="showRegister()">crie a conta do seu escritório</button>
-            </p>
+            @if (signupAvailable()) {
+              <p class="switch-link">
+                Ou <button type="button" class="link-btn" (click)="showRegister()">crie a conta do seu escritório</button>
+                <span class="switch-hint">e teste grátis por {{ trialDays() }} dias</span>
+              </p>
+            }
           </div>
         </section>
 
         <!-- Cadastro: cria um escritório novo, com quem se cadastra como administrador. -->
         <section class="form-slide register-slide" aria-labelledby="register-title" [attr.inert]="activeIndex() !== 1 ? '' : null">
-          @if (step() > 0) {
-            <button type="button" class="back-arrow" aria-label="Voltar para a etapa anterior" (click)="changeStep(-1)">
-              <fa-icon [icon]="arrowLeft" aria-hidden="true"></fa-icon>
-            </button>
-          }
+          @if (registered(); as done) {
+            <!-- Cadastro aceito: falta confirmar o e-mail para o teste começar. -->
+            <div class="auth-header">
+              <h1 id="register-title">Verifique seu e-mail</h1>
+              <p>Falta um passo para começar o teste grátis.</p>
+            </div>
+            <div class="verify-box" role="status">
+              <fa-icon class="verify-icon" [icon]="mailIcon" aria-hidden="true"></fa-icon>
+              <p>
+                Enviamos um link de confirmação para <strong>{{ done.email }}</strong>.
+                Clique nele para ativar a conta e começar o teste grátis de {{ trialDays() }} dias.
+              </p>
+              <p class="verify-note">
+                O link vale <strong>{{ done.hours }} horas</strong>. Não chegou? Confira a caixa de spam ou peça outro abaixo.
+              </p>
+            </div>
+            <app-resend-email [login]="done.login" [hours]="done.hours"></app-resend-email>
+            <div class="d-grid mt-3">
+              <app-button label="Ir para o login" size="large" styleClass="w-100 auth-submit" (onClick)="backToLoginAfterSignup()"></app-button>
+            </div>
+          } @else {
+            @if (step() > 0) {
+              <button type="button" class="back-arrow" aria-label="Voltar para a etapa anterior" (click)="changeStep(-1)">
+                <fa-icon [icon]="arrowLeft" aria-hidden="true"></fa-icon>
+              </button>
+            }
 
-          <div class="auth-header register-header" [class.with-back]="step() > 0">
-            <h1 id="register-title">Criar a conta do escritório</h1>
-            <p>Para escritórios contábeis que vão usar o Taxify.</p>
-          </div>
-
-          <ol class="steps-row" aria-label="Etapas do cadastro">
-            <li class="step-col" [attr.aria-current]="step() === 1 ? 'step' : null">
-              <app-step-indicator [stepIndex]="step()" [stepReference]="1"></app-step-indicator>
-              <div class="step-labels">
-                <div class="step-title">Dados</div>
-                <div class="step-subtitle">Nome e documento</div>
-              </div>
-            </li>
-            <li class="step-col" [attr.aria-current]="step() === 2 ? 'step' : null">
-              <app-step-indicator [stepIndex]="step()" [stepReference]="2"></app-step-indicator>
-              <div class="step-labels">
-                <div class="step-title">Acesso</div>
-                <div class="step-subtitle">Login e e-mail</div>
-              </div>
-            </li>
-            <li class="step-col" [attr.aria-current]="step() === 3 ? 'step' : null">
-              <app-step-indicator [stepIndex]="step()" [stepReference]="3"></app-step-indicator>
-              <div class="step-labels">
-                <div class="step-title">Senha</div>
-                <div class="step-subtitle">Mínimo de 6 caracteres</div>
-              </div>
-            </li>
-          </ol>
-
-          <form [formGroup]="registerForm" class="wizard-form" (ngSubmit)="changeStep()" novalidate [attr.aria-busy]="registerLoading()">
-            <div class="wizard-fields">
-              @switch (step()) {
-                @case (1) {
-                  <div class="mt-1">
-                    <app-input formControlName="name" label="Seu nome completo" inputId="register-name" autocomplete="name"></app-input>
-                  </div>
-
-                  <div class="mt-2 row-fields">
-                    <app-input
-                      formControlName="documentType"
-                      label="Documento"
-                      inputId="register-document-type"
-                      type="select"
-                      [options]="documentTypeOptions"
-                    ></app-input>
-                    <app-input formControlName="documentNumber" mask="document" label="CPF / CNPJ" inputId="register-document" autocomplete="off"></app-input>
-                  </div>
-                  <p class="field-hint">O escritório começa com o seu nome; dá para mudar depois.</p>
-                }
-                @case (2) {
-                  <div class="mt-1">
-                    <app-input formControlName="login" label="Login (para entrar no Taxify)" inputId="register-login" autocomplete="username"></app-input>
-                  </div>
-                  <div class="mt-2">
-                    <app-input formControlName="email" type="email" label="E-mail" inputId="register-email" autocomplete="email"></app-input>
-                  </div>
-                }
-                @case (3) {
-                  <div class="mt-1">
-                    <app-input
-                      formControlName="password"
-                      label="Senha"
-                      inputId="register-password"
-                      autocomplete="new-password"
-                      [type]="hidePassword() ? 'password' : 'text'"
-                      [icon]="eyeIcon()"
-                      [iconLabel]="hidePassword() ? 'Mostrar senha' : 'Ocultar senha'"
-                      [iconPressed]="!hidePassword()"
-                      [clickable]="true"
-                      (onClick)="hidePassword.set(!hidePassword())"
-                    ></app-input>
-                  </div>
-
-                  <div class="mt-2">
-                    <app-input
-                      formControlName="confirmPassword"
-                      label="Confirme a senha"
-                      inputId="register-password-confirm"
-                      autocomplete="new-password"
-                      [type]="hideConfirmPassword() ? 'password' : 'text'"
-                      [icon]="eyeIconConfirm()"
-                      [iconLabel]="hideConfirmPassword() ? 'Mostrar senha' : 'Ocultar senha'"
-                      [iconPressed]="!hideConfirmPassword()"
-                      [clickable]="true"
-                      (onClick)="hideConfirmPassword.set(!hideConfirmPassword())"
-                    ></app-input>
-                  </div>
-                }
-                @default {
-                  <div class="welcome-box">
-                    <p class="welcome-title">O que acontece no cadastro</p>
-                    <ul class="welcome-list">
-                      <li>Você cria a conta de um <strong>escritório novo</strong> e entra como <strong>administrador</strong>.</li>
-                      <li>Depois cadastra as empresas da carteira, a equipe e os certificados.</li>
-                      <li>Já trabalha num escritório que usa o Taxify? Não crie outra conta: peça ao administrador o seu usuário.</li>
-                    </ul>
-                  </div>
-                }
-              }
+            <div class="auth-header register-header" [class.with-back]="step() > 0">
+              <h1 id="register-title">Criar a conta do escritório</h1>
+              <p>Teste grátis por {{ trialDays() }} dias, para escritórios contábeis.</p>
             </div>
 
-            <div aria-live="assertive">
-              @if (registerError()) {
-                <div class="form-alert error" role="alert">
-                  <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
-                  <span>{{ registerError() }}</span>
+            <ol class="steps-row" aria-label="Etapas do cadastro">
+              <li class="step-col" [attr.aria-current]="step() === 1 ? 'step' : null">
+                <app-step-indicator [stepIndex]="step()" [stepReference]="1"></app-step-indicator>
+                <div class="step-labels">
+                  <div class="step-title">Escritório</div>
+                  <div class="step-subtitle">CNPJ e contato</div>
                 </div>
-              }
-            </div>
+              </li>
+              <li class="step-col" [attr.aria-current]="step() === 2 ? 'step' : null">
+                <app-step-indicator [stepIndex]="step()" [stepReference]="2"></app-step-indicator>
+                <div class="step-labels">
+                  <div class="step-title">Você</div>
+                  <div class="step-subtitle">Administrador</div>
+                </div>
+              </li>
+              <li class="step-col" [attr.aria-current]="step() === 3 ? 'step' : null">
+                <app-step-indicator [stepIndex]="step()" [stepReference]="3"></app-step-indicator>
+                <div class="step-labels">
+                  <div class="step-title">Senha</div>
+                  <div class="step-subtitle">E os termos</div>
+                </div>
+              </li>
+            </ol>
 
-            <div class="wizard-footer">
-              <div class="d-grid">
-                <app-button
-                  type="submit"
-                  size="large"
-                  [label]="buttonLabel()"
-                  [disabled]="registerLoading()"
-                  styleClass="w-100 auth-submit"
-                ></app-button>
+            <form [formGroup]="registerForm" class="wizard-form" (ngSubmit)="changeStep()" novalidate [attr.aria-busy]="registerLoading()">
+              <div class="wizard-fields">
+                @switch (step()) {
+                  @case (1) {
+                    <div class="mt-1">
+                      <app-input formControlName="firmName" label="Nome do escritório" inputId="register-firm-name" autocomplete="organization"></app-input>
+                    </div>
+                    <div class="mt-2">
+                      <app-input formControlName="firmDocument" mask="cnpj" label="CNPJ do escritório" inputId="register-firm-document" autocomplete="off"></app-input>
+                    </div>
+                    <div class="mt-2">
+                      <app-input formControlName="billingEmail" type="email" label="E-mail financeiro" inputId="register-billing-email" autocomplete="email"></app-input>
+                    </div>
+                    <p class="field-hint">Para onde vão as cobranças. Pode ser o mesmo e-mail do seu acesso.</p>
+                    <div class="mt-2">
+                      <app-input formControlName="contactPhone" mask="phone" type="tel" label="Telefone / WhatsApp (com DDD)" inputId="register-phone" autocomplete="tel-national"></app-input>
+                    </div>
+                  }
+                  @case (2) {
+                    <div class="mt-1">
+                      <app-input formControlName="name" label="Seu nome completo" inputId="register-name" autocomplete="name"></app-input>
+                    </div>
+                    <div class="mt-2">
+                      <app-input formControlName="document" mask="cpf" label="Seu CPF" inputId="register-document" autocomplete="off"></app-input>
+                    </div>
+                    <div class="mt-2">
+                      <app-input formControlName="email" type="email" label="Seu e-mail (recebe o link de confirmação)" inputId="register-email" autocomplete="email"></app-input>
+                    </div>
+                    <div class="mt-2">
+                      <app-input formControlName="login" label="Login (para entrar no Taxify)" inputId="register-login" autocomplete="username"></app-input>
+                    </div>
+                  }
+                  @case (3) {
+                    <div class="mt-1">
+                      <app-input
+                        formControlName="password"
+                        label="Senha (mínimo de 6 caracteres)"
+                        inputId="register-password"
+                        autocomplete="new-password"
+                        [type]="hidePassword() ? 'password' : 'text'"
+                        [icon]="eyeIcon()"
+                        [iconLabel]="hidePassword() ? 'Mostrar senha' : 'Ocultar senha'"
+                        [iconPressed]="!hidePassword()"
+                        [clickable]="true"
+                        (onClick)="hidePassword.set(!hidePassword())"
+                      ></app-input>
+                    </div>
+
+                    <div class="mt-2">
+                      <app-input
+                        formControlName="confirmPassword"
+                        label="Confirme a senha"
+                        inputId="register-password-confirm"
+                        autocomplete="new-password"
+                        [type]="hideConfirmPassword() ? 'password' : 'text'"
+                        [icon]="eyeIconConfirm()"
+                        [iconLabel]="hideConfirmPassword() ? 'Mostrar senha' : 'Ocultar senha'"
+                        [iconPressed]="!hideConfirmPassword()"
+                        [clickable]="true"
+                        (onClick)="hideConfirmPassword.set(!hideConfirmPassword())"
+                      ></app-input>
+                    </div>
+
+                    <div class="terms-box mt-2">
+                      <label class="terms-check" for="register-terms">
+                        <input
+                          id="register-terms"
+                          type="checkbox"
+                          formControlName="acceptTerms"
+                          [attr.aria-invalid]="registerForm.controls.acceptTerms.invalid && registerForm.controls.acceptTerms.touched ? true : null"
+                          aria-describedby="register-terms-links"
+                        />
+                        <span>
+                          Li e aceito os documentos abaixo
+                          @if (signupConfig()?.termsVersion; as version) {
+                            <small class="terms-version">(versão {{ version }})</small>
+                          }
+                        </span>
+                      </label>
+                      <ul id="register-terms-links" class="terms-links">
+                        @if (signupConfig()?.termsUrl; as url) {
+                          <li><a [href]="url" target="_blank" rel="noopener">Termos de uso<span class="visually-hidden"> (abre em outra aba)</span></a></li>
+                        }
+                        @if (signupConfig()?.privacyUrl; as url) {
+                          <li><a [href]="url" target="_blank" rel="noopener">Política de privacidade<span class="visually-hidden"> (abre em outra aba)</span></a></li>
+                        }
+                        @if (signupConfig()?.dpaUrl; as url) {
+                          <li><a [href]="url" target="_blank" rel="noopener">Acordo de operador de dados<span class="visually-hidden"> (abre em outra aba)</span></a></li>
+                        }
+                      </ul>
+                      @if (registerForm.controls.acceptTerms.invalid && registerForm.controls.acceptTerms.touched) {
+                        <p class="terms-error">{{ registerForm.controls.acceptTerms.errors?.['server'] || 'Marque o aceite para criar a conta.' }}</p>
+                      }
+                    </div>
+                  }
+                  @default {
+                    <div class="welcome-box">
+                      <p class="welcome-title">O que acontece no cadastro</p>
+                      <ul class="welcome-list">
+                        <li>Você cria a conta de um <strong>escritório novo</strong> e entra como <strong>administrador</strong>.</li>
+                        <li>Enviamos um link ao seu e-mail. Ao clicar, começa o <strong>teste grátis de {{ trialDays() }} dias</strong>.</li>
+                        <li>Tenha em mãos o <strong>CNPJ do escritório</strong>, um e-mail financeiro e um telefone/WhatsApp.</li>
+                        <li>Já trabalha num escritório que usa o Taxify? Não crie outra conta: peça ao administrador o seu usuário.</li>
+                      </ul>
+                    </div>
+                  }
+                }
               </div>
-            </div>
-          </form>
 
-          <p class="switch-link">Já tem conta? <button type="button" class="link-btn" (click)="showLogin()">Entrar</button></p>
+              <div aria-live="assertive">
+                @if (registerError()) {
+                  <div class="form-alert error" role="alert">
+                    <fa-icon [icon]="errorIcon" aria-hidden="true"></fa-icon>
+                    <span>{{ registerError() }}</span>
+                  </div>
+                }
+              </div>
+
+              <div class="wizard-footer">
+                <div class="d-grid">
+                  <app-button
+                    type="submit"
+                    size="large"
+                    [label]="buttonLabel()"
+                    [disabled]="registerLoading()"
+                    styleClass="w-100 auth-submit"
+                  ></app-button>
+                </div>
+              </div>
+            </form>
+
+            <p class="switch-link">Já tem conta? <button type="button" class="link-btn" (click)="showLogin()">Entrar</button></p>
+          }
         </section>
       </div>
     </div>

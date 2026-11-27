@@ -213,7 +213,7 @@ export class InvoiceXmlListComponent implements OnInit, OnDestroy {
       label: 'Importar XML',
       icon: 'upload',
       isShow: this.auth.can('INVOICES_SYNC'),
-      handler: () => this.openImportModal(),
+      write: true, handler: () => this.openImportModal(),
     },
   ]);
 

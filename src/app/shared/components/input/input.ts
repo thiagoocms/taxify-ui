@@ -15,7 +15,16 @@ import {AbstractControl, ControlContainer, ControlValueAccessor, NG_VALUE_ACCESS
 import {FaIconComponent} from '@fortawesome/angular-fontawesome';
 import {faXmark, IconDefinition} from '@fortawesome/free-solid-svg-icons';
 import {debounceTime, distinctUntilChanged, Observable, of, Subject, Subscriber, switchMap} from 'rxjs';
-import {formatDocument, maskDocument, onlyDigits} from '../../utils/document-mask';
+import {formatDocument, maskCnpj, maskCpf, maskDocument, onlyDigits} from '../../utils/document-mask';
+import {maskPhone} from '../../utils/format';
+
+/** Máscaras de exibição: o formulário sempre recebe só os dígitos. */
+const MASKS: Record<string, { apply: (value?: string | null) => string; maxLength: number }> = {
+  document: { apply: maskDocument, maxLength: 18 },
+  cnpj: { apply: maskCnpj, maxLength: 18 },
+  cpf: { apply: maskCpf, maxLength: 14 },
+  phone: { apply: maskPhone, maxLength: 15 },
+};
 
 
 let nextInputId = 0;
@@ -44,6 +53,11 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   @Input() label: string = 'text';
   @Input() type: string = 'text';
   @Input() disabled = false;
+  /**
+   * Campo obrigatório: só anuncia (aria-required) ao leitor de tela; quem valida continua sendo o formulário. Não se
+   * chama `required` porque esse atributo, junto com formControl/ngModel, liga o RequiredValidator do Angular.
+   */
+  @Input() ariaRequired = false;
   @Input() border: boolean = true;
   @Input() icon: IconDefinition | null = null;
   @Input() clickable: boolean = false;
@@ -57,8 +71,8 @@ export class InputComponent implements ControlValueAccessor, OnInit {
   /** Autocomplete: monta o texto de cada sugestão (e do item escolhido); sem ele, usa displayField. */
   @Input() displayFn?: (item: any) => string;
   @Input() minRequired: number = 2;
-  /** 'document': máscara de CPF/CNPJ na tela; o formulário recebe só os dígitos. */
-  @Input() mask: 'document' | '' = '';
+  /** Máscara na tela ('document' = CPF/CNPJ, 'cnpj', 'cpf', 'phone'); o formulário recebe só os dígitos. */
+  @Input() mask: 'document' | 'cnpj' | 'cpf' | 'phone' | '' = '';
   /** 'sm': a versão compacta, para edições em linha e cartões (sem a reserva da linha de erro). */
   @Input() size: 'default' | 'sm' = 'default';
   /** Número: o passo do campo (ex.: '0.01'); o formulário recebe number (ou null, vazio). */
@@ -135,7 +149,7 @@ export class InputComponent implements ControlValueAccessor, OnInit {
       this.cdr.markForCheck();
       return;
     }
-    this.value = this.mask === 'document' ? maskDocument(value) : (value ?? '');
+    this.value = this.mask ? MASKS[this.mask].apply(value) : (value ?? '');
     if (typeof this.value === 'number') {
       this.value = String(this.value);
     }
@@ -156,8 +170,8 @@ export class InputComponent implements ControlValueAccessor, OnInit {
 
   onInput(event: any) {
     let newVal = event?.target?.value || '';
-    if (this.mask === 'document') {
-      const masked = maskDocument(newVal);
+    if (this.mask) {
+      const masked = MASKS[this.mask].apply(newVal);
       if (event?.target) {
         event.target.value = masked;
       }
@@ -220,6 +234,16 @@ export class InputComponent implements ControlValueAccessor, OnInit {
     this.onClick.emit(event);
   }
 
+  /** Teclado numérico no celular para os campos com máscara. */
+  get inputMode(): string | null {
+    if (this.mask === 'phone') return 'tel';
+    return this.mask ? 'numeric' : null;
+  }
+
+  get effectiveMaxLength(): number {
+    return this.mask ? MASKS[this.mask].maxLength : this.maxLength;
+  }
+
   get hasValue(): boolean {
     return this.value !== '' && this.value !== null && this.value !== undefined;
   }
@@ -261,6 +285,21 @@ export class InputComponent implements ControlValueAccessor, OnInit {
     }
     if (errors['documentInvalid']) {
       messages.push('CPF/CNPJ inválido');
+    }
+    if (errors['cnpjInvalid']) {
+      messages.push('CNPJ inválido: confira os dígitos');
+    }
+    if (errors['cpfInvalid']) {
+      messages.push('CPF inválido: confira os dígitos');
+    }
+    if (errors['phoneInvalid']) {
+      messages.push('Informe DDD + número (10 ou 11 dígitos)');
+    }
+    if (errors['maxBytes']) {
+      messages.push(`Senha longa demais: no máximo ${errors['maxBytes'].max} bytes (acentos contam 2)`);
+    }
+    if (errors['server'] && typeof errors['server'] === 'string') {
+      messages.push(errors['server']);
     }
     if (errors['noResults']) {
       messages.push('Nenhum resultado encontrado');

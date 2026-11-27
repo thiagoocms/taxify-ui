@@ -34,15 +34,15 @@
           @if (divergenceOpen()) {
             <app-input class="divergence-field" size="sm" label="O que está divergente?" [maxLength]="500"
                        [ngModel]="divergenceNote()" (ngModelChange)="divergenceNote.set($event)"></app-input>
-            <app-button label="Salvar" severity="warning" [disabled]="!divergenceNote().trim() || reviewSaving()" (onClick)="review('DIVERGENT')"></app-button>
+            <app-button label="Salvar" severity="warning" [disabled]="!divergenceNote().trim() || reviewSaving()" [write]="true" (onClick)="review('DIVERGENT')"></app-button>
             <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="divergenceOpen.set(false)"></app-button>
           } @else {
             @if (reviewState !== 'REVIEWED') {
-              <app-button label="Marcar como conferida" icon="check" severity="success" [disabled]="reviewSaving()" (onClick)="review('REVIEWED')"></app-button>
+              <app-button label="Marcar como conferida" icon="check" severity="success" [disabled]="reviewSaving()" [write]="true" (onClick)="review('REVIEWED')"></app-button>
             }
-            <app-button label="Divergência" icon="triangle-exclamation" variant="outlined" severity="warning" [disabled]="reviewSaving()" (onClick)="openDivergence()"></app-button>
+            <app-button label="Divergência" icon="triangle-exclamation" variant="outlined" severity="warning" [disabled]="reviewSaving()" [write]="true" (onClick)="openDivergence()"></app-button>
             @if (reviewState !== 'PENDING') {
-              <app-button label="Voltar para a conferir" icon="rotate-left" variant="text" [disabled]="reviewSaving()" (onClick)="review('PENDING')"></app-button>
+              <app-button label="Voltar para a conferir" icon="rotate-left" variant="text" [disabled]="reviewSaving()" [write]="true" (onClick)="review('PENDING')"></app-button>
             }
           }
         </div>
@@ -354,7 +354,7 @@
                   icon="wand-magic-sparkles"
                   [label]="rectifying() ? 'Retificando...' : 'Retificar nota'"
                   [disabled]="rectifying() || !documentId()"
-                  (onClick)="retificar()"
+                  [write]="true" (onClick)="retificar()"
                 ></app-button>
               }
             </div>
@@ -411,7 +411,7 @@
                   icon="wand-magic-sparkles"
                   [label]="rectifying() ? 'Retificando...' : 'Retificar códigos'"
                   [disabled]="rectifying() || !documentId()"
-                  (onClick)="retificar()"
+                  [write]="true" (onClick)="retificar()"
                 ></app-button>
               </div>
             }
@@ -439,7 +439,7 @@
           <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
             <p class="muted mb-0">Histórico da nota: conferência, retificação e cancelamento entram sozinhos. Registros não são editados nem excluídos.</p>
             @if (authService.can('INVOICES_AUDIT')) {
-              <app-button label="Adicionar registro" icon="plus" (onClick)="openCreateAuditForm()"></app-button>
+              <app-button label="Adicionar registro" icon="plus" [write]="true" (onClick)="openCreateAuditForm()"></app-button>
             }
           </div>
 
@@ -544,7 +544,7 @@
 
       <div class="d-flex justify-content-end gap-2 mt-3">
         <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="closeAuditForm()"></app-button>
-        <app-button type="submit" label="Adicionar" [disabled]="!auditForm.controls.status.value"></app-button>
+        <app-button [write]="true" type="submit" label="Adicionar" [disabled]="!auditForm.controls.status.value"></app-button>
       </div>
     </form>
   }

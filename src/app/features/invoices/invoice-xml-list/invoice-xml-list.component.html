@@ -133,7 +133,7 @@
       <app-help-tip text="Origem: de onde a nota veio primeiro. 'Só no SIEG' / 'Só na SEFAZ': está numa fonte e não na outra há mais de 48h (a SEFAZ não entrega as notas emitidas pela própria empresa)."></app-help-tip>
       @if (canReview && pendingOnPage().length) {
         <app-button [label]="'Marcar ' + pendingOnPage().length + ' da página como conferidas'" icon="check" variant="outlined" severity="success"
-          [disabled]="reviewing()" (onClick)="reviewPage()"></app-button>
+          [disabled]="reviewing()" [write]="true" (onClick)="reviewPage()"></app-button>
       }
       <span class="tabs-count">{{ totalElements() }} {{ totalElements() === 1 ? 'nota' : 'notas' }}</span>
     </div>
@@ -283,6 +283,7 @@
         <app-button label="Fechar" variant="text" severity="secondary" (onClick)="closeImportModal()"></app-button>
         <app-button
           type="submit"
+          [write]="true"
           [label]="importing() ? 'Importando...' : 'Importar'"
           [disabled]="importing() || !importFile()"
         ></app-button>

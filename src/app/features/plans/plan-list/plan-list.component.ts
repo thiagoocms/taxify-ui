@@ -46,7 +46,7 @@ export class PlanListComponent implements OnInit {
     actions: this.auth.isAdmin
       ? [
           { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditForm(row) },
-          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+          { name: 'delete', write: true, icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
         ]
       : [],
   };
@@ -76,7 +76,7 @@ export class PlanListComponent implements OnInit {
 
   readonly pageButtons = computed<PageButton[]>(() => {
     if (this.viewMode() === 'list') {
-      return [{ label: 'Novo plano', icon: 'plus', isShow: this.auth.isAdmin, handler: () => this.openCreateForm() }];
+      return [{ label: 'Novo plano', icon: 'plus', isShow: this.auth.isAdmin, write: true, handler: () => this.openCreateForm() }];
     }
     return [{ label: 'Voltar', icon: 'arrow-left', variant: 'outlined', severity: 'secondary', handler: () => this.closeForm() }];
   });

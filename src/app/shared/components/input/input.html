@@ -5,6 +5,7 @@
     @switch (type) {
       @case ('autocomplete') {
         <input
+          [attr.aria-required]="ariaRequired ? true : null"
           [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors, 'with-clear': !!value && !disabled }"
           [disabled]="disabled"
           [value]="value"
@@ -33,6 +34,8 @@
       }
       @case ('textarea') {
         <textarea
+          [id]="inputId"
+          [attr.aria-required]="ariaRequired ? true : null"
           [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
           [disabled]="disabled"
           [maxLength]="maxLength"
@@ -45,6 +48,8 @@
       }
       @case ('select') {
         <select
+          [id]="inputId"
+          [attr.aria-required]="ariaRequired ? true : null"
           [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors }"
           [disabled]="disabled"
           [value]="value"
@@ -65,16 +70,17 @@
       @default {
         <input
           [id]="inputId"
+          [attr.aria-required]="ariaRequired ? true : null"
           [ngClass]="{ 'input-boxed': border, 'invalid': hasErrors, 'with-icon-button': !!icon && !!iconLabel }"
           [attr.aria-invalid]="hasErrors ? true : null"
           [attr.aria-describedby]="hasErrors ? inputId + '-error' : null"
           [type]="type"
-          [attr.inputmode]="mask === 'document' ? 'numeric' : null"
+          [attr.inputmode]="inputMode"
           [attr.step]="step"
           [attr.min]="min"
           [attr.autocomplete]="autocomplete"
           [disabled]="disabled"
-          [maxLength]="mask === 'document' ? 18 : maxLength"
+          [maxLength]="effectiveMaxLength"
           [value]="value"
           (input)="onInput($event)"
           (focus)="focused = true"

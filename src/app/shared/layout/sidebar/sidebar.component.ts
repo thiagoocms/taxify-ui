@@ -19,8 +19,10 @@ import {
   faTags,
   faTruck,
   faUsers,
+  faBuildingShield,
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../core/services/auth.service';
+import { FirmAccessService } from '../../../core/services/firm-access.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -31,6 +33,7 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class SidebarComponent {
   private readonly authService = inject(AuthService);
+  private readonly firmAccess = inject(FirmAccessService);
 
   @Output() linkClicked = new EventEmitter<void>();
 
@@ -49,6 +52,9 @@ export class SidebarComponent {
   readonly folderIcon = faFolderOpen;
   readonly tagsIcon = faTags;
   readonly usersIcon = faUsers;
+  readonly platformIcon = faBuildingShield;
+  /** Menu "Plataforma" (console dos escritórios): só o admin da plataforma, pelo `platformAdmin` do /firm-access. */
+  readonly isPlatformAdmin = this.firmAccess.platformAdmin;
   readonly chevronIcon = faChevronDown;
   readonly isAdmin = this.authService.isAdmin;
   readonly canCompanies = this.authService.can('COMPANIES_VIEW');

@@ -26,6 +26,8 @@
             [label]="pageButton.label || ''"
             [icon]="pageButton.icon || ''"
             [disabled]="pageButton.isDisabled || false"
+            [write]="pageButton.write || false"
+            [tooltip]="pageButton.tooltip || ''"
             (onClick)="action(pageButton)"
           />
         }

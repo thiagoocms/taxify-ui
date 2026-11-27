@@ -97,7 +97,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader';
               @if (!readonly && s.present) {
                 <div class="mt-1">
                   <app-button [label]="capturingAdn() ? 'Consultando o Ambiente Nacional...' : 'Capturar NFS-e agora'" icon="cloud-arrow-down"
-                    variant="outlined" severity="secondary" [disabled]="capturingAdn()" (onClick)="captureAdn()"></app-button>
+                    variant="outlined" severity="secondary" [disabled]="capturingAdn()" [write]="true" (onClick)="captureAdn()"></app-button>
                 </div>
               }
             }
@@ -157,7 +157,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader';
                           <td class="text-end">
                             @if (!readonly && nota.ciencia === 'ERRO') {
                               <app-button label="Reenviar ciência" variant="text" styleClass="p-0" [disabled]="retrying() === nota.chave"
-                                (onClick)="retry(nota.chave)"></app-button>
+                                [write]="true" (onClick)="retry(nota.chave)"></app-button>
                             }
                           </td>
                         </tr>
@@ -180,19 +180,19 @@ import { LoaderComponent } from '../../../shared/components/loader/loader';
               <input type="file" class="form-control form-control-sm" accept=".pfx,.p12" (change)="pick($event)" />
               <app-input size="sm" type="password" label="Senha do certificado" autocomplete="new-password" [(ngModel)]="password"></app-input>
               <app-button [label]="saving() ? 'Enviando...' : s.present && !s.inherited ? 'Trocar certificado' : 'Enviar certificado'"
-                icon="upload" variant="outlined" [disabled]="!file || !password || saving()" (onClick)="upload()"></app-button>
+                icon="upload" variant="outlined" [disabled]="!file || !password || saving()" [write]="true" (onClick)="upload()"></app-button>
           </div>
           <div class="d-flex gap-2 mt-2">
             @if (s.present && s.sefazInPlan) {
               <app-button [label]="capturing() ? 'Consultando a SEFAZ...' : 'Capturar agora'" icon="cloud-arrow-down" variant="outlined"
-                severity="secondary" [disabled]="capturing()" (onClick)="capture()"></app-button>
+                severity="secondary" [disabled]="capturing()" [write]="true" (onClick)="capture()"></app-button>
             }
             @if (s.present && !s.inherited) {
               @if (confirmingDelete()) {
-                <app-button label="Confirmar remoção" severity="danger" (onClick)="remove()"></app-button>
+                <app-button label="Confirmar remoção" severity="danger" [write]="true" (onClick)="remove()"></app-button>
                 <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="confirmingDelete.set(false)"></app-button>
               } @else {
-                <app-button label="Remover certificado" variant="text" severity="danger" (onClick)="confirmingDelete.set(true)"></app-button>
+                <app-button label="Remover certificado" variant="text" severity="danger" [write]="true" (onClick)="confirmingDelete.set(true)"></app-button>
               }
             }
           </div>

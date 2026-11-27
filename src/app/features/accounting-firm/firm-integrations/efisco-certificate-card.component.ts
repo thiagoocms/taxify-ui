@@ -54,12 +54,12 @@ import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/
         <small class="text-muted">O arquivo e a senha ficam guardados cifrados. Só e-CPF (pessoa física).</small>
         <div class="integration-actions">
           <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
-          <app-button [label]="busy() ? 'Enviando...' : 'Salvar'" [disabled]="busy() || !file" (onClick)="upload()"></app-button>
+          <app-button [label]="busy() ? 'Enviando...' : 'Salvar'" [disabled]="busy() || !file" [write]="true" (onClick)="upload()"></app-button>
         </div>
       } @else {
         <div class="integration-actions">
           @if (s?.present) {
-            <app-button label="Remover" variant="text" severity="danger" [disabled]="busy()" (onClick)="remove()"></app-button>
+            <app-button label="Remover" variant="text" severity="danger" [disabled]="busy()" [write]="true" (onClick)="remove()"></app-button>
           }
           <app-button [label]="s?.present ? 'Trocar certificado' : 'Enviar certificado'" variant="outlined" icon="upload"
             (onClick)="editing.set(true)"></app-button>

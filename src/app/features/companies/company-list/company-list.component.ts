@@ -23,21 +23,26 @@ import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/
 import { formatDocument } from '../../../shared/utils/document-mask';
 import { LoaderComponent } from '../../../shared/components/loader/loader';
 import { Button } from '../../../shared/components/button/button';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { certidaoBadge, CertidaoSummaryDTO } from '../../../core/models/certidao.model';
 import { CertidaoService, openPdf } from '../../../core/services/certidao.service';
+import { FirmAccessService } from '../../../core/services/firm-access.service';
+import { planNameInSentence } from '../../../core/models/api-error.model';
 
 type ViewMode = 'list' | 'form';
 
 @Component({
   selector: 'app-company-list',
   standalone: true,
-  imports: [LoaderComponent, Button, CommonModule, ReactiveFormsModule, InputComponent, Modal, Page, Pagination, Table, CompanyFormComponent],
+  imports: [LoaderComponent, Button, FaIconComponent, CommonModule, ReactiveFormsModule, InputComponent, Modal, Page, Pagination, Table, CompanyFormComponent],
   templateUrl: './company-list.component.html',
   styleUrl: './company-list.component.scss',
 })
 export class CompanyListComponent implements OnInit {
   private readonly confirmDialog = inject(ConfirmDialogService);
   protected readonly auth = inject(AuthService);
+  /** Somente leitura e limite do teste: desabilitam "Nova empresa", importar e excluir. */
+  protected readonly firmAccess = inject(FirmAccessService);
 
   private readonly certidaoCell = viewChild.required<TemplateRef<unknown>>('certidaoCell');
 
@@ -58,13 +63,24 @@ export class CompanyListComponent implements OnInit {
   readonly tableConfig: TableConfig = {
     headerVisible: true,
     // Só o administrador altera o cadastro; os demais abrem a empresa para ver as seções do perfil deles.
+    // Em somente leitura, editar continua abrindo a ficha (o Salvar fica desabilitado); excluir fica desabilitado.
     actions: this.auth.isAdmin
       ? [
           { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditForm(row) },
-          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+          { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', write: true, handler: (row) => this.remove(row) },
         ]
       : [{ name: 'open', icon: 'eye', tooltip: 'Abrir', variant: 'text', handler: (row) => this.openEditForm(row) }],
   };
+
+  /** Limite do teste atingido: "Nova empresa" desabilitado, com a explicação acima da lista. */
+  readonly companyLimitMessage = computed(() => {
+    const limits = this.firmAccess.limits();
+    if (!this.auth.isAdmin || !limits || !this.firmAccess.companyLimitReached()) {
+      return null;
+    }
+    return `O ${planNameInSentence(limits.planName)} permite ${limits.maxCompanies} empresas e o escritório já tem ` +
+      `${limits.companiesInUse} em uso. Empresas inativas não contam. Fale com a CS Hub para contratar.`;
+  });
 
   private readonly acessoriasService = inject(AcessoriasService);
   private readonly accountingFirmService = inject(AccountingFirmService);
@@ -110,10 +126,19 @@ export class CompanyListComponent implements OnInit {
           icon: 'cloud-arrow-down',
           variant: 'outlined',
           isDisabled: this.importing(),
+          write: true,
           isShow: this.auth.isAdmin && this.accountingFirmService.hasAcessoriasToken(),
           handler: () => this.importFromAcessorias(),
         },
-        { label: 'Nova empresa', icon: 'plus', isShow: this.auth.isAdmin, handler: () => this.openCreateForm() },
+        {
+          label: 'Nova empresa',
+          icon: 'plus',
+          isShow: this.auth.isAdmin,
+          isDisabled: this.firmAccess.companyLimitReached(),
+          tooltip: this.companyLimitMessage() ?? undefined,
+          write: true,
+          handler: () => this.openCreateForm(),
+        },
       ];
     }
     return [{ label: 'Voltar', icon: 'arrow-left', variant: 'outlined', severity: 'secondary', handler: () => this.closeForm() }];
@@ -209,8 +234,14 @@ export class CompanyListComponent implements OnInit {
           return;
         }
         this.importResult.set(job.result);
-        this.toastr.success(`${job.result.created} criada(s), ${job.result.updated} atualizada(s).`, 'Importação do Acessórias');
+        const skippedByLimit = job.result.skippedByLimit ?? 0;
+        const limitNote = skippedByLimit ? ` ${skippedByLimit} fora por limite do teste.` : '';
+        this.toastr.success(
+          `${job.result.created} criada(s), ${job.result.updated} atualizada(s).${limitNote}`,
+          'Importação do Acessórias',
+        );
         this.loadCompanies();
+        this.firmAccess.reload();
       });
   }
 
@@ -241,6 +272,8 @@ export class CompanyListComponent implements OnInit {
   onSaved(): void {
     this.viewMode.set('list');
     this.loadCompanies();
+    // Criar ou reativar empresa muda o uso do limite do teste.
+    this.firmAccess.reload();
   }
 
   async remove(company: CompanyDTO): Promise<void> {
@@ -248,6 +281,13 @@ export class CompanyListComponent implements OnInit {
       return;
     }
 
-    this.companyService.delete(company.id!).subscribe(() => this.loadCompanies());
+    this.companyService.delete(company.id!).subscribe({
+      next: () => {
+        this.loadCompanies();
+        this.firmAccess.reload();
+      },
+      // O interceptor já mostrou o toast (somente leitura, não encontrado...); a linha continua na lista.
+      error: () => undefined,
+    });
   }
 }

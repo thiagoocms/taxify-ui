@@ -1,0 +1,89 @@
+.verify-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-darker) 100%);
+}
+
+.verify-card {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: var(--border-radius);
+  padding: 32px 36px;
+  color: var(--bs-body-color);
+  font-size: 14.5px;
+  line-height: 1.55;
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-title);
+    margin: 0 0 10px;
+  }
+
+  p {
+    margin: 0 0 12px;
+  }
+
+  a {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+}
+
+.verify-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text-title) !important;
+
+  small {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+  }
+}
+
+.verify-state {
+  display: block;
+  font-size: 34px;
+  margin-bottom: 8px;
+
+  &.ok {
+    color: var(--bs-success-text-emphasis);
+  }
+
+  &.warn {
+    color: var(--bs-warning-text-emphasis);
+  }
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--bs-secondary-color);
+}
+
+.hint-list {
+  margin: 0 0 14px;
+  padding-left: 18px;
+  font-size: 13.5px;
+}
+
+:host ::ng-deep .verify-submit {
+  min-height: 46px;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .verify-card {
+    padding: 24px 20px;
+  }
+}

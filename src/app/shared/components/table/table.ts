@@ -57,6 +57,8 @@ interface TableAction {
   disabled?: boolean;
   variant?: 'text' | 'outlined' | undefined;
   showLabel?: boolean;
+  /** Ação de escrita: desabilitada com o escritório em somente leitura (ver Button.write). */
+  write?: boolean;
   handler: (row: any) => void;
 }
 

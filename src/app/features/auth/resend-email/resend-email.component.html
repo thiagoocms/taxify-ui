@@ -1,0 +1,23 @@
+<div class="resend">
+  @if (!login) {
+    <app-input [formControl]="loginControl" label="Seu login" inputId="resend-login" autocomplete="username"></app-input>
+  }
+  <app-button
+    [label]="buttonLabel()"
+    icon="envelope"
+    variant="outlined"
+    [disabled]="sending() || cooldown() > 0"
+    (onClick)="resend()"
+  ></app-button>
+  <div aria-live="polite">
+    @if (sent()) {
+      <p class="resend-message text-success-emphasis" role="status">
+        Se houver um cadastro aguardando confirmação para esse login, enviamos um link novo (vale {{ hours }} horas)
+        e o anterior deixou de valer. Confira também a caixa de spam. São no máximo 3 reenvios por hora.
+      </p>
+    }
+    @if (error()) {
+      <p class="resend-message text-danger-emphasis" role="alert">{{ error() }}</p>
+    }
+  </div>
+</div>

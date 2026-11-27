@@ -298,6 +298,11 @@ $illustration-width: 44%;
 
 .wizard-fields {
   min-height: 150px;
+
+  // O rótulo flutuante do campo sobe ~10px: espaço para a linha de erro/dica do campo de cima não encostar nele.
+  > .mt-2 {
+    margin-top: 16px !important;
+  }
 }
 
 .row-fields {
@@ -315,7 +320,7 @@ $illustration-width: 44%;
 }
 
 .field-hint {
-  margin: -6px 0 0;
+  margin: -2px 0 0;
   font-size: 12px;
   color: #6b7280;
 }
@@ -463,4 +468,114 @@ $illustration-width: 44%;
 .back-arrow:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+// ------------------------------------------------------------------ Fase 1 do SaaS: avisos, termos e verificação --
+.form-alert {
+  &.info {
+    background: var(--bs-primary-bg-subtle);
+    border: 1px solid var(--bs-primary-border-subtle);
+    color: var(--bs-primary-text-emphasis);
+
+    a {
+      color: inherit;
+      font-weight: 600;
+    }
+  }
+
+  &.warning {
+    background: var(--bs-warning-bg-subtle);
+    border: 1px solid var(--bs-warning-border-subtle);
+    color: var(--bs-warning-text-emphasis);
+  }
+
+  .alert-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+.switch-hint {
+  display: block;
+  font-size: 12.5px;
+  color: var(--bs-secondary-color);
+}
+
+.terms-box {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--radius-control);
+  padding: 12px 14px;
+  background: var(--app-bg);
+}
+
+.terms-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--bs-body-color);
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--color-primary);
+  }
+}
+
+.terms-version {
+  color: var(--bs-secondary-color);
+}
+
+.terms-links {
+  margin: 8px 0 0 28px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 13px;
+
+  a {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+}
+
+.terms-error {
+  margin: 8px 0 0 28px;
+  font-size: 12.5px;
+  color: var(--bs-form-invalid-color);
+}
+
+.verify-box {
+  border-radius: var(--border-radius);
+  background: var(--app-bg);
+  border: 1px solid var(--bs-border-color);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+
+  p {
+    margin: 0 0 8px;
+  }
+
+  .verify-icon {
+    display: block;
+    font-size: 26px;
+    color: var(--color-primary);
+    margin-bottom: 8px;
+  }
+}
+
+.verify-note {
+  font-size: 13px;
+  color: var(--bs-secondary-color);
 }

@@ -7,6 +7,11 @@ export interface AcessoriasImportResultDTO {
   linksCreated: number;
   /** Empresas não importadas, cada uma com o motivo. */
   skipped: string[];
+  /**
+   * Quantas ficaram de fora pelo limite do teste grátis (empresa nova sem vaga, ou inativa que voltou a "Ativa" e
+   * continuou inativa). Também aparecem em `skipped`. Ausente em respostas de versões anteriores da API.
+   */
+  skippedByLimit?: number;
   /** Responsáveis ("Nome <email>") sem usuário com esse e-mail no Taxify. */
   responsiblesNotFound: string[];
   errors: string[];

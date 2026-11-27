@@ -1,0 +1,50 @@
+<main class="verify-page">
+  <section class="verify-card shadow" aria-labelledby="verify-title" [attr.aria-busy]="state() === 'loading'">
+    <a class="verify-brand" routerLink="/auth/login" aria-label="Taxify por CS Hub - ir para o login">
+      <img src="favicon.svg" alt="" width="32" height="32" />
+      <span>Taxify<small>por CS Hub</small></span>
+    </a>
+
+    @switch (state()) {
+      @case ('loading') {
+        <h1 id="verify-title">Confirmando seu e-mail...</h1>
+        <app-loader variant="section" message="Confirmando o link"></app-loader>
+      }
+      @case ('success') {
+        <fa-icon class="verify-state ok" [icon]="okIcon" aria-hidden="true"></fa-icon>
+        <h1 id="verify-title">E-mail confirmado</h1>
+        <p role="status">
+          A conta do escritório está ativa. O teste grátis vai até
+          <strong>{{ formatDate(trialEndsOn()) }}</strong> (inclusive).
+        </p>
+        <p class="hint">Entre com o login e a senha que você cadastrou.</p>
+        <app-button label="Entrar no Taxify" size="large" styleClass="w-100 verify-submit" (onClick)="goToLogin()"></app-button>
+      }
+      @case ('invalid') {
+        <fa-icon class="verify-state warn" [icon]="errorIcon" aria-hidden="true"></fa-icon>
+        <h1 id="verify-title">Este link não vale mais</h1>
+        <p role="alert">
+          O link de confirmação venceu (ele vale {{ verificationHours() }} horas), já foi usado ou está incompleto.
+        </p>
+        <ul class="hint-list">
+          <li>Já confirmou antes? Então é só <a routerLink="/auth/login">entrar no Taxify</a>.</li>
+          <li>Ainda não confirmou? Peça um link novo informando o seu login. O link anterior deixa de valer.</li>
+        </ul>
+        <app-resend-email [hours]="verificationHours()"></app-resend-email>
+        <p class="hint mt-3">
+          Cadastros não confirmados em 7 dias são apagados; aí é preciso se cadastrar de novo.
+          Precisa de ajuda? <a [href]="whatsappUrl" target="_blank" rel="noopener">Fale com a CS Hub</a>.
+        </p>
+      }
+      @case ('error') {
+        <fa-icon class="verify-state warn" [icon]="errorIcon" aria-hidden="true"></fa-icon>
+        <h1 id="verify-title">Não foi possível confirmar agora</h1>
+        <p role="alert">
+          O Taxify não respondeu. Verifique sua internet e tente de novo em instantes; o link continua valendo
+          enquanto não passar o prazo.
+        </p>
+        <app-button label="Tentar de novo" size="large" styleClass="w-100 verify-submit" (onClick)="verify()"></app-button>
+      }
+    }
+  </section>
+</main>

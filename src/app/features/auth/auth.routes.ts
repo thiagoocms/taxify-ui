@@ -4,6 +4,7 @@ import { Routes } from '@angular/router';
  * Rotas públicas (usuário não autenticado).
  * /auth/login    -> tela de login
  * /auth/register -> tela de cadastro (mesmo componente, aba inicial diferente)
+ * /auth/verificar?token=... -> confirmação do e-mail do cadastro (link do e-mail)
  */
 export const AUTH_ROUTES: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -14,5 +15,9 @@ export const AUTH_ROUTES: Routes = [
   {
     path: 'register',
     loadComponent: () => import('./auth.component').then((m) => m.AuthComponent),
+  },
+  {
+    path: 'verificar',
+    loadComponent: () => import('./verify-email/verify-email.component').then((m) => m.VerifyEmailComponent),
   },
 ];

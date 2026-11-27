@@ -112,9 +112,9 @@ export class RetentionsComponent implements OnInit {
     const noSelection = !this.selected().length;
     return [
       { id: 'retentions-review', label: 'Marcar como conferidas', icon: 'check', isShow: this.canReview,
-        isDisabled: noSelection, handler: () => this.review(true) },
+        isDisabled: noSelection, write: true, handler: () => this.review(true) },
       { id: 'retentions-unreview', label: 'Desfazer conferência', variant: 'text', isShow: this.canReview,
-        isDisabled: noSelection, handler: () => this.review(false) },
+        isDisabled: noSelection, write: true, handler: () => this.review(false) },
       { id: 'retentions-csv', label: 'Exportar CSV', icon: 'download', variant: 'outlined',
         isDisabled: !this.screen()?.rows.length || this.exporting(), handler: () => this.exportCsv() },
     ];

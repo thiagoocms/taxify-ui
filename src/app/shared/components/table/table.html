@@ -92,8 +92,9 @@
                       [icon]="action.icon || ''"
                       [class]="action.class || ''"
                       (onClick)="action.handler(row); $event.stopPropagation()"
-                      [title]="action.tooltip || ''"
-                      [disabled]="row['disableActions']" />
+                      [tooltip]="action.tooltip || ''"
+                      [write]="!!action.write"
+                      [disabled]="!!action.disabled || row['disableActions']" />
                   }
                   </div>
                 </td>

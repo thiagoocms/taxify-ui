@@ -72,12 +72,19 @@
     </div>
   }
 
+  <div aria-live="assertive">
+    @if (formError()) {
+      <p class="text-danger small text-end mt-3 mb-0" role="alert">{{ formError() }}</p>
+    }
+  </div>
+
   <div class="d-flex justify-content-end gap-2 mt-3">
     <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancel()"></app-button>
     <app-button
       type="submit"
       [label]="loading() ? 'Salvando...' : 'Salvar'"
       [disabled]="loading()"
+      [write]="true"
     ></app-button>
   </div>
 </form>

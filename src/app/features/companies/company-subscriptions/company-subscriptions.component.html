@@ -8,7 +8,7 @@
     <div class="accordion-body">
       <div class="d-flex justify-content-end mb-2">
         @if (auth.can('SUBSCRIPTIONS_MANAGE')) {
-          <app-button label="Nova assinatura" icon="plus" (onClick)="openCreateDialog()"></app-button>
+          <app-button label="Nova assinatura" icon="plus" [write]="true" (onClick)="openCreateDialog()"></app-button>
         }
       </div>
 

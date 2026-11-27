@@ -326,13 +326,13 @@
   <div class="row-actions">
     @if (canEdit(row)) {
       <app-button icon="pen" tooltip="Editar" variant="text" (onClick)="editRule(row)"></app-button>
-      <app-button icon="trash" tooltip="Excluir" variant="text" severity="danger" (onClick)="deleteRule(row)"></app-button>
+      <app-button icon="trash" tooltip="Excluir" variant="text" severity="danger" [write]="true" (onClick)="deleteRule(row)"></app-button>
     }
     @if (canReview(row)) {
       <app-button icon="circle-check" [tooltip]="row.reviewed ? 'Desfazer conferência' : 'Conferir'" variant="text"
-        [severity]="row.reviewed ? 'success' : 'secondary'" (onClick)="reviewRule(row)"></app-button>
+        [severity]="row.reviewed ? 'success' : 'secondary'" [write]="true" (onClick)="reviewRule(row)"></app-button>
       <app-button [icon]="row.enabled ? 'toggle-on' : 'toggle-off'" [tooltip]="row.enabled ? 'Desativar' : 'Ativar'" variant="text"
-        [severity]="row.enabled ? 'success' : 'secondary'" (onClick)="enableRule(row)"></app-button>
+        [severity]="row.enabled ? 'success' : 'secondary'" [write]="true" (onClick)="enableRule(row)"></app-button>
     }
   </div>
 </ng-template>
@@ -485,7 +485,7 @@
           <span class="rf-label">Vale para</span>
           <div class="scope-chips" role="group" aria-label="Vale para">
             <button type="button" class="chip" [class.active]="!f.global" [disabled]="!companyId() || !!f.id" (click)="setScope(false)">Só esta empresa</button>
-            <button type="button" class="chip" [class.active]="f.global" [disabled]="!canManageGlobalRules || !!f.id" (click)="setScope(true)">Todas as empresas</button>
+            <button type="button" class="chip" [class.active]="f.global" [disabled]="!canManageGlobalRules() || !!f.id" (click)="setScope(true)">Todas as empresas</button>
           </div>
         </div>
       </section>
@@ -577,7 +577,7 @@
         <span class="cell-sub">Regra nova ou alterada fica "a conferir" até alguém do fiscal conferir.</span>
         <div class="d-flex gap-2">
           <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="ruleForm.set(null)"></app-button>
-          <app-button [label]="savingRule() ? 'Salvando...' : 'Salvar regra'" [disabled]="savingRule() || !formulaOk()" (onClick)="saveRule()"></app-button>
+          <app-button [label]="savingRule() ? 'Salvando...' : 'Salvar regra'" [disabled]="savingRule() || !formulaOk()" [write]="true" (onClick)="saveRule()"></app-button>
         </div>
       </div>
     </div>
@@ -604,7 +604,7 @@
     <div class="d-flex justify-content-end gap-2 mt-3">
       <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="importOpen.set(false)"></app-button>
       <app-button [label]="importing() ? 'Importando...' : 'Importar'" [disabled]="importing() || !importFile()"
-        (onClick)="importExtract()"></app-button>
+        [write]="true" (onClick)="importExtract()"></app-button>
     </div>
   }
 </app-modal>

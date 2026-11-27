@@ -33,12 +33,12 @@
             <app-input size="sm" type="password" autocomplete="off" [(ngModel)]="keyDraft"
               [label]="type === 'SIEG' ? 'X-API-Key da SIEG' : 'Token de API do Acessórias'"></app-input>
             <app-button label="Cancelar" variant="text" severity="secondary" (onClick)="cancelEditKey()"></app-button>
-            <app-button [label]="savingKey() ? 'Salvando...' : 'Salvar'" [disabled]="savingKey() || !keyDraft.trim()" (onClick)="saveKey(type)"></app-button>
+            <app-button [label]="savingKey() ? 'Salvando...' : 'Salvar'" [disabled]="savingKey() || !keyDraft.trim()" [write]="true" (onClick)="saveKey(type)"></app-button>
           </div>
         } @else {
           <div class="integration-actions">
             @if (current?.configured) {
-              <app-button label="Remover" variant="text" severity="danger" [disabled]="savingKey()" (onClick)="saveKey(type, true)"></app-button>
+              <app-button label="Remover" variant="text" severity="danger" [disabled]="savingKey()" [write]="true" (onClick)="saveKey(type, true)"></app-button>
             }
             <app-button [label]="current?.configured ? 'Trocar chave' : 'Informar chave'" variant="outlined" (onClick)="startEditKey(type)"></app-button>
           </div>
@@ -70,10 +70,10 @@
         @if (ca.configured) {
           <div class="integration-actions">
             @if (ca.connected) {
-              <app-button label="Desconectar" variant="text" severity="danger" [disabled]="contaAzulBusy()" (onClick)="disconnectContaAzul()"></app-button>
-              <app-button label="Reconectar" variant="outlined" [disabled]="contaAzulBusy()" (onClick)="connectContaAzul()"></app-button>
+              <app-button label="Desconectar" variant="text" severity="danger" [disabled]="contaAzulBusy()" [write]="true" (onClick)="disconnectContaAzul()"></app-button>
+              <app-button label="Reconectar" variant="outlined" [disabled]="contaAzulBusy()" [write]="true" (onClick)="connectContaAzul()"></app-button>
             } @else {
-              <app-button [label]="contaAzulBusy() ? 'Abrindo...' : 'Conectar Conta Azul'" icon="link" [disabled]="contaAzulBusy()" (onClick)="connectContaAzul()"></app-button>
+              <app-button [label]="contaAzulBusy() ? 'Abrindo...' : 'Conectar Conta Azul'" icon="link" [disabled]="contaAzulBusy()" [write]="true" (onClick)="connectContaAzul()"></app-button>
             }
           </div>
         }
@@ -142,9 +142,9 @@
         </small>
         <div class="d-flex gap-2">
           @if (settings.provider !== 'MANUAL' && settings.connected && providerDraft === settings.provider) {
-            <app-button [label]="syncing() ? 'Sincronizando ' + syncProgress() + '...' : 'Sincronizar agora'" variant="outlined" [disabled]="syncing()" (onClick)="syncBilling()"></app-button>
+            <app-button [label]="syncing() ? 'Sincronizando ' + syncProgress() + '...' : 'Sincronizar agora'" variant="outlined" [disabled]="syncing()" [write]="true" (onClick)="syncBilling()"></app-button>
           }
-          <app-button [label]="savingBilling() ? 'Salvando...' : 'Salvar cobrança'" [disabled]="savingBilling()" (onClick)="saveBilling()"></app-button>
+          <app-button [label]="savingBilling() ? 'Salvando...' : 'Salvar cobrança'" [disabled]="savingBilling()" [write]="true" (onClick)="saveBilling()"></app-button>
         </div>
       </div>
 

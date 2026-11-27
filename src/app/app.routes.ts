@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
+import { platformAdminGuard } from './core/guards/platform-admin.guard';
 
 export const routes: Routes = [
   // ------------------------------------------------------------------------
@@ -118,6 +119,14 @@ export const routes: Routes = [
           import('./features/assessment/tax-assessment-detail/tax-assessment-detail.component').then(
             (m) => m.TaxAssessmentDetailComponent,
           ),
+      },
+      // Console da plataforma (CS Hub): escritórios, situação de acesso e revisão.
+      { path: 'plataforma', pathMatch: 'full', redirectTo: 'plataforma/escritorios' },
+      {
+        path: 'plataforma/escritorios',
+        canActivate: [platformAdminGuard],
+        loadComponent: () =>
+          import('./features/platform/platform-firms/platform-firms.component').then((m) => m.PlatformFirmsComponent),
       },
       // Compatibilidade com links antigos.
       { path: 'companies', redirectTo: 'cadastro/empresas' },

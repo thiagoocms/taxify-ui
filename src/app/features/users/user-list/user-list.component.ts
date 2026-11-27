@@ -18,6 +18,9 @@ import { UserService } from '../../../core/services/user.service';
 import { UserFormComponent } from '../user-form/user-form.component';
 import { ConfirmDialogService } from '../../../shared/components/confirm-dialog/confirm-dialog.service';
 import { LoaderComponent } from '../../../shared/components/loader/loader';
+import { FirmAccessService } from '../../../core/services/firm-access.service';
+import { planNameInSentence } from '../../../core/models/api-error.model';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 const PROFILE_LABELS: Record<string, string> = {
   ADMIN: 'Administrador',
@@ -42,7 +45,7 @@ type ViewMode = 'list' | 'form';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [LoaderComponent, CommonModule, FormsModule, ReactiveFormsModule, Toggle, Button, InputComponent, Modal, Page, Pagination, Table, UserFormComponent],
+  imports: [LoaderComponent, FaIconComponent, CommonModule, FormsModule, ReactiveFormsModule, Toggle, Button, InputComponent, Modal, Page, Pagination, Table, UserFormComponent],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss',
 })
@@ -54,13 +57,30 @@ export class UserListComponent implements OnInit {
     { name: 'Perfil', property: 'profileLabel' },
   ];
 
+  /** Somente leitura e limite do teste: desabilitam "Novo usuário", "Cadastrar" do Acessórias e excluir. */
+  protected readonly firmAccess = inject(FirmAccessService);
+
   readonly tableConfig: TableConfig = {
     headerVisible: true,
     actions: [
+      // Em somente leitura, editar abre o formulário só para ver (Salvar desabilitado).
       { name: 'edit', icon: 'pen', tooltip: 'Editar', variant: 'text', handler: (row) => this.openEditForm(row) },
-      { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+      { name: 'delete', icon: 'trash', tooltip: 'Excluir', severity: 'danger', variant: 'text', write: true, handler: (row) => this.remove(row) },
     ],
   };
+
+  /** Limite do teste atingido (o somente leitura é tratado pelo [write] dos botões). */
+  readonly cannotCreate = computed(() => this.firmAccess.userLimitReached());
+
+  /** Limite do teste atingido: explicação acima da lista (a vaga só volta excluindo um usuário). */
+  readonly userLimitMessage = computed(() => {
+    const limits = this.firmAccess.limits();
+    if (!limits || !this.firmAccess.userLimitReached()) {
+      return null;
+    }
+    return `O ${planNameInSentence(limits.planName)} permite ${limits.maxUsers} usuários (contando o administrador) e o ` +
+      `escritório já tem ${limits.usersInUse}. Fale com a CS Hub para contratar.`;
+  });
 
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly acessoriasService = inject(AcessoriasService);
@@ -112,7 +132,14 @@ export class UserListComponent implements OnInit {
           isShow: this.accountingFirmService.hasAcessoriasToken(),
           handler: () => this.openAcessoriasUsers(),
         },
-        { label: 'Novo usuário', icon: 'plus', handler: () => this.openCreateForm() },
+        {
+          label: 'Novo usuário',
+          icon: 'plus',
+          isDisabled: this.cannotCreate(),
+          tooltip: this.userLimitMessage() ?? undefined,
+          write: true,
+          handler: () => this.openCreateForm(),
+        },
       ];
     }
     return [{ label: 'Voltar', icon: 'arrow-left', variant: 'outlined', severity: 'secondary', handler: () => this.closeForm() }];
@@ -215,6 +242,8 @@ export class UserListComponent implements OnInit {
   onSaved(): void {
     this.viewMode.set('list');
     this.loadUsers();
+    // Criar usuário muda o uso do limite do teste.
+    this.firmAccess.reload();
   }
 
   async remove(user: UserDTO): Promise<void> {
@@ -222,6 +251,13 @@ export class UserListComponent implements OnInit {
       return;
     }
 
-    this.userService.delete(user.id!).subscribe(() => this.loadUsers());
+    this.userService.delete(user.id!).subscribe({
+      next: () => {
+        this.loadUsers();
+        this.firmAccess.reload();
+      },
+      // O interceptor já mostrou o toast (somente leitura, não encontrado...); a linha continua na lista.
+      error: () => undefined,
+    });
   }
 }

@@ -121,7 +121,7 @@ export class PendenciesComponent implements OnInit {
       icon: 'cloud-arrow-down',
       variant: 'outlined',
       isDisabled: this.refreshing(),
-      handler: () => this.refresh(),
+      write: true, handler: () => this.refresh(),
     },
   ]);
 

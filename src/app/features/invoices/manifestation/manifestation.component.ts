@@ -127,13 +127,13 @@ export class ManifestationComponent {
     const disabled = !this.selected().length || this.sending();
     return [
       { id: 'manifest-confirm', label: 'Confirmar operação', icon: 'check', isShow: show, isDisabled: disabled,
-        handler: () => this.send('CONFIRMACAO') },
+        write: true, handler: () => this.send('CONFIRMACAO') },
       { id: 'manifest-ciencia', label: 'Só ciência', icon: 'eye', variant: 'outlined', isShow: show, isDisabled: disabled,
-        handler: () => this.send('CIENCIA') },
+        write: true, handler: () => this.send('CIENCIA') },
       { id: 'manifest-not-performed', label: 'Não realizada', icon: 'ban', variant: 'outlined', isShow: show,
-        isDisabled: disabled, handler: () => this.openNotPerformed() },
+        isDisabled: disabled, write: true, handler: () => this.openNotPerformed() },
       { id: 'manifest-unknown', label: 'Desconhecer', icon: 'xmark', variant: 'outlined', severity: 'danger', isShow: show,
-        isDisabled: disabled, handler: () => this.send('DESCONHECIMENTO') },
+        isDisabled: disabled, write: true, handler: () => this.send('DESCONHECIMENTO') },
     ];
   });
 

@@ -16,6 +16,7 @@
         type="submit"
         [label]="loading() ? 'Salvando...' : 'Salvar'"
         [disabled]="loading() || form.pristine"
+        [write]="true"
       ></app-button>
     </div>
   </form>

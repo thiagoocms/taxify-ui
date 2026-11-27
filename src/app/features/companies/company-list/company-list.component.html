@@ -6,6 +6,13 @@
       </div>
     </div>
 
+    @if (companyLimitMessage()) {
+      <div class="notice" role="status">
+        <fa-icon [icon]="['fas', 'triangle-exclamation']" aria-hidden="true"></fa-icon>
+        <span><strong>Limite do teste atingido.</strong> {{ companyLimitMessage() }}</span>
+      </div>
+    }
+
     <app-table [columns]="columns()" [data]="companies()" [config]="tableConfig"></app-table>
 
     @if (loading()) {
@@ -33,6 +40,13 @@
       <li><strong>{{ result.received }}</strong> empresa(s) recebida(s) do Acessórias</li>
       <li><strong>{{ result.created }}</strong> criada(s), <strong>{{ result.updated }}</strong> atualizada(s), <strong>{{ result.unchanged }}</strong> sem alteração</li>
       <li><strong>{{ result.linksCreated }}</strong> vínculo(s) de responsável criado(s)</li>
+      @if (result.skippedByLimit) {
+        <li class="import-limit">
+          <strong>{{ result.skippedByLimit }}</strong> empresa(s) ficaram de fora pelo limite do teste grátis
+          (novas não criadas ou inativas que não foram reativadas). Elas aparecem em "Não importadas".
+          Fale com a CS Hub para contratar.
+        </li>
+      }
     </ul>
 
     @if (result.responsiblesNotFound.length) {

@@ -47,7 +47,7 @@ export class UserLinksComponent implements OnChanges {
   readonly tableConfig: TableConfig = {
     headerVisible: true,
     actions: [
-      { name: 'unlink', icon: 'link-slash', tooltip: 'Remover vínculo', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
+      { name: 'unlink', write: true, icon: 'link-slash', tooltip: 'Remover vínculo', severity: 'danger', variant: 'text', handler: (row) => this.remove(row) },
     ],
   };
 

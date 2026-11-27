@@ -27,6 +27,7 @@ import {
   RULE_KIND_LABELS,
 } from '../../core/models/fronteira.model';
 import { AuthService } from '../../core/services/auth.service';
+import { FirmAccessService } from '../../core/services/firm-access.service';
 import { CompanyService } from '../../core/services/company.service';
 import { CurrentCompanyService } from '../../core/services/current-company.service';
 import { FronteiraService } from '../../core/services/fronteira.service';
@@ -119,7 +120,9 @@ export class FronteiraComponent implements OnInit {
   readonly canWriteRules = this.auth.can('INVOICES_AUDIT');
   readonly canManageRules = this.auth.can('FISCAL_RULES_MANAGE');
   /** A tabela geral vale para todos os escritórios: só a CS Hub altera (o backend recusa os demais). */
-  readonly canManageGlobalRules = this.canManageRules && this.auth.isPlatformAdmin();
+  private readonly firmAccess = inject(FirmAccessService);
+  /** Regras gerais (todas as empresas): só o admin da plataforma (fonte: GET /firm-access). */
+  readonly canManageGlobalRules = computed(() => this.canManageRules && this.firmAccess.platformAdmin());
   readonly form = this.fb.group({ company: this.fb.control<CompanyDTO | null>(null) });
   readonly companyId = signal<string | null>(null);
   readonly report = signal<FronteiraReportDTO | null>(null);
@@ -241,8 +244,8 @@ export class FronteiraComponent implements OnInit {
       label: 'Nova regra',
       icon: 'plus',
       variant: 'outlined',
-      isShow: this.view() === 'regras' && (this.companyId() ? this.canWriteRules || this.canManageRules : this.canManageGlobalRules),
-      handler: () => this.newRule(),
+      isShow: this.view() === 'regras' && (this.companyId() ? this.canWriteRules || this.canManageRules : this.canManageGlobalRules()),
+      write: true, handler: () => this.newRule(),
     },
     {
       id: 'fronteira-report-pdf',
@@ -275,14 +278,14 @@ export class FronteiraComponent implements OnInit {
       variant: 'outlined',
       isDisabled: this.syncing(),
       isShow: this.view() === 'conferencia' && !!this.companyId() && this.canImport && !!this.efiscoCertificate()?.present,
-      handler: () => this.syncWithEfisco(),
+      write: true, handler: () => this.syncWithEfisco(),
     },
     {
       id: 'fronteira-import',
       label: 'Importar extrato do e-Fisco',
       icon: 'upload',
       isShow: this.view() === 'conferencia' && !!this.companyId() && this.canImport,
-      handler: () => this.openImport(),
+      write: true, handler: () => this.openImport(),
     },
   ]);
 
@@ -578,7 +581,7 @@ export class FronteiraComponent implements OnInit {
   }
 
   newRule(kind: FronteiraRuleKind = 'ALIQUOTA_INTERNA'): void {
-    this.openRuleForm({ kind, companyId: this.companyId(), global: !this.companyId() && this.canManageGlobalRules }, false);
+    this.openRuleForm({ kind, companyId: this.companyId(), global: !this.companyId() && this.canManageGlobalRules() }, false);
   }
 
   editRule(rule: FronteiraRuleDTO): void {
@@ -848,12 +851,12 @@ export class FronteiraComponent implements OnInit {
   }
 
   canEdit(rule: FronteiraRuleDTO): boolean {
-    return rule.companyId ? this.canWriteRules : this.canManageGlobalRules;
+    return rule.companyId ? this.canWriteRules : this.canManageGlobalRules();
   }
 
   /** Conferir/ativar: a da empresa com FISCAL_RULES_MANAGE; a geral, só a CS Hub. */
   canReview(rule: FronteiraRuleDTO): boolean {
-    return rule.companyId ? this.canManageRules : this.canManageGlobalRules;
+    return rule.companyId ? this.canManageRules : this.canManageGlobalRules();
   }
 
   kindLabel(kind: string): string {

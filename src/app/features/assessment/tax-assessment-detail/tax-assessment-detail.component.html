@@ -188,7 +188,7 @@
             <app-input formControlName="notes" label="Observações do fechamento"></app-input>
           </div>
           @if (canClose) {
-            <app-button type="submit" label="Salvar guia" variant="outlined" [disabled]="busy()"></app-button>
+            <app-button type="submit" [write]="true" label="Salvar guia" variant="outlined" [disabled]="busy()"></app-button>
           }
         </form>
       </section>

@@ -1,0 +1,46 @@
+@switch (mode()) {
+  @case ('blocked') {
+    <section class="access-banner blocked" role="status" aria-label="Situação do escritório">
+      <fa-icon class="banner-icon" [icon]="lockIcon" aria-hidden="true"></fa-icon>
+      <div class="banner-body">
+        <p class="banner-title">{{ blockedTitle() }}</p>
+        <p>
+          Você continua vendo e exportando os dados, mas não dá para cadastrar nem editar.
+          {{ capturesText() }}
+        </p>
+        <p class="banner-warning">
+          <fa-icon [icon]="warnIcon" aria-hidden="true"></fa-icon>
+          {{ sefazText() }}
+        </p>
+      </div>
+      <a class="banner-action" [href]="whatsappUrl" target="_blank" rel="noopener">
+        Fale com a CS Hub<span class="visually-hidden"> (abre o WhatsApp em outra aba)</span>
+      </a>
+    </section>
+  }
+  @case ('trial') {
+    <section class="access-banner trial" [class.last-day]="lastDay()" role="status" aria-label="Teste grátis">
+      <fa-icon class="banner-icon" [icon]="clockIcon" aria-hidden="true"></fa-icon>
+      <div class="banner-body inline">
+        <p class="banner-title">{{ trialTitle() }}</p>
+        @if (limitsText()) {
+          <p class="banner-limits">{{ limitsText() }}</p>
+        }
+      </div>
+      <a class="banner-action" [href]="whatsappUrl" target="_blank" rel="noopener">
+        Contratar<span class="visually-hidden"> - fale com a CS Hub pelo WhatsApp (abre em outra aba)</span>
+      </a>
+    </section>
+  }
+  @case ('past-due') {
+    <section class="access-banner past-due" role="status" aria-label="Pagamento em atraso">
+      <fa-icon class="banner-icon" [icon]="warnIcon" aria-hidden="true"></fa-icon>
+      <div class="banner-body inline">
+        <p class="banner-title">Pagamento em atraso: o acesso continua liberado por enquanto.</p>
+      </div>
+      <a class="banner-action" [href]="whatsappUrl" target="_blank" rel="noopener">
+        Fale com a CS Hub<span class="visually-hidden"> (abre o WhatsApp em outra aba)</span>
+      </a>
+    </section>
+  }
+}

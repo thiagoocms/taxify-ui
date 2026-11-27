@@ -7,7 +7,7 @@
   @if (open()) {
     <div class="accordion-body">
       <div class="d-flex justify-content-end mb-2">
-        <app-button label="Vincular empresa" icon="plus" (onClick)="openCreateDialog()"></app-button>
+        <app-button label="Vincular empresa" icon="plus" [write]="true" (onClick)="openCreateDialog()"></app-button>
       </div>
 
       <app-table [columns]="columns" [data]="links()" [config]="tableConfig"></app-table>
